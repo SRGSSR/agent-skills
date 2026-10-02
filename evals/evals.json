@@ -1,0 +1,90 @@
+{
+  "skill_name": "project-phase + work-journal",
+  "notes": "Each eval runs on a fixture repo built by evals/fixtures/build.sh. with_skill gets both skills plus the skill state the fixture defines (AGENTS.md blocks, .ai/); without_skill gets the same repo without them. Programmatic checks live in evals/grade.mjs; checks marked (judgment) are graded by reading the final message and diff.",
+  "evals": [
+    {
+      "id": 1,
+      "name": "prototype-csv-export",
+      "fixture": "evals/fixtures/prototype-csv-export",
+      "prompt": "Add a way to export the items list as CSV: a link on the list page that downloads the file.",
+      "expected_output": "Prototype phase: a minimal change in server.js (a CSV route and a link), correct CSV, no tests, no new files or dependencies, no list of unsolicited suggestions.",
+      "expectations": [
+        "The list page links to a CSV download that returns all 3 items",
+        "The item name containing a comma ('Headphones, closed-back') is correctly quoted in the CSV",
+        "Only server.js changed among project files (ignoring AGENTS.md and .ai/)",
+        "No dependencies were added to package.json",
+        "No test files, CI, Docker or lint config were created",
+        "(judgment) The final message contains no list of unsolicited improvement suggestions (at most one blocker-level line)"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "maintenance-discount-bug",
+      "fixture": "evals/fixtures/maintenance-discount-bug",
+      "prompt": "Bug report from billing: an invoice with a 100% discount still shows the full total instead of 0. Please fix it.",
+      "expected_output": "Maintenance phase: one-condition fix in applyDiscount, a regression test, nothing else touched, other issues only noted.",
+      "expectations": [
+        "An invoice with a 100% discount now has total 0",
+        "The existing test suite passes",
+        "A regression test for the 100% discount was added",
+        "src/format.js is unchanged",
+        "The change in src/invoice.js is small (at most 6 added+removed lines)",
+        "No cleanup in src/invoice.js: var declarations, round2, the TODO comment and the commented-out old implementation are all still there",
+        "package.json is unchanged"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "setup-production-repo",
+      "fixture": "evals/fixtures/setup-production-repo",
+      "prompt": "Set up the project phase for this repo, so that AI agents working here know what stage we're in and how to behave.",
+      "expected_output": "Detects production from signals, writes a short contract into AGENTS.md, imports it from the existing CLAUDE.md, stores state with history in .ai/phase.md, proposes an override for legacy/old-importer and a few project-specific rules (migrations, API consumers), touches no source files.",
+      "expectations": [
+        "Phase instructions were written to a file agents load automatically (AGENTS.md or CLAUDE.md)",
+        "The chosen current phase is production",
+        "Claude Code will see the instructions: CLAUDE.md contains them or imports @AGENTS.md",
+        "The original CLAUDE.md content is preserved",
+        "legacy/old-importer gets its own phase (maintenance or sunset) as an area override",
+        "No source, test, config or legacy files were modified",
+        "The always-loaded instructions are concise (at most 40 lines added across AGENTS.md and CLAUDE.md)",
+        "At least one project-specific rule grounded in the repo (e.g. existing migrations are never edited, or API responses stay compatible with old app versions) is in the always-loaded instructions",
+        "(judgment) Phase state is persisted with a dated history entry and the reason for the choice"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "resume-from-handoff",
+      "fixture": "evals/fixtures/resume-from-handoff",
+      "prompt": "Continue where we left off yesterday.",
+      "expected_output": "Reads the handoff, verifies git state, implements the next steps (itunes:duration in renderItem, omitted when unknown or 0, feed tests, changelog), avoids the recorded dead ends, logs the resume and updates the handoff.",
+      "expectations": [
+        "Feed items with a duration contain <itunes:duration> in HH:MM:SS",
+        "Items without a duration, or with 0, have no <itunes:duration> tag",
+        "The test suite passes",
+        "test/feed.test.js has new tests about the duration",
+        "No dependency was added (in particular not the 'podcast' package)",
+        "formatDuration was not reimplemented with Date/toISOString",
+        "CHANGELOG.md has an entry under Unreleased",
+        "A journal entry for today records the resumed work",
+        "The handoff was updated to reflect the new state"
+      ]
+    },
+    {
+      "id": 5,
+      "name": "maintenance-small-feature",
+      "fixture": "evals/fixtures/maintenance-discount-bug",
+      "prompt": "Billing wants to support fixed-amount discounts too (for example CHF 20 off), in addition to percentage discounts. Can you add that?",
+      "expected_output": "Maintenance phase: the smallest backward-compatible addition in the existing style. No new discounts module despite the TODO, no var-to-const modernization, percentage discounts unchanged, tests for the new case.",
+      "expectations": [
+        "A fixed-amount discount works (CHF 100 invoice with CHF 20 off gives discount 20 and total 86.5)",
+        "Percentage discounts behave exactly as before and the existing test suite passes",
+        "Tests for the fixed-amount discount were added",
+        "No new source files were created (no separate discounts module)",
+        "The TODO comment, the commented-out old implementation and round2 are still in src/invoice.js",
+        "New code in src/invoice.js matches the existing style (no const, let or arrow functions added)",
+        "All existing exports of src/invoice.js are still exported",
+        "src/format.js and package.json are unchanged"
+      ]
+    }
+  ]
+}

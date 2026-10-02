@@ -1,0 +1,8 @@
+# Local eval runs and review pages (rebuild with evals/fixtures/build.sh)
+workspace/
+workspace-review/
+
+# Local agent settings
+.claude/
+
+.DS_Store

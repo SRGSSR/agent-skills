@@ -1,0 +1,8 @@
+2019-03-12T10:00:00|Initial invoice calculations|
+2019-06-04T14:20:00|Add percentage discounts|
+2020-01-15T09:45:00|Swiss rounding to 5 Rappen on totals|
+2020-05-28T16:10:00|Add CHF formatting helpers|
+2022-11-02T11:30:00|fix: rounding of line totals with 3 decimals|
+2024-01-03T08:50:00|fix: VAT rate 8.1% from 2024|
+2025-02-18T13:15:00|fix: thousands separator for negative amounts|
+2025-03-01T10:00:00|chore: release 2.4.1|

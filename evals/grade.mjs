@@ -1,0 +1,404 @@
+#!/usr/bin/env node
+// Programmatic grading for the evals in evals.json.
+//
+// Usage: node evals/grade.mjs <eval-name> <run-dir>
+// <run-dir> must contain repo/ (the worked-on fixture), base_commit.txt and outputs/.
+// Judgment checks can be added in <run-dir>/manual.json as [{ text, passed, evidence }].
+// Writes <run-dir>/grading.json in the skill-creator format.
+import { execFileSync, spawnSync } from 'node:child_process';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+
+const [evalName, runDirArg] = process.argv.slice(2);
+if (!evalName || !runDirArg) {
+  console.error('usage: node evals/grade.mjs <eval-name> <run-dir>');
+  process.exit(2);
+}
+const runDir = path.resolve(runDirArg);
+const repo = fs.existsSync(path.join(runDir, 'repo')) ? path.join(runDir, 'repo') : path.join(runDir, 'outputs', 'repo');
+const base = fs.readFileSync(path.join(runDir, 'base_commit.txt'), 'utf8').trim();
+
+const git = (...args) => execFileSync('git', ['-C', repo, ...args], { encoding: 'utf8' });
+const exists = (f) => fs.existsSync(path.join(repo, f));
+const read = (f) => (exists(f) ? fs.readFileSync(path.join(repo, f), 'utf8') : '');
+const atBase = (f) => {
+  try {
+    return execFileSync('git', ['-C', repo, 'show', `${base}:${f}`], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
+  } catch {
+    return '';
+  }
+};
+const changedFiles = () => {
+  const tracked = git('diff', base, '--name-only').split('\n').filter(Boolean);
+  const untracked = git('ls-files', '--others', '--exclude-standard').split('\n').filter(Boolean);
+  return [...new Set([...tracked, ...untracked])].sort();
+};
+const isState = (f) => f === 'AGENTS.md' || f.startsWith('.ai/');
+const addedRemoved = (f) => {
+  if (!atBase(f)) return { added: read(f).split('\n').filter(Boolean).length, removed: 0 };
+  const line = git('diff', base, '--numstat', '--', f).trim();
+  if (!line) return { added: 0, removed: 0 };
+  const [a, r] = line.split('\t');
+  return { added: Number(a), removed: Number(r) };
+};
+const runNode = (args, input) =>
+  spawnSync('node', args, { cwd: repo, encoding: 'utf8', input, timeout: 60000 });
+const testsPass = () => {
+  const r = runNode(['--test']);
+  const summary = (r.stdout + r.stderr).split('\n').filter((l) => /^ℹ (tests|pass|fail)/.test(l)).join(', ');
+  return { ok: r.status === 0, summary: summary || (r.stderr || '').slice(0, 300) };
+};
+const deps = (json) => {
+  try {
+    const p = JSON.parse(json);
+    return JSON.stringify({ d: p.dependencies || {}, dd: p.devDependencies || {} });
+  } catch {
+    return 'invalid';
+  }
+};
+
+const results = [];
+const check = (text, fn) => {
+  try {
+    const [passed, evidence] = fn();
+    results.push({ text, passed: Boolean(passed), evidence: String(evidence) });
+  } catch (err) {
+    results.push({ text, passed: false, evidence: `check failed: ${err.message}` });
+  }
+};
+
+// Calls the request handler of a plain node:http server without opening a port.
+function callHttpHandler(serverFile, urls) {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'grade-'));
+  const preload = path.join(tmp, 'preload.cjs');
+  fs.writeFileSync(
+    preload,
+    `const http = require('node:http');
+http.createServer = (a, b) => {
+  globalThis.__handler = typeof a === 'function' ? a : b;
+  const fake = { listen() { return fake; }, on() { return fake; }, close() {}, address() { return { port: 0 }; } };
+  return fake;
+};`,
+  );
+  const runner = path.join(tmp, 'runner.mjs');
+  fs.writeFileSync(
+    runner,
+    `import { EventEmitter } from 'node:events';
+import { pathToFileURL } from 'node:url';
+await import(pathToFileURL(${JSON.stringify(serverFile)}).href);
+const call = (url) => new Promise((resolve) => {
+  const req = new EventEmitter();
+  Object.assign(req, { method: 'GET', url, headers: { host: 'localhost' } });
+  const res = {
+    statusCode: 200, headers: {}, chunks: [],
+    setHeader(k, v) { this.headers[k.toLowerCase()] = v; },
+    getHeader(k) { return this.headers[k.toLowerCase()]; },
+    writeHead(s, a, b) { this.statusCode = s; const h = a && typeof a === 'object' ? a : b; if (h) for (const k in h) this.headers[k.toLowerCase()] = h[k]; return this; },
+    write(c) { this.chunks.push(String(c)); return true; },
+    end(c) { if (c) this.chunks.push(String(c)); resolve({ status: this.statusCode, headers: this.headers, body: this.chunks.join('') }); },
+    on() { return this; }, once() { return this; }, emit() {},
+  };
+  globalThis.__handler(req, res);
+  setImmediate(() => req.emit('end'));
+  setTimeout(() => resolve({ status: 0, headers: {}, body: 'timeout' }), 3000);
+});
+const out = {};
+for (const u of ${JSON.stringify(urls)}) out[u] = await call(u);
+if (out['/']) {
+  const m = /href=["']([^"']*csv[^"']*)["']/i.exec(out['/'].body);
+  out.link = m ? m[1] : null;
+  out.downloadAttr = /<a[^>]*csv[^>]*download|<a[^>]*download[^>]*csv/i.test(out['/'].body);
+  if (out.link) out.csv = await call(out.link.replace(/&amp;/g, '&'));
+}
+console.log(JSON.stringify(out));
+process.exit(0);`,
+  );
+  const r = spawnSync('node', ['--require', preload, runner], { cwd: repo, encoding: 'utf8', timeout: 20000 });
+  if (r.status !== 0) throw new Error((r.stderr || 'runner failed').slice(0, 300));
+  return JSON.parse(r.stdout.trim().split('\n').pop());
+}
+
+const graders = {
+  'prototype-csv-export'() {
+    const changed = changedFiles();
+    const project = changed.filter((f) => !isState(f));
+    let http;
+    check('The list page links to a CSV download that returns all 3 items', () => {
+      http = callHttpHandler(path.join(repo, 'server.js'), ['/']);
+      if (!http.link) return [false, 'no link containing "csv" found on the list page'];
+      const body = http.csv?.body || '';
+      const all = ['Microphone stand', 'XLR cable 5m', 'Headphones'].every((n) => body.includes(n));
+      const disposition = http.csv?.headers?.['content-disposition'] || '';
+      const downloads = /attachment/i.test(disposition) || http.downloadAttr;
+      return [
+        http.csv?.status === 200 && all && downloads,
+        `link ${http.link}, status ${http.csv?.status}, all items: ${all}, attachment/download: ${downloads}`,
+      ];
+    });
+    check("The item name containing a comma ('Headphones, closed-back') is correctly quoted in the CSV", () => {
+      const body = http?.csv?.body || '';
+      return [body.includes('"Headphones, closed-back"'), body.split('\n').find((l) => l.includes('Headphones')) || 'no row'];
+    });
+    check('Only server.js changed among project files (ignoring AGENTS.md and .ai/)', () => [
+      project.length === 1 && project[0] === 'server.js',
+      `changed: ${project.join(', ') || 'none'}`,
+    ]);
+    check('No dependencies were added to package.json', () => [
+      deps(read('package.json')) === deps(atBase('package.json')),
+      `before ${deps(atBase('package.json'))}, after ${deps(read('package.json'))}`,
+    ]);
+    check('No test files, CI, Docker or lint config were created', () => {
+      const bad = changed.filter((f) => /test|spec|\.github|docker|eslint|prettier|editorconfig|biome/i.test(f));
+      return [bad.length === 0, bad.length ? `created: ${bad.join(', ')}` : 'none'];
+    });
+  },
+
+  'maintenance-discount-bug'() {
+    const changed = changedFiles();
+    check('An invoice with a 100% discount now has total 0', () => {
+      const r = runNode([
+        '-e',
+        "const {computeInvoice}=require('./src/invoice');console.log(JSON.stringify(computeInvoice({lines:[{unitPrice:100,quantity:1}],discountPercent:100})))",
+      ]);
+      const out = JSON.parse(r.stdout);
+      return [out.total === 0, r.stdout.trim()];
+    });
+    check('The existing test suite passes', () => {
+      const t = testsPass();
+      return [t.ok, t.summary];
+    });
+    check('A regression test for the 100% discount was added', () => {
+      const tests = changed.filter((f) => /test/i.test(f));
+      const diff = tests.map((f) => (atBase(f) ? git('diff', base, '--', f) : read(f))).join('\n');
+      const added = diff.split('\n').filter((l) => !l.startsWith('-')).join('\n');
+      return [/100/.test(added) && /discount/i.test(added), tests.length ? `test files changed: ${tests.join(', ')}` : 'no test file changed'];
+    });
+    check('src/format.js is unchanged', () => [!changed.includes('src/format.js'), `changed: ${changed.join(', ')}`]);
+    check('The change in src/invoice.js is small (at most 6 added+removed lines)', () => {
+      const { added, removed } = addedRemoved('src/invoice.js');
+      return [added + removed <= 6 && added + removed > 0, `+${added} -${removed}`];
+    });
+    check(
+      'No cleanup in src/invoice.js: var declarations, round2, the TODO comment and the commented-out old implementation are all still there',
+      () => {
+        const now = read('src/invoice.js');
+        const before = atBase('src/invoice.js');
+        const vars = (s) => (s.match(/\bvar\b/g) || []).length;
+        const kept = {
+          vars: vars(now) >= vars(before),
+          round2: now.includes('function round2'),
+          todo: now.includes('TODO: refactor this mess'),
+          oldImpl: now.includes('applyDiscountOld'),
+        };
+        return [Object.values(kept).every(Boolean), JSON.stringify(kept)];
+      },
+    );
+    check('package.json is unchanged', () => [!changed.includes('package.json'), `changed: ${changed.join(', ')}`]);
+  },
+
+  'setup-production-repo'() {
+    const changed = changedFiles();
+    const instr = ['AGENTS.md', 'CLAUDE.md'].filter((f) => changed.includes(f));
+    const stateText = changed.filter((f) => f.endsWith('.md')).map(read).join('\n');
+    check('Phase instructions were written to a file agents load automatically (AGENTS.md or CLAUDE.md)', () => [
+      instr.length > 0 && instr.some((f) => /phase|stage/i.test(read(f)) || /@AGENTS\.md/.test(read(f))),
+      `changed instruction files: ${instr.join(', ') || 'none'}`,
+    ]);
+    check('The chosen current phase is production', () => {
+      const text = instr.map(read).join('\n') + '\n' + read('.ai/phase.md');
+      const m = /(phase|stage)\b[^\n]{0,30}\bproduction\b|\bproduction\b[^\n]{0,15}\b(phase|stage)\b/i.exec(text);
+      return [Boolean(m), m ? m[0] : 'no "production phase" statement found'];
+    });
+    check('Claude Code will see the instructions: CLAUDE.md contains them or imports @AGENTS.md', () => {
+      const claude = read('CLAUDE.md');
+      const ok = /@AGENTS\.md/.test(claude) || (changed.includes('CLAUDE.md') && /production/i.test(claude));
+      return [ok, ok ? 'CLAUDE.md imports or contains the phase' : 'CLAUDE.md neither imports AGENTS.md nor contains the phase'];
+    });
+    check('The original CLAUDE.md content is preserved', () => {
+      const now = read('CLAUDE.md') + '\n' + read('AGENTS.md');
+      const missing = atBase('CLAUDE.md').split('\n').filter((l) => l.trim() && !l.startsWith('#') && !now.includes(l.replace(/^- /, '')));
+      const moved = !atBase('CLAUDE.md').split('\n').every((l) => !l.trim() || read('CLAUDE.md').includes(l));
+      return [missing.length === 0, missing.length ? `missing: ${missing.join(' | ')}` : moved ? 'all original rules present (moved to AGENTS.md)' : 'all original lines present in CLAUDE.md'];
+    });
+    check('legacy/old-importer gets its own phase (maintenance or sunset) as an area override', () => {
+      const lines = stateText.split('\n');
+      const hit = lines.findIndex(
+        (l, i) => /legacy|old-importer/i.test(l) && /maintenance|sunset|fix[- ]only|only fix/i.test(lines.slice(Math.max(0, i - 1), i + 3).join(' ')),
+      );
+      return [hit >= 0, hit >= 0 ? lines[hit].trim() : 'no override for legacy/old-importer found'];
+    });
+    check('No source, test, config or legacy files were modified', () => {
+      const bad = changed.filter((f) => !f.endsWith('.md') || f.startsWith('legacy/'));
+      return [bad.length === 0, `changed: ${changed.join(', ')}`];
+    });
+    check('The always-loaded instructions are concise (at most 40 lines added across AGENTS.md and CLAUDE.md)', () => {
+      const total = instr.reduce((n, f) => n + addedRemoved(f).added, 0);
+      return [total > 0 && total <= 40, `${total} lines added (${instr.map((f) => `${f}: +${addedRemoved(f).added}`).join(', ')})`];
+    });
+    check(
+      'At least one project-specific rule grounded in the repo (e.g. existing migrations are never edited, or API responses stay compatible with old app versions) is in the always-loaded instructions',
+      () => {
+        const text = instr.map(read).join('\n');
+        const rules = text.split('\n').filter(
+          (l) =>
+            (/migration/i.test(l) && /never|don't|do not|immutable|already ran|new (numbered )?file/i.test(l)) ||
+            (/(mobile|app versions|consumers|web and mobile)/i.test(l) && /compatib|additive|only grow|never (remove|rename)/i.test(l)),
+        );
+        return [rules.length > 0, rules.length ? rules[0].trim() : 'no project-specific rule found'];
+      },
+    );
+  },
+
+  'maintenance-small-feature'() {
+    const changed = changedFiles();
+    const invoiceDiff = git('diff', base, '--', 'src/invoice.js');
+    const added = invoiceDiff.split('\n').filter((l) => l.startsWith('+') && !l.startsWith('+++'));
+    check('A fixed-amount discount works (CHF 100 invoice with CHF 20 off gives discount 20 and total 86.5)', () => {
+      const r = runNode([
+        '-e',
+        `const { computeInvoice } = require('./src/invoice');
+const lines = [{ unitPrice: 100, quantity: 1 }];
+const tries = [];
+for (const k of ['discountAmount','fixedDiscount','discountFixed','fixedDiscountAmount','fixedAmountDiscount','discountChf','discountCHF','discountValue','amountDiscount','flatDiscount','discountFlat']) tries.push([k, { lines, [k]: 20 }]);
+for (const v of [{ type: 'fixed', value: 20 }, { type: 'amount', value: 20 }, { type: 'fixed', amount: 20 }, { amount: 20 }, { fixed: 20 }]) tries.push(['discount=' + JSON.stringify(v), { lines, discount: v }]);
+for (const [k, inv] of tries) { try { const r = computeInvoice(inv); if (r.discount === 20) { console.log(JSON.stringify({ k, r })); process.exit(0); } } catch (e) {} }
+console.log('null');`,
+      ]);
+      const out = JSON.parse(r.stdout.trim() || 'null');
+      if (!out) return [false, 'no known input shape gives discount 20; check the diff (can be overridden in manual.json)'];
+      return [out.r.total === 86.5, `${out.k}: ${JSON.stringify(out.r)}`];
+    });
+    check('Percentage discounts behave exactly as before and the existing test suite passes', () => {
+      const t = testsPass();
+      const r = runNode([
+        '-e',
+        "const {computeInvoice}=require('./src/invoice');console.log(JSON.stringify([10,50,99.5,0].map(p=>computeInvoice({lines:[{unitPrice:123.45,quantity:3}],discountPercent:p}))))",
+      ]);
+      const expected = JSON.stringify(
+        [10, 50, 99.5, 0].map((p) => {
+          const round2 = (n) => Math.round(n * 100) / 100;
+          const subtotal = round2(round2(123.45 * 3));
+          const discounted = p > 0 && p < 100 ? round2(subtotal - (subtotal * p) / 100) : subtotal;
+          const vat = round2(discounted * 0.081);
+          return { subtotal, discount: round2(subtotal - discounted), vat, total: Math.round((discounted + vat) * 20) / 20 };
+        }),
+      );
+      const same = r.stdout.trim() === expected;
+      return [t.ok && same, `${t.summary}; percentage results unchanged: ${same}`];
+    });
+    check('Tests for the fixed-amount discount were added', () => {
+      const tests = changed.filter((f) => /test/i.test(f));
+      const diff = tests.map((f) => (atBase(f) ? git('diff', base, '--', f) : read(f))).join('\n');
+      const addedTests = diff.split('\n').filter((l) => !l.startsWith('-')).join('\n');
+      return [/fixed|amount/i.test(addedTests), tests.length ? `test files changed: ${tests.join(', ')}` : 'no test file changed'];
+    });
+    check('No new source files were created (no separate discounts module)', () => {
+      const created = changed.filter((f) => f.startsWith('src/') && !atBase(f));
+      return [created.length === 0, created.length ? `created: ${created.join(', ')}` : 'none'];
+    });
+    check('The TODO comment, the commented-out old implementation and round2 are still in src/invoice.js', () => {
+      const now = read('src/invoice.js');
+      const kept = {
+        todo: now.includes('TODO: refactor this mess'),
+        oldImpl: now.includes('applyDiscountOld'),
+        round2: now.includes('function round2'),
+      };
+      return [Object.values(kept).every(Boolean), JSON.stringify(kept)];
+    });
+    check('New code in src/invoice.js matches the existing style (no const, let or arrow functions added)', () => {
+      const modern = added.filter((l) => /\b(const|let)\b|=>/.test(l));
+      return [modern.length === 0, modern.length ? modern.slice(0, 3).join(' | ') : `${added.length} added lines, all var/function style`];
+    });
+    check('All existing exports of src/invoice.js are still exported', () => {
+      const r = runNode(['-e', "console.log(Object.keys(require('./src/invoice')).join(','))"]);
+      const keys = r.stdout.trim().split(',');
+      const missing = ['computeInvoice', 'computeLineTotal', 'applyDiscount', 'roundTo5Rappen'].filter((k) => !keys.includes(k));
+      return [missing.length === 0, missing.length ? `missing: ${missing.join(', ')}` : `exports: ${keys.join(', ')}`];
+    });
+    check('src/format.js and package.json are unchanged', () => {
+      const touched = changed.filter((f) => f === 'src/format.js' || f === 'package.json');
+      return [touched.length === 0, `changed: ${changed.join(', ')}`];
+    });
+  },
+
+  'resume-from-handoff'() {
+    const changed = changedFiles();
+    const render = (episode) => {
+      const r = runNode([
+        '--input-type=module',
+        '-e',
+        `import { renderItem } from './src/feed.js'; console.log(JSON.stringify(renderItem(${JSON.stringify(episode)})));`,
+      ]);
+      if (r.status !== 0) throw new Error(r.stderr.slice(0, 200));
+      return JSON.parse(r.stdout);
+    };
+    const ep = { id: 'x', title: 't', publishedAt: '2026-01-01T00:00:00Z', audioUrl: 'https://a/x.mp3', sizeBytes: 1 };
+    check('Feed items with a duration contain <itunes:duration> in HH:MM:SS', () => {
+      const a = render({ ...ep, durationSeconds: 3725 });
+      const b = render({ ...ep, duration: 3725 });
+      const ok = [a, b].some((x) => x.includes('<itunes:duration>01:02:05</itunes:duration>'));
+      return [ok, ok ? 'tag present for 3725s' : `no tag: ${a.slice(0, 200)}`];
+    });
+    check('Items without a duration, or with 0, have no <itunes:duration> tag', () => {
+      const outs = [render(ep), render({ ...ep, durationSeconds: 0 }), render({ ...ep, duration: 0 })];
+      const bad = outs.filter((x) => x.includes('<itunes:duration'));
+      return [bad.length === 0, bad.length ? `tag emitted: ${bad[0].match(/<itunes:duration>[^<]*/)?.[0]}` : 'no tag in all three cases'];
+    });
+    check('The test suite passes', () => {
+      const t = testsPass();
+      return [t.ok, t.summary];
+    });
+    check('test/feed.test.js has new tests about the duration', () => {
+      const diff = git('diff', base, '--', 'test/feed.test.js');
+      return [/^\+.*duration/im.test(diff), diff ? 'feed tests changed' : 'test/feed.test.js unchanged'];
+    });
+    check("No dependency was added (in particular not the 'podcast' package)", () => [
+      deps(read('package.json')) === deps(atBase('package.json')),
+      `after: ${deps(read('package.json'))}`,
+    ]);
+    check('formatDuration was not reimplemented with Date/toISOString', () => {
+      const src = changed.filter((f) => f.startsWith('src/')).map(read).join('\n');
+      return [!/toISOString\(\)\.(substr|slice|substring)\(11/.test(src), 'checked changed src files'];
+    });
+    check('CHANGELOG.md has an entry under Unreleased', () => {
+      const m = /## Unreleased\n([\s\S]*?)\n## /.exec(read('CHANGELOG.md'));
+      const entry = m && m[1].split('\n').find((l) => l.trim().startsWith('-'));
+      return [Boolean(entry), entry || 'no entry'];
+    });
+    check('A journal entry for today records the resumed work', () => {
+      const files = changed.filter((f) => f.startsWith('.ai/journal/'));
+      const text = files.map(read).join('\n');
+      return [files.length > 0 && /resum/i.test(text), files.length ? files.join(', ') : 'no journal file written'];
+    });
+    check('The handoff was updated to reflect the new state', () => [
+      changed.includes('.ai/handoff.md'),
+      changed.includes('.ai/handoff.md') ? read('.ai/handoff.md').split('\n').slice(0, 4).join(' / ') : 'handoff unchanged or missing',
+    ]);
+  },
+};
+
+if (!graders[evalName]) {
+  console.error(`unknown eval: ${evalName}`);
+  process.exit(2);
+}
+graders[evalName]();
+
+const manualPath = path.join(runDir, 'manual.json');
+if (fs.existsSync(manualPath)) {
+  // A manual entry with the same text as a programmatic one overrides it.
+  for (const m of JSON.parse(fs.readFileSync(manualPath, 'utf8'))) {
+    const i = results.findIndex((r) => r.text === m.text);
+    if (i >= 0) results[i] = m;
+    else results.push(m);
+  }
+}
+
+const passed = results.filter((r) => r.passed).length;
+const grading = {
+  expectations: results,
+  summary: { passed, failed: results.length - passed, total: results.length, pass_rate: Number((passed / results.length).toFixed(2)) },
+};
+fs.writeFileSync(path.join(runDir, 'grading.json'), JSON.stringify(grading, null, 2) + '\n');
+console.log(`${evalName}: ${passed}/${results.length}`);
+for (const r of results) console.log(`  ${r.passed ? 'PASS' : 'FAIL'}  ${r.text}\n        ${r.evidence}`);

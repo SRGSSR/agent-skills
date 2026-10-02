@@ -1,0 +1,11 @@
+{
+  "name": "invoicing-core",
+  "version": "2.4.1",
+  "description": "Invoice calculations (CHF, VAT, discounts, Swiss rounding)",
+  "main": "src/invoice.js",
+  "scripts": {
+    "test": "node --test"
+  },
+  "license": "UNLICENSED",
+  "private": true
+}

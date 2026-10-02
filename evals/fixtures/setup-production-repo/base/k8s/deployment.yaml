@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: newsroom-api
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: newsroom-api
+  template:
+    metadata:
+      labels:
+        app: newsroom-api
+    spec:
+      containers:
+        - name: api
+          image: registry.example.com/newsroom-api:1.8.0
+          ports:
+            - containerPort: 8080
