@@ -34,7 +34,7 @@ const changedFiles = () => {
   const untracked = git('ls-files', '--others', '--exclude-standard').split('\n').filter(Boolean);
   return [...new Set([...tracked, ...untracked])].sort();
 };
-const isState = (f) => f === 'AGENTS.md' || f.startsWith('.ai/');
+const isState = (f) => f === 'AGENTS.md' || f === '.gitattributes' || f.startsWith('.ai/');
 // Text between <!-- name:start --> and <!-- name:end --> inclusive, or ''.
 const block = (text, name) => {
   const m = new RegExp(`<!-- ${name}:start -->[\\s\\S]*?<!-- ${name}:end -->`).exec(text);
