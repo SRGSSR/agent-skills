@@ -1,6 +1,6 @@
 {
   "skill_name": "project-phase + work-journal",
-  "notes": "Each eval runs on a fixture repo built by evals/fixtures/build.sh. with_skill gets both skills plus the skill state the fixture defines (AGENTS.md blocks, .ai/); without_skill gets the same repo without them. Programmatic checks live in evals/grade.mjs; checks marked (judgment) are graded by reading the final message and diff.",
+  "notes": "Each eval runs on a fixture repo built by evals/fixtures/build.sh. with_skill gets both skills plus the skill state the fixture defines (AGENTS.md blocks, .ai/); without_skill gets the same repo without them. Programmatic checks live in evals/grade.mjs; checks marked (judgment) are graded by reading the final message and diff. Fixtures with a state-in-baseline file (on/off evals) give without_skill the same AGENTS.md and .ai/ state, so only the skill differs. Evals 8-10 check that triggers work in Italian, French and German.",
   "evals": [
     {
       "id": 1,
@@ -84,6 +84,91 @@
         "New code in src/invoice.js matches the existing style (no const, let or arrow functions added)",
         "All existing exports of src/invoice.js are still exported",
         "src/format.js and package.json are unchanged"
+      ]
+    },
+    {
+      "id": 6,
+      "name": "journal-off-csv",
+      "fixture": "evals/fixtures/journal-off",
+      "prompt": "Add a way to export the items list as CSV: a link on the list page that downloads the file. After that let's stop here, I'll continue tomorrow.",
+      "expected_output": "work-journal is off (marker in AGENTS.md): the CSV feature is done as in prototype, but no journal entry, no handoff rewrite, and the work-journal block is not added back.",
+      "expectations": [
+        "The list page links to a CSV download that returns all 3 items",
+        "The item name containing a comma ('Headphones, closed-back') is correctly quoted in the CSV",
+        "Only server.js changed among project files (ignoring AGENTS.md and .ai/)",
+        "No dependencies were added to package.json",
+        "No test files, CI, Docker or lint config were created",
+        "AGENTS.md still has the work-journal off marker and no work-journal block",
+        "The project-phase block in AGENTS.md is unchanged",
+        ".ai/handoff.md is unchanged and no journal entry was written"
+      ]
+    },
+    {
+      "id": 7,
+      "name": "phase-on",
+      "fixture": "evals/fixtures/phase-off-maintenance",
+      "prompt": "/project-phase on",
+      "expected_output": "Replaces the off marker with the MAINTENANCE contract block rebuilt from .ai/phase.md (since 2025-03-01, custom billing-QA rule, footer), keeps the rest of AGENTS.md, touches no project files.",
+      "expectations": [
+        "AGENTS.md has a project-phase block and no off marker",
+        "The block is the maintenance contract since 2025-03-01",
+        "The custom rule from .ai/phase.md (billing QA, rounding) is in the block",
+        "The other AGENTS.md content (Agent notes, Commands) is preserved",
+        "The block is concise (at most 20 lines)",
+        "No files changed outside AGENTS.md, CLAUDE.md and .ai/"
+      ]
+    },
+    {
+      "id": 8,
+      "name": "phase-off-it",
+      "fixture": "evals/fixtures/phase-on-prototype",
+      "prompt": "Disattiva project-phase in questo progetto, per ora non ci serve.",
+      "expected_output": "Italian trigger for off: the project-phase block becomes the off marker, the hand-added demo-items rule is moved to Custom rules in .ai/phase.md, the work-journal block and project files are untouched, reply in Italian.",
+      "expectations": [
+        "AGENTS.md has the project-phase off marker and no project-phase block",
+        "The work-journal block in AGENTS.md is unchanged",
+        "The hand-added rule about the demo items is preserved in .ai/phase.md",
+        ".ai/phase.md still records the prototype phase",
+        "No files changed outside AGENTS.md, CLAUDE.md and .ai/",
+        "(judgment) The final message is in Italian and says how to turn project-phase back on"
+      ]
+    },
+    {
+      "id": 9,
+      "name": "setup-production-repo-fr",
+      "fixture": "evals/fixtures/setup-production-repo",
+      "prompt": "Configure la phase du projet pour ce dépôt, pour que les agents IA qui travaillent ici sachent à quel stade nous en sommes et comment se comporter.",
+      "expected_output": "Same as setup-production-repo, triggered by a French request; the final message is in French.",
+      "expectations": [
+        "Phase instructions were written to a file agents load automatically (AGENTS.md or CLAUDE.md)",
+        "The chosen current phase is production",
+        "Claude Code will see the instructions: CLAUDE.md contains them or imports @AGENTS.md",
+        "The original CLAUDE.md content is preserved",
+        "legacy/old-importer gets its own phase (maintenance or sunset) as an area override",
+        "No source, test, config or legacy files were modified",
+        "The always-loaded instructions are concise (at most 40 lines added across AGENTS.md and CLAUDE.md)",
+        "At least one project-specific rule grounded in the repo (e.g. existing migrations are never edited, or API responses stay compatible with old app versions) is in the always-loaded instructions",
+        "(judgment) Phase state is persisted with a dated history entry and the reason for the choice",
+        "(judgment) The final message is in French"
+      ]
+    },
+    {
+      "id": 10,
+      "name": "resume-from-handoff-de",
+      "fixture": "evals/fixtures/resume-from-handoff",
+      "prompt": "Mach bitte dort weiter, wo wir gestern aufgehört haben.",
+      "expected_output": "Same as resume-from-handoff, triggered by a German request; the final message is in German.",
+      "expectations": [
+        "Feed items with a duration contain <itunes:duration> in HH:MM:SS",
+        "Items without a duration, or with 0, have no <itunes:duration> tag",
+        "The test suite passes",
+        "test/feed.test.js has new tests about the duration",
+        "No dependency was added (in particular not the 'podcast' package)",
+        "formatDuration was not reimplemented with Date/toISOString",
+        "CHANGELOG.md has an entry under Unreleased",
+        "A journal entry for today records the resumed work",
+        "The handoff was updated to reflect the new state",
+        "(judgment) The final message is in German"
       ]
     }
   ]

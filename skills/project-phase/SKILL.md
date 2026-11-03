@@ -1,9 +1,9 @@
 ---
 name: project-phase
-description: Sets and applies the project's lifecycle phase (explore, prototype, stabilize, production, maintenance, sunset) so the agent works the way that phase needs - no over-engineering or unsolicited advice while prototyping, structural suggestions and tech-debt tracking in production, minimal regression-safe diffs in maintenance. Use this skill whenever the user wants to set up, check or change the project phase, mode or stage; says things like "we're just prototyping", "it's a quick POC", "this is live now", "maintenance only", "stop over-engineering", "don't touch anything else"; asks whether the project is ready for production; or wants to review tech debt or shortcuts. Also use it when AGENTS.md or CLAUDE.md contains a project-phase block and it is unclear how the phase applies to the current request.
+description: Sets and applies the project's lifecycle phase (explore, prototype, stabilize, production, maintenance, sunset) so the agent works the way that phase needs - no over-engineering or unsolicited advice while prototyping, structural suggestions and tech-debt tracking in production, minimal regression-safe diffs in maintenance. Use this skill whenever the user wants to set up, check or change the project phase, mode or stage; says things like "we're just prototyping", "it's a quick POC", "this is live now", "maintenance only", "stop over-engineering", "don't touch anything else"; asks whether the project is ready for production; or wants to review tech debt or shortcuts; or wants to turn it on or off for a project (`/project-phase on`, `/project-phase off`, "disable project-phase here"). Also use it when AGENTS.md or CLAUDE.md contains a project-phase block and it is unclear how the phase applies to the current request.
 license: MIT
 metadata:
-  version: "0.1.0"
+  version: "0.2.0"
 ---
 
 # Project Phase
@@ -21,7 +21,26 @@ Two pieces, both plain Markdown in the repo, readable by any agent or human:
    - `phase.md` - phase set, current phase, area overrides, custom rules, history.
    - `debt.md` - one-line register of deliberate shortcuts and tech debt.
 
-This skill manages those files: setup, status, phase changes, debt reviews, and interpreting the phase in unclear cases.
+This skill manages those files: setup, status, phase changes, debt reviews, turning it on or off, and interpreting the phase in unclear cases.
+
+## On / off
+
+The user can turn the skill off for one project, with `/project-phase off`, or by asking in words, and turn it back on with `/project-phase on`.
+
+**Off** means `AGENTS.md` contains the one-line marker `<!-- project-phase:off -->` instead of the contract block. The marker exists so that this skill does not add the block back on its own. While it is there:
+- Don't run setup, don't write the block, don't write `.ai/phase.md` or `.ai/debt.md` unprompted.
+- Do what the user explicitly asks this time (a status, a debt review, a phase change in `phase.md`), without turning the skill back on. Mention once, in one line, that project-phase is off here and `/project-phase on` re-enables it.
+
+**To turn it off:**
+1. Replace the contract block, from `<!-- project-phase:start -->` to `<!-- project-phase:end -->` inclusive, with `<!-- project-phase:off -->`. If there is no block, add the marker near the top of `AGENTS.md` (create the file if missing).
+2. The block is rebuilt from `.ai/phase.md` on `on`, so hand edits to it would be lost. If the block has bullets that are not in the phase contract nor in `phase.md`, move them to `## Custom rules` in `phase.md` first and say so.
+3. Leave the rest of `.ai/` and any `@AGENTS.md` line in `CLAUDE.md` as they are.
+4. Report in one line: off for this project, state kept in `.ai/`, `/project-phase on` restores it.
+
+**To turn it on:**
+- If the block is already there, say so and show the status.
+- If the marker is there and `.ai/phase.md` exists, replace the marker with the contract block rebuilt from `phase.md` as in setup step 4 (current phase and its since-date, area overrides, custom rules, footer), and make sure `CLAUDE.md` imports `AGENTS.md`. Report the phase in one line, and in one more line any signal that it no longer fits.
+- If there is no `.ai/phase.md`, remove the marker and run setup.
 
 ## Principles that hold in every phase
 
@@ -29,6 +48,7 @@ This skill manages those files: setup, status, phase changes, debt reviews, and 
 - **Some things are never relaxed:** no secrets in code, commits or logs; no destructive operations (data, history, infrastructure) without confirmation; honest reporting of what is untested or incomplete. Speed is never a reason to hide a known risk.
 - **Never change the phase on your own.** When signals suggest it no longer fits, mention it once in one line and continue under the current phase.
 - **Process cost follows the phase.** In explore and prototype, even this skill's bookkeeping stays minimal: one-line debt entries, no reports.
+- **Talk in the user's language.** This skill is written in English, but reports, questions and the final message go in the language the user writes in. Files (`AGENTS.md` blocks, `.ai/`) keep the language they already use; new ones are in English.
 
 ## Phases
 
@@ -58,7 +78,7 @@ If the user's global instructions name a default set (for example `project-phase
 
 ### Setup (first use in a project)
 
-1. **Check for existing state.** If `.ai/phase.md` or a contract block exists, show status instead of starting over.
+1. **Check for existing state.** If `AGENTS.md` has the `<!-- project-phase:off -->` marker, follow [On / off](#on--off): set up only if the user explicitly asks, and then remove the marker. If `.ai/phase.md` or a contract block exists, show status instead of starting over.
 2. **Read the signals** cheaply: top-level listing, README, `git log --oneline | head -20`, commit count and age, CI config, tests, deploy files, version and tags, CHANGELOG. The signal table is in [references/transitions.md](references/transitions.md#detecting-the-phase). Do not read the source tree for this.
 3. **Propose, then ask.** Recommend a phase set and a current phase with two or three lines of reasoning, and ask the user to confirm. Signals only suggest: the phase reflects what the team wants to optimize now, not just repo age. A new repo can be production on day one (a rewrite of a live service); an old one can be back in prototype for a new direction. If parts of the repo clearly differ (an experiments folder, a frozen legacy module), propose area overrides.
    Also propose up to three **project-specific rules** that the generic contract cannot know but the signals reveal, especially where a mistake would be costly. For example: migrations that already ran must never be edited; old mobile app versions keep calling the API, so responses only grow; a folder is generated and must not be edited by hand. Only rules grounded in what you read, one line each. Generic best practices don't belong here.

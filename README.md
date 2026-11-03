@@ -91,6 +91,15 @@ Or copy `skills/project-phase/` and `skills/work-journal/` into your tool's skil
 - **Gemini CLI** reads `GEMINI.md` by default. Add `AGENTS.md` to `context.fileName` in its settings.
 - **Tools without skill support** still follow the blocks in `AGENTS.md`. You only need the skill for setup and phase changes, and you can do those by hand from the files in `skills/project-phase/references/`.
 
+### Disable or uninstall
+
+Removing a skill does not change how the agent behaves in projects already set up: the blocks in `AGENTS.md` are loaded on every task with or without the skill.
+
+- **Turn a skill off in one project:** `/project-phase off` or `/work-journal off` (or ask in words, for example "turn project-phase off here"). The block in `AGENTS.md` is replaced by a one-line marker such as `<!-- project-phase:off -->`, which also stops the skill from adding the block back on its own. `.ai/` is kept, and `/project-phase on` or `/work-journal on` restores the block. While off, the skill still does what you explicitly ask, once.
+- **Remove the skill:** in Claude Code, `claude plugin disable <name>@srgssr-project-status` (or `uninstall`), or use the `/plugin` menu. With other tools, delete the skill folder. Turn it off in your projects first, or edit `AGENTS.md` by hand as below.
+- **By hand:** delete the block between `<!-- project-phase:start -->` and `<!-- project-phase:end -->` (or `<!-- work-journal:start -->` and `<!-- work-journal:end -->`) in `AGENTS.md`. If the skill is still installed, put the `off` marker in its place, or the skill may add the block back. If setup added `@AGENTS.md` to `CLAUDE.md` only for these blocks, remove that line too. You can keep `.ai/` as a record or delete it.
+- **Less rigor, not none:** for `project-phase`, changing the phase (for example to `prototype`) is usually what you want instead of turning it off.
+
 ## Usage
 
 Talk to your agent normally. Examples:
