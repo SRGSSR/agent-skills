@@ -383,7 +383,7 @@ console.log('null');`,
       const h = changed.filter((f) => f === '.ai/handoff.md' || f.startsWith('.ai/handoff/'));
       return [h.length > 0, h.length ? h.map((f) => `${f}: ${exists(f) ? read(f).split('\n').slice(0, 3).join(' / ') : 'deleted'}`).join(' | ') : 'no handoff changed'];
     });
-    if (evalName !== 'parallel-handoff') {
+    if (evalName.startsWith('resume-from-handoff')) {
       check(UPGRADED, () => {
         const b = block(read('AGENTS.md'), 'work-journal');
         return [!exists('.ai/handoff.md') && b.includes('.ai/handoff/<branch>.md'), `handoff.md: ${exists('.ai/handoff.md') ? 'present' : 'absent'}, block: ${b ? (b.includes('.ai/handoff/<branch>.md') ? '0.3' : 'old') : 'none'}`];
@@ -486,6 +486,21 @@ console.log('null');`,
       const l = diff.split('\n').find((x) => /^\+/.test(x) && /(\/\/|\*|#)/.test(x) && /(zero|\b0\b|00:00:00|unknown|apple)/i.test(x));
       return [Boolean(l), l || 'not found in added comments'];
     });
+  },
+
+  'merge-from-develop'() {
+    graders['resume-from-handoff']();
+    const changed = changedFiles();
+    check('test/fixtures/episodes.json from develop is unchanged (reused, not recreated)', () => {
+      const ok = !changed.includes('test/fixtures/episodes.json');
+      return [ok, ok ? 'unchanged' : 'changed'];
+    });
+    check('The journal records the merge of develop into the branch', () => {
+      const text = changed.filter((f) => f.startsWith('.ai/journal/')).map((f) => git('diff', base, '--', f) || read(f)).join('\n');
+      const l = text.split('\n').find((x) => /merg/i.test(x) && /develop/i.test(x));
+      return [Boolean(l), l || 'no line about the merge'];
+    });
+    check('No single .ai/handoff.md was created', () => [!exists('.ai/handoff.md'), exists('.ai/handoff.md') ? 'created' : 'absent']);
   },
 };
 graders['setup-production-repo-fr'] = graders['setup-production-repo'];

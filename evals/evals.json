@@ -1,6 +1,6 @@
 {
   "skill_name": "project-phase + work-journal",
-  "notes": "Each eval runs on a fixture repo built by evals/fixtures/build.sh. with_skill gets both skills plus the skill state the fixture defines (AGENTS.md blocks, .ai/); without_skill gets the same repo without them. Programmatic checks live in evals/grade.mjs; checks marked (judgment) are graded by reading the final message and diff. Fixtures with a state-in-baseline file (on/off evals) give without_skill the same AGENTS.md and .ai/ state, so only the skill differs. Evals 8-10 check that triggers work in Italian, French and German. Eval 11 checks per-branch handoffs with a colleague's open handoff in the repo.",
+  "notes": "Each eval runs on a fixture repo built by evals/fixtures/build.sh. with_skill gets both skills plus the skill state the fixture defines (AGENTS.md blocks, .ai/); without_skill gets the same repo without them. Programmatic checks live in evals/grade.mjs; checks marked (judgment) are graded by reading the final message and diff. Fixtures with a state-in-baseline file (on/off evals) give without_skill the same AGENTS.md and .ai/ state, so only the skill differs. Evals 8-10 check that triggers work in Italian, French and German. Eval 11 checks per-branch handoffs with a colleague's open handoff in the repo. Eval 12 checks that a merge of develop into the feature branch after the handoff is noticed.",
   "evals": [
     {
       "id": 1,
@@ -193,6 +193,27 @@
         "No single .ai/handoff.md was created",
         "New journal entries name the branch feature/itunes-duration in the header",
         "If its handoff was deleted, the zero-duration decision was kept in a code comment or doc"
+      ]
+    },
+    {
+      "id": 12,
+      "name": "merge-from-develop",
+      "fixture": "evals/fixtures/merge-from-develop",
+      "prompt": "Continue where we left off yesterday.",
+      "expected_output": "After the handoff was written, develop was merged into the feature branch and brought test/fixtures/episodes.json, which is step 2 of the handoff. The agent notices the merge, reuses the file instead of recreating it, records the merge in the journal and updates the handoff, then finishes the feature as in resume-from-handoff.",
+      "expectations": [
+        "Feed items with a duration contain <itunes:duration> in HH:MM:SS",
+        "Items without a duration, or with 0, have no <itunes:duration> tag",
+        "The test suite passes",
+        "test/feed.test.js has new tests about the duration",
+        "No dependency was added (in particular not the 'podcast' package)",
+        "formatDuration was not reimplemented with Date/toISOString",
+        "CHANGELOG.md has an entry under Unreleased",
+        "A journal entry for today records the resumed work",
+        "The handoff reflects the new state (rewritten, moved to .ai/handoff/<branch>.md, or deleted because the task is done)",
+        "test/fixtures/episodes.json from develop is unchanged (reused, not recreated)",
+        "The journal records the merge of develop into the branch",
+        "No single .ai/handoff.md was created"
       ]
     }
   ]

@@ -1,0 +1,6 @@
+[
+  { "id": "ep-101", "title": "Morning news", "publishedAt": "2026-09-28T06:00:00Z", "audioUrl": "https://cdn.example.com/ep-101.mp3", "sizeBytes": 18200000, "durationSeconds": 1520 },
+  { "id": "ep-102", "title": "Election night live", "publishedAt": "2026-09-20T18:00:00Z", "audioUrl": "https://cdn.example.com/ep-102.mp3", "sizeBytes": 905000000, "durationSeconds": 90061 },
+  { "id": "ep-103", "title": "Trailer", "publishedAt": "2026-09-01T08:00:00Z", "audioUrl": "https://cdn.example.com/ep-103.mp3", "sizeBytes": 400000, "durationSeconds": 0 },
+  { "id": "ep-104", "title": "Archive: 1998 interview", "publishedAt": "2026-08-15T10:00:00Z", "audioUrl": "https://cdn.example.com/ep-104.mp3", "sizeBytes": 30100000 }
+]
