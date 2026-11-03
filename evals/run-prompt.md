@@ -37,10 +37,12 @@ Environment notes:
 - If you need to identify yourself (tool/model): <tool>/<model>.
 
 Installed skills (load a skill by reading its SKILL.md when its description matches the situation, then follow it):
-- project-phase (<repo>/skills/project-phase/SKILL.md): Sets and applies the project's lifecycle phase (explore, prototype, stabilize, production, maintenance, sunset) so the agent works the way that phase needs - no over-engineering or unsolicited advice while prototyping, structural suggestions and tech-debt tracking in production, minimal regression-safe diffs in maintenance. Use when the user wants to set up, check or change the project phase; or when AGENTS.md or CLAUDE.md contains a project-phase block and it is unclear how the phase applies to the current request.
-- work-journal (<repo>/skills/work-journal/SKILL.md): Keeps a terse work journal and a handoff document in the repo so work can be paused and resumed by another agent, model or human. Use when the user is stopping or pausing, asks for a handoff, wants to continue previous work, or when starting work in a repo that has .ai/handoff.md or .ai/journal/.
+- project-phase (<repo>/skills/project-phase/SKILL.md): <description from its frontmatter, verbatim>
+- work-journal (<repo>/skills/work-journal/SKILL.md): <description from its frontmatter, verbatim>
 
 When finished, write the exact final message you would send to the user into <run-dir>/outputs/final_message.md
 ```
 
 For setup evals, add to the non-interactive note: "proceed as if the user accepted your recommendation".
+
+Use the descriptions verbatim: they are what triggers a skill, and evals 6-10 test exactly that (on/off phrases, Italian, French and German requests). Keep the user message in its original language.

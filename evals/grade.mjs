@@ -35,6 +35,11 @@ const changedFiles = () => {
   return [...new Set([...tracked, ...untracked])].sort();
 };
 const isState = (f) => f === 'AGENTS.md' || f.startsWith('.ai/');
+// Text between <!-- name:start --> and <!-- name:end --> inclusive, or ''.
+const block = (text, name) => {
+  const m = new RegExp(`<!-- ${name}:start -->[\\s\\S]*?<!-- ${name}:end -->`).exec(text);
+  return m ? m[0] : '';
+};
 const addedRemoved = (f) => {
   if (!atBase(f)) return { added: read(f).split('\n').filter(Boolean).length, removed: 0 };
   const line = git('diff', base, '--numstat', '--', f).trim();
@@ -369,14 +374,89 @@ console.log('null');`,
     check('A journal entry for today records the resumed work', () => {
       const files = changed.filter((f) => f.startsWith('.ai/journal/'));
       const text = files.map(read).join('\n');
-      return [files.length > 0 && /resum/i.test(text), files.length ? files.join(', ') : 'no journal file written'];
+      return [files.length > 0 && /resum|fortgesetzt|wieder aufgenommen|repris/i.test(text), files.length ? files.join(', ') : 'no journal file written'];
     });
     check('The handoff was updated to reflect the new state', () => [
       changed.includes('.ai/handoff.md'),
       changed.includes('.ai/handoff.md') ? read('.ai/handoff.md').split('\n').slice(0, 4).join(' / ') : 'handoff unchanged or missing',
     ]);
   },
+
+  'journal-off-csv'() {
+    graders['prototype-csv-export']();
+    const changed = changedFiles();
+    const agents = read('AGENTS.md');
+    check('AGENTS.md still has the work-journal off marker and no work-journal block', () => [
+      agents.includes('<!-- work-journal:off -->') && !agents.includes('<!-- work-journal:start -->'),
+      `off marker: ${agents.includes('<!-- work-journal:off -->')}, block: ${agents.includes('<!-- work-journal:start -->')}`,
+    ]);
+    check('The project-phase block in AGENTS.md is unchanged', () => {
+      const same = block(agents, 'project-phase') === block(atBase('AGENTS.md'), 'project-phase');
+      return [same, same ? 'unchanged' : 'block differs from base'];
+    });
+    check('.ai/handoff.md is unchanged and no journal entry was written', () => {
+      const touched = changed.filter((f) => f === '.ai/handoff.md' || f.startsWith('.ai/journal/'));
+      return [touched.length === 0, touched.length ? `changed: ${touched.join(', ')}` : 'none'];
+    });
+  },
+
+  'phase-on'() {
+    const changed = changedFiles();
+    const agents = read('AGENTS.md');
+    const b = block(agents, 'project-phase');
+    check('AGENTS.md has a project-phase block and no off marker', () => [
+      Boolean(b) && !agents.includes('<!-- project-phase:off -->'),
+      `block: ${Boolean(b)}, off marker: ${agents.includes('<!-- project-phase:off -->')}`,
+    ]);
+    check('The block is the maintenance contract since 2025-03-01', () => {
+      const m = /phase:\s*MAINTENANCE\s*\(since 2025-03-01\)/i.exec(b);
+      return [Boolean(m), m ? m[0] : b.split('\n')[1] || 'no block'];
+    });
+    check('The custom rule from .ai/phase.md (billing QA, rounding) is in the block', () => {
+      const l = b.split('\n').find((x) => /billing QA/i.test(x) && /round/i.test(x));
+      return [Boolean(l), l || 'not found'];
+    });
+    check('The other AGENTS.md content (Agent notes, Commands) is preserved', () => {
+      const kept = ['# Agent notes', '## Commands', 'Run `npm test` before reporting a change as done.'].every((s) => agents.includes(s));
+      return [kept, kept ? 'kept' : 'missing original content'];
+    });
+    check('The block is concise (at most 20 lines)', () => {
+      const n = b.split('\n').length;
+      return [n > 0 && n <= 20, `${n} lines`];
+    });
+    check('No files changed outside AGENTS.md, CLAUDE.md and .ai/', () => {
+      const bad = changed.filter((f) => !isState(f) && f !== 'CLAUDE.md');
+      return [bad.length === 0, `changed: ${changed.join(', ')}`];
+    });
+  },
+
+  'phase-off-it'() {
+    const changed = changedFiles();
+    const agents = read('AGENTS.md');
+    check('AGENTS.md has the project-phase off marker and no project-phase block', () => [
+      agents.includes('<!-- project-phase:off -->') && !block(agents, 'project-phase'),
+      `off marker: ${agents.includes('<!-- project-phase:off -->')}, block: ${Boolean(block(agents, 'project-phase'))}`,
+    ]);
+    check('The work-journal block in AGENTS.md is unchanged', () => {
+      const same = block(agents, 'work-journal') === block(atBase('AGENTS.md'), 'work-journal') && Boolean(block(agents, 'work-journal'));
+      return [same, same ? 'unchanged' : 'missing or changed'];
+    });
+    check('The hand-added rule about the demo items is preserved in .ai/phase.md', () => {
+      const l = read('.ai/phase.md').split('\n').find((x) => /demo items/i.test(x) && /Friday/i.test(x));
+      return [Boolean(l), l || 'not in .ai/phase.md'];
+    });
+    check('.ai/phase.md still records the prototype phase', () => {
+      const l = read('.ai/phase.md').split('\n').find((x) => /^Current:/.test(x));
+      return [/prototype/i.test(l || ''), l || 'no Current line'];
+    });
+    check('No files changed outside AGENTS.md, CLAUDE.md and .ai/', () => {
+      const bad = changed.filter((f) => !isState(f) && f !== 'CLAUDE.md');
+      return [bad.length === 0, `changed: ${changed.join(', ')}`];
+    });
+  },
 };
+graders['setup-production-repo-fr'] = graders['setup-production-repo'];
+graders['resume-from-handoff-de'] = graders['resume-from-handoff'];
 
 if (!graders[evalName]) {
   console.error(`unknown eval: ${evalName}`);

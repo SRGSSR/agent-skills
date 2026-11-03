@@ -5,6 +5,9 @@
 # Creates <out-dir>/<fixture>/with_skill and <out-dir>/<fixture>/without_skill.
 # with_skill additionally contains the fixture's skill-state/ files (AGENTS.md, .ai/),
 # committed on top of the history, as if the skills had been set up earlier.
+# A fixture with a `state-in-baseline` file gets skill-state/ in without_skill too
+# (on/off evals: same repo state, only the skill is missing). base/ and history.txt
+# may be symlinks to another fixture's.
 #
 # history.txt format, one entry per line:
 #   ISO_DATE|commit message|comma-separated files added in this commit (optional)
@@ -54,7 +57,7 @@ build_variant() {
       GIT_AUTHOR_DATE="$date" GIT_COMMITTER_DATE="$date" g commit -q --allow-empty -m "$msg"
       last_date="$date"
     done <"$src/history.txt"
-    if [ "$variant" = with_skill ] && [ -d "$src/skill-state" ]; then
+    if { [ "$variant" = with_skill ] || [ -f "$src/state-in-baseline" ]; } && [ -d "$src/skill-state" ]; then
       cp -R "$src/skill-state/." .
       g add -A
       GIT_AUTHOR_DATE="$last_date" GIT_COMMITTER_DATE="$last_date" g commit -q -m "docs: update agent instructions and work state"
