@@ -1,6 +1,6 @@
 ---
 name: project-phase
-description: Sets and applies the project's lifecycle phase (explore, prototype, stabilize, production, maintenance, sunset) so the agent works the way that phase needs - no over-engineering or unsolicited advice while prototyping, structural suggestions and tech-debt tracking in production, minimal regression-safe diffs in maintenance. Use this skill whenever the user wants to set up, check or change the project phase, mode or stage; says things like "we're just prototyping", "it's a quick POC", "this is live now", "maintenance only", "stop over-engineering", "don't touch anything else"; asks whether the project is ready for production; or wants to review tech debt or shortcuts; or wants to turn it on or off for a project (`/project-phase on`, `/project-phase off`, "disable project-phase here"). Also use it when AGENTS.md or CLAUDE.md contains a project-phase block and it is unclear how the phase applies to the current request.
+description: Sets and applies the project's lifecycle phase (explore, prototype, stabilize, production, maintenance, sunset) so the agent works the way that phase needs: no over-engineering while prototyping, tech-debt tracking in production, minimal regression-safe diffs in maintenance. Use this skill whenever the user wants to set up, check or change the project phase, mode or stage; says things like "we're just prototyping", "it's a quick POC", "this is live now", "maintenance only", "stop over-engineering", "don't touch anything else"; asks whether the project is ready for production; or wants to review tech debt or shortcuts; or wants to turn it on or off for a project (`/project-phase on`, `/project-phase off`, "disable project-phase here"). Also use it when a project-phase block exists and it is unclear how the phase applies or the phase seems wrong, and before a code change in a repo with no project-phase block or off marker when the user's global instructions contain `project-phase: ask`.
 license: MIT
 metadata:
   version: "0.4.0"
@@ -47,9 +47,19 @@ The user can turn the skill off for one project, with `/project-phase off`, or b
 - **The phase sets defaults, not prohibitions.** An explicit request from the user wins for that task. Do it without lecturing. If the user keeps overriding the contract in the same direction, the phase is probably wrong: say so once.
 - **Some things are never relaxed:** no secrets in code, commits or logs; no destructive operations (data, history, infrastructure) without confirmation; honest reporting of what is untested or incomplete. Speed is never a reason to hide a known risk.
 - **The contract wins over generic coding-style instructions.** Global rules or style skills (minimalism, "always add tests", ...) apply within the phase; where they conflict with the contract, follow the contract, because it is the team's choice for this project. Explicit requests from the user still win for that task.
-- **Never change the phase on your own.** When signals suggest it no longer fits, mention it once in one line and continue under the current phase.
+- **Never change the phase on your own.** When you are not sure the phase is right, ask (see [When the phase is not certain](#when-the-phase-is-not-certain)); a change happens only when the user decides it.
 - **Process cost follows the phase.** In explore and prototype, even this skill's bookkeeping stays minimal: one-line debt entries, no reports.
 - **Talk in the user's language.** This skill is written in English, but reports, questions and the final message go in the language the user writes in. Files (`AGENTS.md` blocks, `.ai/`) keep the language they already use; new ones are in English.
+
+## When the phase is not certain
+
+The phase is certain only when it is recorded and consistent: the contract block in `AGENTS.md` matches `.ai/phase.md`. Signals in the repo (age, CI, tags, deploy files) never make it certain on their own. Ask the user, in one question with your best guess and the reason, in three cases:
+
+- **Not recorded:** no block, no off marker, no `.ai/phase.md`, and the user's global instructions contain `project-phase: ask`. Ask before the first code change. On an answer, run [Setup](#setup-first-use-in-a-project) with that phase (the set from the global instructions, or `standard`), propose project-specific rules in the report instead of a second question, then continue with the original request. If the user does not want phases here, add the off marker (see [On / off](#on--off)). Without `project-phase: ask`, don't set up on your own.
+- **Inconsistent:** the block and `phase.md` disagree, or the phase is not in the set. Ask which one holds, then rebuild the block from `phase.md` as in setup step 4.
+- **Signals against the recorded phase:** the user mentions real users in a prototype, the repo gained deploy files and release tags, only fixes arrive in production for months (more in [references/transitions.md](references/transitions.md#drift-signals)). First read the history in `phase.md`: if a line already confirms the phase for the same reason, don't ask again. Otherwise ask whether the phase still fits. If the user keeps it, add a history line, for example `- 2026-11-03: confirmed prototype (asked: deploy files present; still a demo for the pilot team)`. If the user wants to change it, follow [Changing phase](#changing-phase).
+
+If the user doesn't answer or says "later", record nothing. Continue under the recorded phase, or, if there is none, under the phase the signals suggest, and say so in one line ("Assuming production: release tags and CI"). Ask at most once per session. When you cannot ask (non-interactive runs), put the question in the final message.
 
 ## Phases
 

@@ -35,6 +35,7 @@ Environment notes:
 - This is non-interactive: you cannot ask the user anything. Where you would normally ask and wait, use your best judgment, proceed, and put the question in your final message.
 - Don't commit, push or create branches. If you start a server to check something, stop it before finishing. Network access may be unavailable.
 - If you need to identify yourself (tool/model): <tool>/<model>.
+- (Only if the eval has `global_instructions`.) The user's global agent instructions, loaded in every project, contain: `<global_instructions>`
 
 Installed skills (load a skill by reading its SKILL.md when its description matches the situation, then follow it):
 - project-phase (<repo>/skills/project-phase/SKILL.md): <description from its frontmatter, verbatim>

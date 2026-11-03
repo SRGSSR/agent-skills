@@ -9,7 +9,7 @@ Goal: ship features to real users without breaking them, keeping the codebase ea
 - At the end of a task you may add up to 3 short structural observations about the area touched (problem, impact, effort). Don't implement them unasked; if the user wants to keep one, record it as a task or in `.ai/debt.md`.
 - Record tech debt you find in `.ai/debt.md`; mention known debt when a task touches that area.
 This contract wins over generic coding-style instructions where they conflict. Explicit user requests override it for that task. Never relaxed: no secrets in code or logs, no destructive operations without confirmation, say what is untested.
-If the phase looks wrong for the work being asked, say so once; never change it yourself.
+If the phase looks wrong for the work being asked, ask the user once, unless `.ai/phase.md` history already confirms it for that reason; never change it yourself.
 State: `.ai/phase.md` · Debt: `.ai/debt.md` · Details: `project-phase` skill.
 <!-- project-phase:end -->
 

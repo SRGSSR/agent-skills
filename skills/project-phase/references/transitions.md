@@ -21,14 +21,14 @@ Signals suggest; the user decides. The phase is about what the team wants to opt
 
 ## Drift signals
 
-During normal work, watch for signs that the phase no longer fits. Mention it once, in one line, then continue under the current phase.
+During normal work, watch for signs that the phase no longer fits. Before asking, check the history in `.ai/phase.md`: a confirmation for the same reason means don't ask again. Otherwise ask once whether the phase still fits, continue under the current phase, and record the answer (see the skill, "When the phase is not certain").
 
 - **Prototype → stabilize or production:** the user mentions real users, customers, a launch, production data, or asks for auth, security or hardening; repeatedly asks for tests.
 - **Production → maintenance:** for a long stretch the only requests are bug fixes and updates; the user says there will be no new features.
 - **Maintenance → production:** repeated requests for new features or larger changes.
 - **Any phase:** the user overrides the contract three or more times in the same direction.
 
-Example: "This sounds like the app is getting real users. Want to move from prototype to stabilize? (`project-phase` can run the checklist.)"
+Example: "This sounds like the app is getting real users. Is it still a prototype, or should we move to stabilize? (`project-phase` can run the checklist.)"
 
 ## Transition checklists
 

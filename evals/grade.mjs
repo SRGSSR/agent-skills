@@ -70,6 +70,16 @@ const newJournalHeads = () => {
   return [...added, ...untracked.flatMap((f) => read(f).split('\n').filter((l) => l.startsWith('## ')))];
 };
 
+// Sentences of the final message that ask the user about the phase.
+const phaseQuestions = () => {
+  const msg = fs.existsSync(path.join(runDir, 'outputs', 'final_message.md')) ? fs.readFileSync(path.join(runDir, 'outputs', 'final_message.md'), 'utf8') : '';
+  return msg.split(/(?<=[?.!])\s+|\n/).filter((x) => x.includes('?') && /phase|stabili[sz]e|production|prototype|maintenance|explore/i.test(x));
+};
+const finalMessage = () => {
+  const f = path.join(runDir, 'outputs', 'final_message.md');
+  return fs.existsSync(f) ? fs.readFileSync(f, 'utf8') : '';
+};
+
 const HANDOFF_UPDATED = 'The handoff reflects the new state (rewritten, moved to .ai/handoff/<branch>.md, or deleted because the task is done)';
 
 const UPGRADED = 'The 0.2 layout was upgraded: no .ai/handoff.md left and the work-journal block uses .ai/handoff/<branch>.md';
@@ -589,6 +599,42 @@ console.log('null');`,
     check('The existing in-memory store item is still in .ai/debt.md', () => {
       const l = debt.split('\n').find((x) => /memory/i.test(x));
       return [Boolean(l), l || 'missing'];
+    });
+  },
+
+  'phase-ask'() {
+    const changed = changedFiles();
+    check('A /health route was added under src/', () => {
+      const f = changed.filter((x) => x.startsWith('src/') && /health/.test(read(x)));
+      return [f.length > 0, f.join(', ') || 'no src file mentions health'];
+    });
+    check('The final message asks the user which phase the project is in', () => {
+      const q = phaseQuestions();
+      return [q.length > 0, q[0] || 'no question about the phase'];
+    });
+    check('The final message states the phase assumed meanwhile (production)', () => {
+      const l = finalMessage().split('\n').find((x) => /production/i.test(x));
+      return [Boolean(l), l || 'production not mentioned'];
+    });
+    check('Nothing was recorded without an answer: no project-phase block, no .ai/phase.md', () => {
+      const rec = Boolean(block(read('AGENTS.md'), 'project-phase')) || /project-phase/.test(read('CLAUDE.md')) || exists('.ai/phase.md');
+      return [!rec, rec ? 'phase state written' : 'nothing written'];
+    });
+    check('Only source, test, changelog or readme files changed', () => {
+      const bad = changed.filter((x) => !/^(src|test)\//.test(x) && !['CHANGELOG.md', 'README.md'].includes(x));
+      return [bad.length === 0, bad.join(', ') || 'none'];
+    });
+  },
+
+  'phase-confirmed'() {
+    graders['prototype-csv-export']();
+    check('The agent did not ask again about the phase (the history confirms prototype for this reason)', () => {
+      const q = phaseQuestions();
+      return [q.length === 0, q[0] || 'no question about the phase'];
+    });
+    check('The phase state is unchanged (.ai/phase.md and the block)', () => {
+      const same = read('.ai/phase.md') === atBase('.ai/phase.md') && block(read('AGENTS.md'), 'project-phase') === block(atBase('AGENTS.md'), 'project-phase');
+      return [same, same ? 'unchanged' : 'changed'];
     });
   },
 
