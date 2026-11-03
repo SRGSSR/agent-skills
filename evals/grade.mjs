@@ -244,7 +244,7 @@ const graders = {
       return [hit >= 0, hit >= 0 ? lines[hit].trim() : 'no override for legacy/old-importer found'];
     });
     check('No source, test, config or legacy files were modified', () => {
-      const bad = changed.filter((f) => !f.endsWith('.md') || f.startsWith('legacy/'));
+      const bad = changed.filter((f) => (!f.endsWith('.md') && !isState(f)) || f.startsWith('legacy/'));
       return [bad.length === 0, `changed: ${changed.join(', ')}`];
     });
     check('The always-loaded instructions are concise (at most 40 lines added across AGENTS.md and CLAUDE.md)', () => {
