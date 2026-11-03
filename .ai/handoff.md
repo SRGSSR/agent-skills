@@ -1,43 +1,36 @@
 # Handoff
-Updated: 2026-10-02 14:55 · by: claude-code/claude-opus-5-5
-Branch: main · Initial commit, not pushed
+Updated: 2026-11-03 12:35 · by: claude-code/claude-opus-5-5
+Branch: feature/on-off (git flow; `develop` created locally from `main`, not pushed) · Uncommitted: none after the eval-results commit
 
 ## Goal
-Publish two open-source Agent Skills: `project-phase` (agent behavior adapted to the project's lifecycle phase) and `work-journal` (journal + handoff so work can be resumed by any agent). Done when evals show a clear benefit, the user has reviewed outputs and the open questions below are settled.
+Add per-project on/off to both skills (`/project-phase on|off`, `/work-journal on|off`) and check that triggers work in Italian, French and German. Done when evals pass and the user closes the feature.
 
 ## Status
-- [x] Skills, README, LICENSE, marketplace.json drafted
-- [x] Eval iteration 1 (evals 1-4): with skill 100%, without 81%. `workspace-review/iteration-1.html`
-- [x] Eval iteration 2 (evals 3, 5): with skill 100%, without 89%. `workspace-review/iteration-2.html`, archive in `workspace-review/iteration-2/`
-- [x] Fixes from iteration 2: setup proposes grounded project rules; maintenance "copy the style, not known defects"
-- [x] User feedback on the reports: all cases good, behavior iterations stopped
-- [ ] Optional: eval 5 variant without the "stable, billing QA" README hint (the only discriminating maintenance test still missing)
-- [ ] Optional: description-trigger optimization (skill-creator `run_loop`)
-- [x] Publishing decisions: owner SRG SSR, MIT, names `project-phase` / `work-journal`, state in `.ai/`
-- [x] git init + initial commit
-- [ ] Push to GitHub (user): README assumes `SRGSSR/srgssr-project-status-skill`
+- [x] On/off in both SKILL.md, README "Disable or uninstall", versions 0.2.0. Design: `docs/design/2026-11-03-on-off.md`
+- [x] Evals 6-10 added (`evals/evals.json`, fixtures, `evals/grade.mjs`, `state-in-baseline` flag in `evals/fixtures/build.sh`)
+- [x] Eval iteration 3: with skill 39/40, without 29/40. `workspace-review/iteration-3.html`
+- [ ] Language: with the skill, eval 8 replied in English to an Italian request (fix proposed, awaiting the user)
 
 ## Next steps
-1. When the GitHub repo exists: check that its path matches the install commands in README.md, add the remote, push.
-2. Optional, if the user asks: eval 5 variant with a neutral README (`evals/run-prompt.md`), or description optimization.
+1. If the user agrees: add "reply in the user's language; keep AGENTS.md blocks and `.ai/` files in English" to both SKILL.md (On / off and setup reports), rerun eval 8 only (`evals/run-prompt.md`, `<scratchpad>/prep-iteration.sh`-style layout).
+2. The user merges `feature/on-off` and pushes `develop` (never do it yourself).
 
 ## Decisions
-- English content; MIT, copyright SRG SSR; two skills in one repo, two marketplace entries with `source: "./"` and `skills: [...]`, no plugin.json.
-- Only rerun evals affected by a skill change, to save tokens.
-- Workspace in the scratchpad (sandbox), results archived in `workspace-review/` so they survive restarts.
+- `off` leaves a `<!-- <skill>:off -->` marker; see the design note for why and the alternatives.
+- Eval runs on Sonnet 5.5 subagents; baseline for on/off evals gets the same `.ai/` state.
 
 ## Dead ends
-- Fixtures inside the project dir: `.git/` writes are denied by the sandbox.
-- Starting servers in the grader: local port binding is denied.
-- `/usr/bin/git` and `/usr/bin/python3` shims fail in the sandbox after the OS update: use `/Applications/Xcode.app/Contents/Developer/usr/bin` on PATH and `/opt/homebrew/bin/python3.13`.
+- Fixtures inside the project dir: `.git/` writes are denied by the sandbox. Build them in the scratchpad.
+- `git flow init` needs to write `.git/config`: run it outside the sandbox.
+- `/opt/homebrew/bin/python3.13` no longer exists; use `python3 -I`.
 
 ## Open questions
-- None.
+- For the user: apply the language fix and rerun eval 8?
 
 ## How to verify
-- `claude plugin validate .` passes.
-- `node --check evals/grade.mjs`.
+- `claude plugin validate .` (needs network, run outside the sandbox).
+- `node --check evals/grade.mjs`; `bash evals/fixtures/build.sh <dir>` builds 7 fixtures.
 
 ## Pointers
-- Journal: `.ai/journal/2026-10-02.md`
-- Evals: `evals/evals.json`, `evals/fixtures/`, `evals/grade.mjs`, `evals/run-prompt.md`
+- Journal: `.ai/journal/2026-11-03.md`
+- Evals: `evals/evals.json`, `evals/grade.mjs`, `evals/run-prompt.md`
