@@ -46,7 +46,7 @@ The phase sets defaults, not prohibitions: if you explicitly ask for tests in a 
 Both skills write a short block into `AGENTS.md`, the instruction file most agent tools load on every task. That is what makes the behavior stick even when the skill itself is not loaded, and what makes it work across tools. State lives in plain Markdown under `.ai/`:
 
 ```
-AGENTS.md                 ← contract blocks (about 15 + 7 lines), loaded on every task
+AGENTS.md                 ← contract blocks (about 15 + 9 lines), loaded on every task
 .ai/
 ├── phase.md              ← phase set, current phase, area overrides, history
 ├── debt.md               ← one-line register of shortcuts and tech debt
@@ -64,7 +64,18 @@ The skills themselves handle setup, phase changes with transition checklists (fo
 
 - **One handoff per branch**, deleted when the branch's task is done: people and agents on different branches never overwrite each other's state.
 - **Shared journal and debt list without merge conflicts:** setup adds `merge=union` for `.ai/journal/*.md` and `.ai/debt.md` to `.gitattributes`, so git keeps both sides when two branches append. Web UIs that merge pull requests may ignore it; the conflict is then trivial (keep both sides).
-- **The journal can grow for years:** resuming reads only the newest file, so the cost does not grow. When a branch's task is done, decisions and dead ends that must last are moved to code comments or design docs, where people will look. The skills never delete old journal files; to prune them, delete them by hand (git keeps them).
+- **The journal can grow for years:** resuming reads only the newest file, so the cost does not grow. When a branch's task is done, decisions and dead ends that must last are moved to code comments or design decisions, where people will look. The skills never delete old journal files; to prune them, delete them by hand (git keeps them).
+
+### Design decisions and tasks
+
+What outlives a branch goes where people look, not in `.ai/`. At setup `work-journal` finds or proposes a place for each, and writes the choice in its `AGENTS.md` block:
+
+- **Design decisions** (why things are the way they are, alternatives discarded): an existing ADR or decisions folder, a new `docs/design/` (one file per decision), a single `docs/decisions.md`, or none (code comments, commit messages, README).
+- **Tasks** (open work and open questions): your issue tracker (the agent proposes issues and creates them only through a connector, with your confirmation), `docs/todo/` (one Markdown file per open task, optionally with an `Assignee:` team handle), or none (follow-ups go in the agent's final message).
+
+With `docs/todo/`, a task file is named like the branch that will do it (`docs/todo/csv-export.md` → `feature/csv-export`), and that branch deletes it when the task is done, so merging the branch closes the task. When a branch's task is done, its follow-ups and open questions become new tasks.
+
+Project state goes in these files, not in the agent tool's private memory, which other agents and people can't read.
 
 ## Install
 
@@ -122,7 +133,30 @@ To set a default phase set for all your projects, put a line like `project-phase
 
 ## Cost
 
-The always-loaded part is the `AGENTS.md` blocks: about 15 lines for the phase and 7 for the journal. Journal entries are 2 to 6 lines at checkpoints, and resuming reads only the branch's handoff and the last few entries. In explore and prototype the bookkeeping is reduced further.
+The always-loaded part is the `AGENTS.md` blocks: about 15 lines for the phase and 9 for the journal. Journal entries are 2 to 6 lines at checkpoints, and resuming reads only the branch's handoff and the last few entries. In explore and prototype the bookkeeping is reduced further.
+
+## Design notes
+
+Why the skills work the way they do, and what was discarded. This repo keeps its design decisions here and in code comments (its own `work-journal` block says `Design decisions: none`).
+
+**On / off**
+- `off` leaves a one-line marker (`<!-- project-phase:off -->`) instead of just deleting the block: the skills trigger on common phrases and `work-journal` sets itself up on the first journal entry, so a deleted block would come back. Discarded: the off state in `.ai/` (an extra read on every trigger, and `work-journal` has no state file), commenting the block out (it contains HTML comments, which don't nest, and would still cost context), a global switch (uninstalling is that).
+- While off, an explicit request is still served once, with a one-line reminder: refusing would be unhelpful, silently turning the skill back on would defeat `off`. `.ai/` is never touched by on/off.
+- `project-phase on` rebuilds the block from `.ai/phase.md` like setup does, so `off` first moves hand-added bullets to `## Custom rules`.
+- The skills are written in English only, and triggers work in Italian, French and German without examples. Replies follow the user's language (the English skill text pulled replies into English before this was stated); files keep the language they already use. Forcing files to English was discarded: a team writing its journal in German should not get mixed-language files.
+
+**Several people, long-lived projects**
+- One handoff per branch, no index file of active work: a file everyone updates is itself a conflict point, and `ls .ai/handoff/` is the index. Deleted when the branch's task is done instead of left in an idle state.
+- Journal and debt stay shared, with `merge=union`. Discarded: everything per branch, `.ai/<branch>/` (debt belongs to the code and survives the merge; dead ends recorded on one branch would be invisible to the next); one journal per author (fragmented history, names in files); the journal on a separate branch or in `git notes` (invisible to other tools); periodic summaries of old journals (cost tokens and become a second truth that drifts); year subfolders (`ls .ai/journal | tail -n 1` makes them unnecessary); automatic deletion of old journals.
+- The journal header names the branch, not the person: `git log` has the author, and no personal data goes into the files. `linguist-generated` only on the journal, so handoff, phase and debt changes stay visible in pull request reviews.
+- Merges done by people are logged at the next resume, in the next commit the agent makes anyway. Discarded: a post-merge git hook (leaves an uncommitted change on `develop`, works only where installed) and a dedicated commit (an extra commit, and on many teams an extra confirmation, for every merge).
+- A merge into the branch (`develop` → feature) can make the handoff stale. At resume the agent compares `git diff --stat` of the merge with the files the handoff relies on; reading the whole merge diff every time was discarded as too expensive.
+- Not verified: whether GitHub and GitLab merge buttons honor `merge=union`. Local merges do.
+
+**Design decisions and tasks**
+- In `docs/` or a tracker, not in `.ai/`: they are written for people and outlive branches, while `.ai/` is the agents' working state. Both are optional, because some teams want no extra folders.
+- One file per task with no status field: separate branches touch separate files, and the merge closes the task by deleting its file. Discarded: a single `ROADMAP.md` (every branch edits the same lines; `merge=union` would duplicate edited lines), a status field (git and the branch already say it), the agent assigning tasks on its own.
+- Follow-ups and open questions become tasks at the end of a branch, because in the journal nobody finds them again.
 
 ## Related work
 

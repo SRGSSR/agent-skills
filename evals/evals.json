@@ -1,6 +1,6 @@
 {
   "skill_name": "project-phase + work-journal",
-  "notes": "Each eval runs on a fixture repo built by evals/fixtures/build.sh. with_skill gets both skills plus the skill state the fixture defines (AGENTS.md blocks, .ai/); without_skill gets the same repo without them. Programmatic checks live in evals/grade.mjs; checks marked (judgment) are graded by reading the final message and diff. Fixtures with a state-in-baseline file (on/off evals) give without_skill the same AGENTS.md and .ai/ state, so only the skill differs. Evals 8-10 check that triggers work in Italian, French and German. Eval 11 checks per-branch handoffs with a colleague's open handoff in the repo. Eval 12 checks that a merge of develop into the feature branch after the handoff is noticed.",
+  "notes": "Each eval runs on a fixture repo built by evals/fixtures/build.sh. with_skill gets both skills plus the skill state the fixture defines (AGENTS.md blocks, .ai/); without_skill gets the same repo without them. Programmatic checks live in evals/grade.mjs; checks marked (judgment) are graded by reading the final message and diff. Fixtures with a state-in-baseline file (on/off evals) give without_skill the same AGENTS.md and .ai/ state, so only the skill differs. Evals 8-10 check that triggers work in Italian, French and German. Eval 11 checks per-branch handoffs with a colleague's open handoff in the repo. Eval 12 checks that a merge of develop into the feature branch after the handoff is noticed. Evals 4 and 10 keep the 0.2 single handoff and merge-from-develop keeps the 0.3 block on purpose, to cover the upgrades. Examples in the skill text deliberately differ from the eval scenarios, to avoid teaching to the test. Fixtures reuse other fixtures' base/ and history.txt through symlinks, so there is no copied source to keep in sync. Eval 13 checks that setup finds an existing ADR folder and roadmap instead of creating new places. Eval 14 checks the end of a branch's task with docs/todo/: the task file is deleted, the open question becomes an unassigned task, the decision is kept.",
   "evals": [
     {
       "id": 1,
@@ -213,7 +213,45 @@
         "The handoff reflects the new state (rewritten, moved to .ai/handoff/<branch>.md, or deleted because the task is done)",
         "test/fixtures/episodes.json from develop is unchanged (reused, not recreated)",
         "The journal records the merge of develop into the branch",
-        "No single .ai/handoff.md was created"
+        "No single .ai/handoff.md was created",
+        "The work-journal block was upgraded to 0.4 (project state not in private memory)"
+      ]
+    },
+    {
+      "id": 13,
+      "name": "setup-docs",
+      "fixture": "evals/fixtures/setup-docs",
+      "prompt": "Set up the work journal for this repo, so any agent can pick up where the last one stopped.",
+      "expected_output": "Writes the work-journal block, imports it from CLAUDE.md, adds the union line to .gitattributes. Finds docs/adr/ and records it as the place for design decisions without creating docs/design/. Finds ROADMAP.md and either names it as the task list or, if it offers the split as its recommendation, moves every open item to docs/todo/. Touches no source files.",
+      "expectations": [
+        "Work journal and handoff instructions were written to a file agents load automatically",
+        "Claude Code will see them: CLAUDE.md contains them or imports @AGENTS.md",
+        "The always-loaded instructions name docs/adr/ as the place for design decisions",
+        "No new place for design decisions was created (docs/design/, docs/decisions*)",
+        "The existing ADRs are unchanged",
+        "The open work in ROADMAP.md is not ignored: the instructions name it as the task list, or its items moved to docs/todo/",
+        "If ROADMAP.md was split into docs/todo/, every open item has a task file",
+        ".gitattributes has merge=union for the journal",
+        "No source, test, migration or legacy files were modified",
+        "The always-loaded instructions are concise (at most 25 lines added across AGENTS.md and CLAUDE.md)"
+      ]
+    },
+    {
+      "id": 14,
+      "name": "task-done",
+      "fixture": "evals/fixtures/task-done",
+      "prompt": "Continue where we left off yesterday.",
+      "expected_output": "Resumes feature/csv-export from its handoff, adds the /items.csv route and the link, and since the task is then done: keeps the reason for the semicolon and BOM in a code comment or design doc, deletes docs/todo/csv-export.md, turns the open question about archived items into a new unassigned task in docs/todo/, deletes the handoff and journals with the branch in the header.",
+      "expectations": [
+        "The list page links to a CSV download with all 3 items, separated by semicolons",
+        "The test suite passes",
+        "No dependency was added",
+        "docs/todo/csv-export.md was deleted (the branch closes its task)",
+        "The open question about archived items became a new task in docs/todo/",
+        "Nobody was assigned by the agent: pdf-labels.md unchanged, new task files have no Assignee",
+        "The handoff .ai/handoff/feature-csv-export.md was deleted",
+        "The reason for the semicolon and BOM (Excel with the Swiss locale) is kept in a code comment or in docs/design/",
+        "New journal entries name the branch feature/csv-export in the header"
       ]
     }
   ]
