@@ -46,18 +46,25 @@ The phase sets defaults, not prohibitions: if you explicitly ask for tests in a 
 Both skills write a short block into `AGENTS.md`, the instruction file most agent tools load on every task. That is what makes the behavior stick even when the skill itself is not loaded, and what makes it work across tools. State lives in plain Markdown under `.ai/`:
 
 ```
-AGENTS.md                 ← contract blocks (about 15 + 6 lines), loaded on every task
+AGENTS.md                 ← contract blocks (about 15 + 7 lines), loaded on every task
 .ai/
 ├── phase.md              ← phase set, current phase, area overrides, history
 ├── debt.md               ← one-line register of shortcuts and tech debt
-├── handoff.md            ← current state: goal, status, next steps, open questions
+├── handoff/
+│   └── feature-x.md      ← current state of one branch: goal, status, next steps, open questions
 └── journal/
-    └── 2026-10-02.md     ← append-only log: what was done, decisions, dead ends
+    └── 2026-10-02.md     ← append-only log shared by all branches: what was done, decisions, dead ends
 ```
 
 The skills themselves handle setup, phase changes with transition checklists (for example prototype → stabilize: secrets, auth, validation, tests, CI, ...), debt reviews, and the handoff and resume protocol.
 
 `.ai/` is meant to be committed, so the handoff travels across machines and people. You can ignore `.ai/journal/` if you prefer to keep the log private.
+
+### Teams and long-lived projects
+
+- **One handoff per branch**, deleted when the branch's task is done: people and agents on different branches never overwrite each other's state.
+- **Shared journal and debt list without merge conflicts:** setup adds `merge=union` for `.ai/journal/*.md` and `.ai/debt.md` to `.gitattributes`, so git keeps both sides when two branches append. Web UIs that merge pull requests may ignore it; the conflict is then trivial (keep both sides).
+- **The journal can grow for years:** resuming reads only the newest file, so the cost does not grow. When a branch's task is done, decisions and dead ends that must last are moved to code comments or design docs, where people will look. The skills never delete old journal files; to prune them, delete them by hand (git keeps them).
 
 ## Install
 
@@ -115,7 +122,7 @@ To set a default phase set for all your projects, put a line like `project-phase
 
 ## Cost
 
-The always-loaded part is the `AGENTS.md` blocks: about 15 lines for the phase and 6 for the journal. Journal entries are 2 to 6 lines at checkpoints, and resuming reads only the handoff and the last few entries. In explore and prototype the bookkeeping is reduced further.
+The always-loaded part is the `AGENTS.md` blocks: about 15 lines for the phase and 7 for the journal. Journal entries are 2 to 6 lines at checkpoints, and resuming reads only the branch's handoff and the last few entries. In explore and prototype the bookkeeping is reduced further.
 
 ## Related work
 

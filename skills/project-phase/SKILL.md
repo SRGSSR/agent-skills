@@ -3,7 +3,7 @@ name: project-phase
 description: Sets and applies the project's lifecycle phase (explore, prototype, stabilize, production, maintenance, sunset) so the agent works the way that phase needs - no over-engineering or unsolicited advice while prototyping, structural suggestions and tech-debt tracking in production, minimal regression-safe diffs in maintenance. Use this skill whenever the user wants to set up, check or change the project phase, mode or stage; says things like "we're just prototyping", "it's a quick POC", "this is live now", "maintenance only", "stop over-engineering", "don't touch anything else"; asks whether the project is ready for production; or wants to review tech debt or shortcuts; or wants to turn it on or off for a project (`/project-phase on`, `/project-phase off`, "disable project-phase here"). Also use it when AGENTS.md or CLAUDE.md contains a project-phase block and it is unclear how the phase applies to the current request.
 license: MIT
 metadata:
-  version: "0.2.0"
+  version: "0.3.0"
 ---
 
 # Project Phase
@@ -87,6 +87,7 @@ If the user's global instructions name a default set (for example `project-phase
    - The contract block for the chosen phase, copied from `references/phases.md`, with the date filled in and the accepted project-specific rules added as bullets just above the footer, into `AGENTS.md`. Create `AGENTS.md` if missing; otherwise insert the block near the top, leaving existing content untouched.
    - Claude Code reads `AGENTS.md` only when there is no `CLAUDE.md`. So if `CLAUDE.md` exists and does not already import it, add a line `@AGENTS.md` near the top. Never duplicate the block in both files.
    - Do not create `.ai/debt.md` yet. It is created on first entry.
+   - Add the line `.ai/debt.md merge=union` to `.gitattributes` (create the file if missing) unless it is already there: when two branches add debt items, git keeps both instead of reporting a conflict.
 5. **Report** in two or three lines: phase, set, files touched.
 
 ### Status

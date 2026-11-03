@@ -63,6 +63,9 @@ const deps = (json) => {
   }
 };
 
+const HANDOFF_UPDATED = 'The handoff reflects the new state (rewritten, moved to .ai/handoff/<branch>.md, or deleted because the task is done)';
+
+const UPGRADED = 'The 0.2 layout was upgraded: no .ai/handoff.md left and the work-journal block uses .ai/handoff/<branch>.md';
 const results = [];
 const check = (text, fn) => {
   try {
@@ -376,10 +379,16 @@ console.log('null');`,
       const text = files.map(read).join('\n');
       return [files.length > 0 && /resum|fortgesetzt|wieder aufgenommen|repris/i.test(text), files.length ? files.join(', ') : 'no journal file written'];
     });
-    check('The handoff was updated to reflect the new state', () => [
-      changed.includes('.ai/handoff.md'),
-      changed.includes('.ai/handoff.md') ? read('.ai/handoff.md').split('\n').slice(0, 4).join(' / ') : 'handoff unchanged or missing',
-    ]);
+    check(HANDOFF_UPDATED, () => {
+      const h = changed.filter((f) => f === '.ai/handoff.md' || f.startsWith('.ai/handoff/'));
+      return [h.length > 0, h.length ? h.map((f) => `${f}: ${exists(f) ? read(f).split('\n').slice(0, 3).join(' / ') : 'deleted'}`).join(' | ') : 'no handoff changed'];
+    });
+    if (evalName.startsWith('resume-from-handoff')) {
+      check(UPGRADED, () => {
+        const b = block(read('AGENTS.md'), 'work-journal');
+        return [!exists('.ai/handoff.md') && b.includes('.ai/handoff/<branch>.md'), `handoff.md: ${exists('.ai/handoff.md') ? 'present' : 'absent'}, block: ${b ? (b.includes('.ai/handoff/<branch>.md') ? '0.3' : 'old') : 'none'}`];
+      });
+    }
   },
 
   'journal-off-csv'() {
@@ -395,7 +404,7 @@ console.log('null');`,
       return [same, same ? 'unchanged' : 'block differs from base'];
     });
     check('.ai/handoff.md is unchanged and no journal entry was written', () => {
-      const touched = changed.filter((f) => f === '.ai/handoff.md' || f.startsWith('.ai/journal/'));
+      const touched = changed.filter((f) => f === '.ai/handoff.md' || f.startsWith('.ai/handoff/') || f.startsWith('.ai/journal/'));
       return [touched.length === 0, touched.length ? `changed: ${touched.join(', ')}` : 'none'];
     });
   },
@@ -453,6 +462,45 @@ console.log('null');`,
       const bad = changed.filter((f) => !isState(f) && f !== 'CLAUDE.md');
       return [bad.length === 0, `changed: ${changed.join(', ')}`];
     });
+  },
+
+  'parallel-handoff'() {
+    graders['resume-from-handoff']();
+    const changed = changedFiles();
+    const own = '.ai/handoff/feature-itunes-duration.md';
+    check("The other branch's handoff (.ai/handoff/feature-chapters.md) is unchanged", () => {
+      const ok = !changed.includes('.ai/handoff/feature-chapters.md');
+      return [ok, ok ? 'unchanged' : 'changed or deleted'];
+    });
+    check('No single .ai/handoff.md was created', () => [!exists('.ai/handoff.md'), exists('.ai/handoff.md') ? 'created' : 'absent']);
+    check('New journal entries name the branch feature/itunes-duration in the header', () => {
+      const added = git('diff', base, '--', '.ai/journal').split('\n').filter((l) => /^\+## /.test(l));
+      const untracked = changed.filter((f) => f.startsWith('.ai/journal/') && !atBase(f)).flatMap((f) => read(f).split('\n').filter((l) => l.startsWith('## ')));
+      const heads = [...added.map((l) => l.slice(1)), ...untracked];
+      const ok = heads.length > 0 && heads.every((l) => l.includes('feature/itunes-duration'));
+      return [ok, heads.join(' | ') || 'no new entries'];
+    });
+    check('If its handoff was deleted, the zero-duration decision was kept in a code comment or doc', () => {
+      if (exists(own)) return [true, 'handoff kept'];
+      const diff = git('diff', base, '--', 'src', 'docs', 'README.md', 'CHANGELOG.md');
+      const l = diff.split('\n').find((x) => /^\+/.test(x) && /(\/\/|\*|#)/.test(x) && /(zero|\b0\b|00:00:00|unknown|apple)/i.test(x));
+      return [Boolean(l), l || 'not found in added comments'];
+    });
+  },
+
+  'merge-from-develop'() {
+    graders['resume-from-handoff']();
+    const changed = changedFiles();
+    check('test/fixtures/episodes.json from develop is unchanged (reused, not recreated)', () => {
+      const ok = !changed.includes('test/fixtures/episodes.json');
+      return [ok, ok ? 'unchanged' : 'changed'];
+    });
+    check('The journal records the merge of develop into the branch', () => {
+      const text = changed.filter((f) => f.startsWith('.ai/journal/')).map((f) => git('diff', base, '--', f) || read(f)).join('\n');
+      const l = text.split('\n').find((x) => /merg/i.test(x) && /develop/i.test(x));
+      return [Boolean(l), l || 'no line about the merge'];
+    });
+    check('No single .ai/handoff.md was created', () => [!exists('.ai/handoff.md'), exists('.ai/handoff.md') ? 'created' : 'absent']);
   },
 };
 graders['setup-production-repo-fr'] = graders['setup-production-repo'];

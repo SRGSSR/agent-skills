@@ -17,9 +17,10 @@ State: `.ai/phase.md` · Debt: `.ai/debt.md` · Details: `project-phase` skill.
 
 <!-- work-journal:start -->
 ## Work journal and handoff
-- Before starting: if `.ai/handoff.md` exists, read it and the last entries of the newest file in `.ai/journal/`, then check them against the git state before continuing.
-- While working: at checkpoints (step done, decision taken, approach abandoned), append a terse entry to `.ai/journal/YYYY-MM-DD.md`: `## HH:MM · tool/model · topic`, then only the lines that apply: Did / Decided (why) / Dead end (why) / Next.
-- When pausing, handing off, finishing with loose ends, or running low on context: rewrite `.ai/handoff.md` (Goal, Status, Next steps, Decisions, Dead ends, Open questions, How to verify) so another agent can continue with zero context.
+- Before starting: read `.ai/handoff/<branch>.md` for the current branch (`/` in the name → `-`) if it exists, and the last entries of the newest journal file (`ls .ai/journal | tail -n 1`), then check them against the git state before continuing.
+- While working: at checkpoints (step done, decision taken, approach abandoned), append a terse entry to `.ai/journal/YYYY-MM-DD.md`: `## HH:MM · tool/model · branch · topic`, then only the lines that apply: Did / Decided (why) / Dead end (why) / Next.
+- When pausing, handing off, finishing with loose ends, or running low on context: rewrite `.ai/handoff/<branch>.md` (Goal, Status, Next steps, Decisions, Dead ends, Open questions, How to verify) so another agent can continue with zero context. Never touch other branches' handoffs.
+- When the branch's task is done: move decisions and dead ends that must outlast it to code comments or design docs, then delete its handoff.
 - Point to files and commits instead of copying content. Never write secrets, tokens or personal data in these files.
 - Formats and details: `work-journal` skill.
 <!-- work-journal:end -->
