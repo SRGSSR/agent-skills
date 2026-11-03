@@ -1,9 +1,9 @@
 ---
 name: work-journal
-description: Keeps a terse work journal and a handoff document in the repo so work can be paused at any moment and resumed later by the same or a different AI agent, model or tool, or by a human. Use this skill whenever the user is stopping or pausing ("let's stop here", "I'll continue tomorrow", "pick this up later", "switching to another model"), asks for a handoff, a session summary or a devlog, wants to continue previous work ("where were we?", "resume", "continue from yesterday"), or wants to set up resumable or logged AI sessions. Also use it when starting work in a repo that has `.ai/handoff.md` or `.ai/journal/`, and before the context runs out on a long task.
+description: Keeps a terse work journal and a handoff document in the repo so work can be paused at any moment and resumed later by the same or a different AI agent, model or tool, or by a human. Use this skill whenever the user is stopping or pausing ("let's stop here", "I'll continue tomorrow", "pick this up later", "switching to another model"), asks for a handoff, a session summary or a devlog, wants to continue previous work ("where were we?", "resume", "continue from yesterday"), or wants to set up resumable or logged AI sessions, or wants to turn it on or off for a project (`/work-journal on`, `/work-journal off`, "stop keeping the journal here"). Also use it when starting work in a repo that has `.ai/handoff.md` or `.ai/journal/`, and before the context runs out on a long task.
 license: MIT
 metadata:
-  version: "0.1.0"
+  version: "0.2.0"
 ---
 
 # Work Journal
@@ -23,7 +23,7 @@ Everything is plain Markdown with no tool-specific features, so any agent that c
 
 ## Setup
 
-When the user asks to set this up, or the first time you write a journal entry in a repo without it:
+When the user asks to set this up, or the first time you write a journal entry in a repo without it (unless it is off, see [On / off](#on--off)):
 
 1. Add the block below to `AGENTS.md` (create the file if missing; leave existing content untouched). Agent tools load it on every task, which is what makes the protocol work even when this skill is not loaded.
 2. Claude Code reads `AGENTS.md` only when there is no `CLAUDE.md`. If `CLAUDE.md` exists and does not import it, add a line `@AGENTS.md` near the top.
@@ -41,9 +41,20 @@ When the user asks to set this up, or the first time you write a journal entry i
 <!-- work-journal:end -->
 ```
 
-## Resuming work
+## On / off
 
-At the start of a session in a repo that has a handoff or journal:
+The user can turn the protocol off for one project, with `/work-journal off`, or by asking in words, and turn it back on with `/work-journal on`.
+
+**Off** means `AGENTS.md` contains the one-line marker `<!-- work-journal:off -->` instead of the block above. The marker exists so that this skill does not add the block back on its own (setup runs on the first journal entry otherwise). While it is there:
+- Don't read the handoff at session start, don't journal at checkpoints, don't write the handoff unprompted, don't run setup.
+- Do what the user explicitly asks this time ("write a handoff", "where were we?"), without turning the protocol back on. Mention once, in one line, that work-journal is off here and `/work-journal on` re-enables it.
+
+**To turn it off:** replace the block, from `<!-- work-journal:start -->` to `<!-- work-journal:end -->` inclusive, with `<!-- work-journal:off -->`. If there is no block, add the marker near the top of `AGENTS.md` (create the file if missing). Leave `.ai/` and any `@AGENTS.md` line in `CLAUDE.md` as they are. Report in one line: off for this project, files kept in `.ai/`, `/work-journal on` restores it.
+
+**To turn it on:** if the block is already there, say so. Otherwise replace the marker (or, without a marker, add the block) with the block above and run the rest of setup: `CLAUDE.md` import, and the one-line note about committing `.ai/` only if `.ai/` does not exist yet. Report in one line.
+
+
+At the start of a session in a repo that has a handoff or journal, unless work-journal is off there:
 
 1. **Read** `.ai/handoff.md`. If there is none, read the last few entries of the newest journal file. Don't read older journal files unless you need to know why something was done.
 2. **Verify** against reality: current branch, `git status`, `git log --oneline` since the handoff date, and the verify command in the handoff if there is one. The handoff may be stale: someone else may have worked since, or the previous session may have died before updating it.
@@ -144,4 +155,4 @@ These files are usually committed and readable by everyone with repo access. Nev
 
 ## With the project-phase skill
 
-If `AGENTS.md` contains a `project-phase` block: add the phase line to the handoff header, log phase changes in the journal, and in explore and prototype journal only decisions, dead ends and session ends, to keep the overhead in line with the phase.
+If `AGENTS.md` contains a `project-phase` contract block (not the `<!-- project-phase:off -->` marker): add the phase line to the handoff header, log phase changes in the journal, and in explore and prototype journal only decisions, dead ends and session ends, to keep the overhead in line with the phase.
