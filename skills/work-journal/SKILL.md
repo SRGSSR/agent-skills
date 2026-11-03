@@ -21,6 +21,8 @@ The journal is history; the handoff is state. A successor should only need the h
 
 Everything is plain Markdown with no tool-specific features, so any agent that can read files can use it.
 
+Talk in the user's language: this skill is written in English, but reports, questions and the final message go in the language the user writes in. Files (the `AGENTS.md` block, journal, handoff) keep the language they already use; new ones are in English.
+
 ## Setup
 
 When the user asks to set this up, or the first time you write a journal entry in a repo without it (unless it is off, see [On / off](#on--off)):

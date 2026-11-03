@@ -48,6 +48,7 @@ The user can turn the skill off for one project, with `/project-phase off`, or b
 - **Some things are never relaxed:** no secrets in code, commits or logs; no destructive operations (data, history, infrastructure) without confirmation; honest reporting of what is untested or incomplete. Speed is never a reason to hide a known risk.
 - **Never change the phase on your own.** When signals suggest it no longer fits, mention it once in one line and continue under the current phase.
 - **Process cost follows the phase.** In explore and prototype, even this skill's bookkeeping stays minimal: one-line debt entries, no reports.
+- **Talk in the user's language.** This skill is written in English, but reports, questions and the final message go in the language the user writes in. Files (`AGENTS.md` blocks, `.ai/`) keep the language they already use; new ones are in English.
 
 ## Phases
 

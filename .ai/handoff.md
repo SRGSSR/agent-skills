@@ -1,5 +1,5 @@
 # Handoff
-Updated: 2026-11-03 12:35 · by: claude-code/claude-opus-5-5
+Updated: 2026-11-03 12:34 · by: claude-code/claude-opus-5-5
 Branch: feature/on-off (git flow; `develop` created locally from `main`, not pushed) · Uncommitted: none after the eval-results commit
 
 ## Goal
@@ -9,11 +9,10 @@ Add per-project on/off to both skills (`/project-phase on|off`, `/work-journal o
 - [x] On/off in both SKILL.md, README "Disable or uninstall", versions 0.2.0. Design: `docs/design/2026-11-03-on-off.md`
 - [x] Evals 6-10 added (`evals/evals.json`, fixtures, `evals/grade.mjs`, `state-in-baseline` flag in `evals/fixtures/build.sh`)
 - [x] Eval iteration 3: with skill 39/40, without 29/40. `workspace-review/iteration-3.html`
-- [ ] Language: with the skill, eval 8 replied in English to an Italian request (fix proposed, awaiting the user)
+- [x] Reply language: both skills reply in the user's language; eval 8 rerun 6/6 with skill (`workspace-review/iteration-4.html`)
 
 ## Next steps
-1. If the user agrees: add "reply in the user's language; keep AGENTS.md blocks and `.ai/` files in English" to both SKILL.md (On / off and setup reports), rerun eval 8 only (`evals/run-prompt.md`, `<scratchpad>/prep-iteration.sh`-style layout).
-2. The user merges `feature/on-off` and pushes `develop` (never do it yourself).
+1. The user reviews, merges `feature/on-off` and pushes `develop` (never do it yourself).
 
 ## Decisions
 - `off` leaves a `<!-- <skill>:off -->` marker; see the design note for why and the alternatives.
@@ -25,7 +24,7 @@ Add per-project on/off to both skills (`/project-phase on|off`, `/work-journal o
 - `/opt/homebrew/bin/python3.13` no longer exists; use `python3 -I`.
 
 ## Open questions
-- For the user: apply the language fix and rerun eval 8?
+- None.
 
 ## How to verify
 - `claude plugin validate .` (needs network, run outside the sandbox).
