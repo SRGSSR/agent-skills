@@ -32,7 +32,7 @@ Fits when: spikes, feasibility checks, comparing approaches, notebooks and scrat
 - **Debt:** not tracked. The code is not meant to survive.
 - **Refactoring:** pointless. Rewrite if needed.
 - **Compatibility:** irrelevant.
-- **Reporting:** a short findings note: what works, what does not, numbers if relevant, recommendation (drop, or rewrite properly in prototype).
+- **Reporting:** a short findings note: what works, what does not, numbers if relevant, recommendation (drop, or rewrite properly in prototype). Save it where the project keeps design decisions (named in the `work-journal` block, if any), or in the README: the final message alone gets lost.
 
 Typical mistakes: creating a package structure, adding tests, polishing code that will be thrown away, evolving spike code into the product instead of rewriting it.
 
@@ -46,7 +46,7 @@ Goal: answer a question fast. The code is disposable; the output is the learning
 - Hardcode freely. Skip tests, error handling, structure, docs and tooling.
 - Use any library that gets to the answer faster.
 - No advice about code quality. Do flag findings that change the answer (limits, blockers, costs, licensing).
-- Finish with a short findings note: what works, what does not, recommendation.
+- Finish with a short findings note (what works, what does not, recommendation), saved with the project's design decisions or in the README.
 {{COMMON FOOTER}}
 <!-- project-phase:end -->
 ```
@@ -101,7 +101,7 @@ Optimizes for: turning a prototype into something safe to run for real users. Th
 
 Fits when: the idea is validated and a launch, pilot with real data, or handover to another team is coming.
 
-- **Scope:** systematic, but plan-driven: audit, prioritized list agreed with the user, small verifiable steps. Not "fix everything at once".
+- **Scope:** systematic, but plan-driven: audit, prioritized list agreed with the user and kept as open items in `.ai/debt.md`, small verifiable steps. Not "fix everything at once".
 - **Structure:** introduce structure where it pays off: clear module boundaries, config out of code, real duplication removed. Not a rewrite to an idealized architecture.
 - **Tests:** before refactoring a flow, pin its current behavior with tests. Cover the core user flows.
 - **Errors:** robust at the boundaries: input validation, external calls, persistence, auth.
@@ -123,7 +123,7 @@ Contract block:
 <!-- project-phase:start -->
 ## Project phase: STABILIZE (since YYYY-MM-DD)
 Goal: turn the prototype into something safe to run for real users. Structural work is expected now.
-- Work from a plan: `.ai/debt.md` plus an audit, prioritized with the user, done in small verifiable steps.
+- Work from the plan in `.ai/debt.md` (audit gaps are open items there, prioritized with the user), in small verifiable steps.
 - Before refactoring a flow, pin its current behavior with tests. Cover the core user flows.
 - Add structure where it pays off: module boundaries, config out of code, real duplication removed. No rewrite to an ideal architecture.
 - Robust error handling at boundaries: input validation, external calls, persistence, auth.
@@ -151,7 +151,7 @@ Fits when: the product is live and actively developed.
 - **Setup:** use what exists. Don't change CI, build or config unprompted.
 - **Docs:** update docs and changelog affected by the change.
 - **Questions:** ask when ambiguity affects users, data or public interfaces; otherwise follow existing conventions.
-- **Suggestions:** at the end of a task, up to three short structural observations relevant to the area touched: problem, impact, rough effort. Don't implement them unasked. No suggestions about code you did not look at.
+- **Suggestions:** at the end of a task, up to three short structural observations relevant to the area touched: problem, impact, rough effort. Don't implement them unasked. No suggestions about code you did not look at. If the user wants to keep one, record it as a task (if the project keeps tasks) or in `.ai/debt.md`.
 - **Debt:** record debt you find in `.ai/debt.md`. When a task touches an area with known debt, mention it.
 - **Refactoring:** incremental, separate commits or PRs from features.
 - **Compatibility:** backward compatible by default. Schema changes need migrations. Breaking changes need explicit approval. Consider feature flags for risky changes if the project uses them.
@@ -170,7 +170,7 @@ Goal: ship features to real users without breaking them, keeping the codebase ea
 - New code gets tests; every bug fix gets a regression test. Keep the suite green.
 - Backward compatible by default (APIs, data, config). Schema changes need migrations; breaking changes need explicit approval.
 - Add dependencies only with a reason; prefer what is already in use. Update affected docs and changelog.
-- At the end of a task you may add up to 3 short structural observations about the area touched (problem, impact, effort). Don't implement them unasked.
+- At the end of a task you may add up to 3 short structural observations about the area touched (problem, impact, effort). Don't implement them unasked; if the user wants to keep one, record it as a task or in `.ai/debt.md`.
 - Record tech debt you find in `.ai/debt.md`; mention known debt when a task touches that area.
 {{COMMON FOOTER}}
 <!-- project-phase:end -->
@@ -185,6 +185,7 @@ Optimizes for: keeping it working. Zero regressions; every change surgical.
 Fits when: the product is stable and valued, with no active feature development; fixes, security patches and small adjustments only.
 
 - **Scope:** the smallest diff that fixes the specific issue. Nothing else: no renames, reformatting, import sorting, comment cleanup, type annotations or "while I'm here" changes. Every changed line must be explainable by the fix.
+- **Root cause:** fix it at the root only when that diff is also minimal and no other caller changes behavior. If the root fix would change other callers (even ones with the same bug), fix the reported path and note the others in `.ai/debt.md`: changing them is a decision for the user.
 - **Structure:** match the surrounding code style, even if outdated. No new abstractions or patterns. Copy the style, not the defects: new code must not repeat a behavior you recognize as a bug (silently ignoring invalid input, charging the full amount); flag the existing one instead.
 - **Tests:** reproduce the bug with a failing test first where feasible. Run the existing suite before and after.
 - **Errors:** fix the failing path; don't redesign error handling around it.
@@ -207,6 +208,7 @@ Contract block:
 ## Project phase: MAINTENANCE (since YYYY-MM-DD)
 Goal: keep it working. Zero regressions; every change surgical.
 - Smallest diff that fixes the specific issue. Touch nothing else: no renames, reformatting, cleanup or "while I'm here" changes.
+- Fix at the root only if no other caller changes behavior; otherwise fix the reported path and note the other callers in `.ai/debt.md`.
 - Match the surrounding code style, even if outdated. No new abstractions or patterns. Copy the style, not known defects.
 - Reproduce bugs with a failing test first where feasible; run the existing suite before and after.
 - Behavior stays identical except for the fix. Never change public interfaces, data formats or config semantics.
@@ -239,7 +241,7 @@ Contract block:
 Goal: wind down safely and help users move off.
 - Only critical fixes (security, data integrity, outages) and migration or export support.
 - For anything else (features, refactors, upgrades), point out the phase and ask for confirmation before starting.
-- Same rules as maintenance: smallest diff, match existing style, no unrelated changes.
+- As in maintenance: smallest diff, match existing style, no unrelated changes; never change public interfaces, data formats or dependencies unless the fix requires it.
 - Keep deprecation notices, timeline and migration guide accurate.
 - No suggestions beyond migration and risk.
 {{COMMON FOOTER}}
@@ -253,7 +255,7 @@ Goal: wind down safely and help users move off.
 Replace `{{COMMON FOOTER}}` in every block with these lines. Add area overrides and custom rules (from `phase.md`) just above them, if any.
 
 ```markdown
-Explicit user requests override these defaults for that task. Never relaxed: no secrets in code or logs, no destructive operations without confirmation, say what is untested.
-If the phase looks wrong for the work being asked, say so once; never change it yourself.
+This contract wins over generic coding-style instructions where they conflict. Explicit user requests override it for that task. Never relaxed: no secrets in code or logs, no destructive operations without confirmation, say what is untested.
+If the phase looks wrong for the work being asked, ask the user once, unless `.ai/phase.md` history already confirms it for that reason; never change it yourself.
 State: `.ai/phase.md` · Debt: `.ai/debt.md` · Details: `project-phase` skill.
 ```

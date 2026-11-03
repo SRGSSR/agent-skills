@@ -21,22 +21,22 @@ Signals suggest; the user decides. The phase is about what the team wants to opt
 
 ## Drift signals
 
-During normal work, watch for signs that the phase no longer fits. Mention it once, in one line, then continue under the current phase.
+During normal work, watch for signs that the phase no longer fits. Before asking, check the history in `.ai/phase.md`: a confirmation for the same reason means don't ask again. Otherwise ask once whether the phase still fits, continue under the current phase, and record the answer (see the skill, "When the phase is not certain").
 
 - **Prototype → stabilize or production:** the user mentions real users, customers, a launch, production data, or asks for auth, security or hardening; repeatedly asks for tests.
 - **Production → maintenance:** for a long stretch the only requests are bug fixes and updates; the user says there will be no new features.
 - **Maintenance → production:** repeated requests for new features or larger changes.
 - **Any phase:** the user overrides the contract three or more times in the same direction.
 
-Example: "This sounds like the app is getting real users. Want to move from prototype to stabilize? (`project-phase` can run the checklist.)"
+Example: "This sounds like the app is getting real users. Is it still a prototype, or should we move to stabilize? (`project-phase` can run the checklist.)"
 
 ## Transition checklists
 
-Present the relevant checklist as a short prioritized list (must now / should soon / later), adapted to what the repo actually has. Skip items already in place. Agree with the user before starting the work.
+Present the relevant checklist as a short prioritized list (must now / should soon / later), adapted to what the repo actually has. Skip items already in place. Agree with the user before starting the work. Record each gap as an open item with its priority in `.ai/debt.md`, so the plan outlives the session (see the skill, "Changing phase").
 
 ### explore → prototype
 
-- Write down the findings (README or `.ai/` note): what worked, what did not, numbers.
+- Write down the findings where the project keeps design decisions, or in the README: what worked, what did not, numbers.
 - Decide keep or rewrite. Usually rewrite: spike code carries spike assumptions.
 - Choose the stack and the simplest end-to-end slice to build first.
 
@@ -45,6 +45,7 @@ Present the relevant checklist as a short prioritized list (must now / should so
 Also used for prototype → production when the phase set has no stabilize phase; the "must" items then become the first tasks in production.
 
 - Review `.ai/debt.md`: every item gets fix now, fix later or accept.
+- Search inline shortcut markers (`TODO`, `FIXME`, the team's own) and add those that matter to `.ai/debt.md`.
 - Secrets and config: nothing hardcoded, environment-based config, `.env` ignored.
 - Auth and authorization on everything exposed.
 - Input validation at all external boundaries.

@@ -131,6 +131,10 @@ Talk to your agent normally. Examples:
 
 To set a default phase set for all your projects, put a line like `project-phase set: simple` in your global agent instructions (for example `~/.claude/CLAUDE.md`).
 
+To be asked for the phase in every repo that has none yet, add `project-phase: ask` there too. Before the first code change in such a repo the agent asks which phase it is in (with a guess from the repo), sets it up from your answer, or adds the off marker if you don't want phases there. Without that line the skill never sets itself up unasked.
+
+The agent also asks when the recorded phase looks wrong (a prototype that gained real users, `AGENTS.md` and `.ai/phase.md` disagreeing), and records your answer as a history line in `.ai/phase.md`, so it doesn't ask again for the same reason.
+
 ## Cost
 
 The always-loaded part is the `AGENTS.md` blocks: about 15 lines for the phase and 9 for the journal. Journal entries are 2 to 6 lines at checkpoints, and resuming reads only the branch's handoff and the last few entries. In explore and prototype the bookkeeping is reduced further.
@@ -152,6 +156,13 @@ Why the skills work the way they do, and what was discarded. This repo keeps its
 - Merges done by people are logged at the next resume, in the next commit the agent makes anyway. Discarded: a post-merge git hook (leaves an uncommitted change on `develop`, works only where installed) and a dedicated commit (an extra commit, and on many teams an extra confirmation, for every merge).
 - A merge into the branch (`develop` → feature) can make the handoff stale. At resume the agent compares `git diff --stat` of the merge with the files the handoff relies on; reading the whole merge diff every time was discarded as too expensive.
 - Not verified: whether GitHub and GitLab merge buttons honor `merge=union`. Local merges do.
+
+**Project phases**
+- The contract wins over generic coding-style instructions (global rules, style plugins) where they conflict, because it is the team's choice for one project; explicit user requests still win for a task. Without this line, a global "always fix the root cause" or "no scaffolding" rule and the phase contract were resolved differently each time. Maintenance makes the most common conflict explicit: fix at the root only if no other caller changes behavior.
+- The plan of a transition (prototype → stabilize takes weeks) lives in `.ai/debt.md` as open items with a priority (`must`, `soon`, `later`), not only in the conversation. Discarded: the handoff (bound to one branch) and a plan section in `phase.md` (a second list next to the debt).
+- Fixed debt items are deleted, not marked: the file stays short, and with `merge=union` two branches changing the same line's status would leave both versions. Accepted items stay, because they record a decision.
+- Asking for the phase in repos without one is opt-in (`project-phase: ask` in the global instructions): otherwise every repo without a block would load the skill and get a question, also for people who installed the skill for one project. An unanswered question is not recorded (no "asked, no answer" state to maintain); the agent asks again at most once per session and meanwhile states the phase it assumes. A confirmed phase is a history line, so the next session doesn't ask again for the same signal.
+- Explore findings and production observations the user wants to keep go to design decisions, tasks or the debt list: the final message alone gets lost.
 
 **Design decisions and tasks**
 - In `docs/` or a tracker, not in `.ai/`: they are written for people and outlive branches, while `.ai/` is the agents' working state. Both are optional, because some teams want no extra folders.

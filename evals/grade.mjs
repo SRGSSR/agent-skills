@@ -34,7 +34,7 @@ const changedFiles = () => {
   const untracked = git('ls-files', '--others', '--exclude-standard').split('\n').filter(Boolean);
   return [...new Set([...tracked, ...untracked])].sort();
 };
-const isState = (f) => f === 'AGENTS.md' || f.startsWith('.ai/');
+const isState = (f) => f === 'AGENTS.md' || f === '.gitattributes' || f.startsWith('.ai/');
 // Text between <!-- name:start --> and <!-- name:end --> inclusive, or ''.
 const block = (text, name) => {
   const m = new RegExp(`<!-- ${name}:start -->[\\s\\S]*?<!-- ${name}:end -->`).exec(text);
@@ -68,6 +68,16 @@ const newJournalHeads = () => {
   const added = git('diff', base, '--', '.ai/journal').split('\n').filter((l) => /^\+## /.test(l)).map((l) => l.slice(1));
   const untracked = git('ls-files', '--others', '--exclude-standard', '--', '.ai/journal').split('\n').filter(Boolean);
   return [...added, ...untracked.flatMap((f) => read(f).split('\n').filter((l) => l.startsWith('## ')))];
+};
+
+// Sentences of the final message that ask the user about the phase.
+const phaseQuestions = () => {
+  const msg = fs.existsSync(path.join(runDir, 'outputs', 'final_message.md')) ? fs.readFileSync(path.join(runDir, 'outputs', 'final_message.md'), 'utf8') : '';
+  return msg.split(/(?<=[?.!])\s+|\n/).filter((x) => x.includes('?') && /phase|stabili[sz]e|production|prototype|maintenance|explore/i.test(x));
+};
+const finalMessage = () => {
+  const f = path.join(runDir, 'outputs', 'final_message.md');
+  return fs.existsSync(f) ? fs.readFileSync(f, 'utf8') : '';
 };
 
 const HANDOFF_UPDATED = 'The handoff reflects the new state (rewritten, moved to .ai/handoff/<branch>.md, or deleted because the task is done)';
@@ -244,7 +254,7 @@ const graders = {
       return [hit >= 0, hit >= 0 ? lines[hit].trim() : 'no override for legacy/old-importer found'];
     });
     check('No source, test, config or legacy files were modified', () => {
-      const bad = changed.filter((f) => !f.endsWith('.md') || f.startsWith('legacy/'));
+      const bad = changed.filter((f) => (!f.endsWith('.md') && !isState(f)) || f.startsWith('legacy/'));
       return [bad.length === 0, `changed: ${changed.join(', ')}`];
     });
     check('The always-loaded instructions are concise (at most 40 lines added across AGENTS.md and CLAUDE.md)', () => {
@@ -558,6 +568,73 @@ console.log('null');`,
     check('The always-loaded instructions are concise (at most 25 lines added across AGENTS.md and CLAUDE.md)', () => {
       const n = addedRemoved('AGENTS.md').added + addedRemoved('CLAUDE.md').added;
       return [n <= 25, `${n} lines added`];
+    });
+  },
+
+  'to-stabilize'() {
+    const changed = changedFiles();
+    const today = new Date().toISOString().slice(0, 10);
+    const phase = read('.ai/phase.md');
+    const debt = read('.ai/debt.md');
+    const openBefore = (atBase('.ai/debt.md').match(/^- \[open\]/gm) || []).length;
+    const newOpen = debt.split('\n').filter((l) => /^- \[open\]/.test(l) && !atBase('.ai/debt.md').includes(l));
+    check('.ai/phase.md records stabilize as current, with a history line dated today', () => {
+      const cur = phase.split('\n').find((l) => /^Current:/.test(l)) || '';
+      const hist = phase.split('\n').find((l) => l.includes(today) && /stabili/i.test(l));
+      return [/stabilize/i.test(cur) && Boolean(hist), `${cur} | ${hist || 'no history line for today'}`];
+    });
+    check('AGENTS.md has the STABILIZE contract block', () => {
+      const b = block(read('AGENTS.md'), 'project-phase');
+      return [/Project phase: STABILIZE/i.test(b), b.split('\n')[1] || 'no block'];
+    });
+    check('No project files changed: the work was not started without agreement', () => {
+      const bad = changed.filter((f) => !isState(f) && f !== 'CLAUDE.md');
+      return [bad.length === 0, bad.join(', ') || 'none'];
+    });
+    check('The gaps found are recorded as at least 3 new open items in .ai/debt.md', () => [newOpen.length >= 3, `${openBefore} open before, ${newOpen.length} new`]);
+    check('New debt items carry a priority (must, soon or later)', () => {
+      const without = newOpen.filter((l) => !/·\s*(must|soon|later)\b/i.test(l));
+      return [newOpen.length > 0 && without.length === 0, without.length ? `without priority: ${without.length}/${newOpen.length}` : `${newOpen.length} with priority`];
+    });
+    check('The existing in-memory store item is still in .ai/debt.md', () => {
+      const l = debt.split('\n').find((x) => /memory/i.test(x));
+      return [Boolean(l), l || 'missing'];
+    });
+  },
+
+  'phase-ask'() {
+    const changed = changedFiles();
+    check('A /health route was added under src/', () => {
+      const f = changed.filter((x) => x.startsWith('src/') && /health/.test(read(x)));
+      return [f.length > 0, f.join(', ') || 'no src file mentions health'];
+    });
+    check('The final message asks the user which phase the project is in', () => {
+      const q = phaseQuestions();
+      return [q.length > 0, q[0] || 'no question about the phase'];
+    });
+    check('The final message states the phase assumed meanwhile (production)', () => {
+      const l = finalMessage().split('\n').find((x) => /production/i.test(x));
+      return [Boolean(l), l || 'production not mentioned'];
+    });
+    check('Nothing was recorded without an answer: no project-phase block, no .ai/phase.md', () => {
+      const rec = Boolean(block(read('AGENTS.md'), 'project-phase')) || /project-phase/.test(read('CLAUDE.md')) || exists('.ai/phase.md');
+      return [!rec, rec ? 'phase state written' : 'nothing written'];
+    });
+    check('Only source, test, changelog or readme files changed', () => {
+      const bad = changed.filter((x) => !/^(src|test)\//.test(x) && !['CHANGELOG.md', 'README.md'].includes(x));
+      return [bad.length === 0, bad.join(', ') || 'none'];
+    });
+  },
+
+  'phase-confirmed'() {
+    graders['prototype-csv-export']();
+    check('The agent did not ask again about the phase (the history confirms prototype for this reason)', () => {
+      const q = phaseQuestions();
+      return [q.length === 0, q[0] || 'no question about the phase'];
+    });
+    check('The phase state is unchanged (.ai/phase.md and the block)', () => {
+      const same = read('.ai/phase.md') === atBase('.ai/phase.md') && block(read('AGENTS.md'), 'project-phase') === block(atBase('AGENTS.md'), 'project-phase');
+      return [same, same ? 'unchanged' : 'changed'];
     });
   },
 

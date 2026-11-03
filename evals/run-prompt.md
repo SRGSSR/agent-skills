@@ -35,6 +35,7 @@ Environment notes:
 - This is non-interactive: you cannot ask the user anything. Where you would normally ask and wait, use your best judgment, proceed, and put the question in your final message.
 - Don't commit, push or create branches. If you start a server to check something, stop it before finishing. Network access may be unavailable.
 - If you need to identify yourself (tool/model): <tool>/<model>.
+- (Only if the eval has `global_instructions`.) The user's global agent instructions, loaded in every project, contain: `<global_instructions>`
 
 Installed skills (load a skill by reading its SKILL.md when its description matches the situation, then follow it):
 - project-phase (<repo>/skills/project-phase/SKILL.md): <description from its frontmatter, verbatim>
@@ -46,5 +47,7 @@ When finished, write the exact final message you would send to the user into <ru
 For setup evals, add to the non-interactive note: "proceed as if the user accepted your recommendation".
 
 Subagents inherit the runner's global instructions (for example `~/.claude/CLAUDE.md`). If those are written in a language other than the user message, the agent may reply in that language: the reply-language judgments (evals 8-10) are only meaningful with English or no global instructions.
+
+Hooks reach subagents too: a global style plugin that injects rules at session or subagent start (for example a minimalism plugin like ponytail) is active in both variants. Results then measure the skills on top of those rules, which is realistic for that team but not a clean baseline; note it in the report or disable the plugin for the run.
 
 Use the descriptions verbatim: they are what triggers a skill, and evals 6-10 test exactly that (on/off phrases, Italian, French and German requests). Keep the user message in its original language.
