@@ -50,7 +50,7 @@ When the user asks to set this up, or the first time you write a journal entry i
 <!-- work-journal:end -->
 ```
 
-**Upgrading from an older version.** If `AGENTS.md` has a work-journal block that differs from the one above, replace it and run setup step 3. If `.ai/handoff.md` exists (the single handoff of version 0.2 and earlier), treat it as the handoff of the branch it names, or of the current branch; the next time you write the handoff, write `.ai/handoff/<branch>.md` and delete `.ai/handoff.md`. If it is only an idle state ("No active task"), delete it. Mention the upgrade in one line.
+**Upgrading from an older version** is part of the protocol, not an unrequested change: do it without asking whenever you find the old layout. If `AGENTS.md` has a work-journal block that differs from the one above, replace it and run setup step 3. If `.ai/handoff.md` exists (the single handoff of version 0.2 and earlier), treat it as the handoff of the branch it names, or of the current branch; the next time you write the handoff, write `.ai/handoff/<branch>.md` and delete `.ai/handoff.md`. If it is only an idle state ("No active task"), delete it. Mention the upgrade in one line.
 
 ## On / off
 
@@ -68,7 +68,7 @@ The user can turn the protocol off for one project, with `/work-journal off`, or
 
 At the start of a session in a repo that has a handoff or journal, unless work-journal is off there:
 
-1. **Read** `.ai/handoff/<branch>.md` for the current branch, then the last few entries of the newest journal file (`ls .ai/journal | tail -n 1`; never list or read the whole folder). If the branch has no handoff, `ls .ai/handoff/` shows the work open on other branches: those belong to other people or streams, so mention them only if relevant and don't resume them unless the user asks. Don't read older journal files unless you need to know why something was done.
+1. **Read** `.ai/handoff/<branch>.md` for the current branch (or the old single `.ai/handoff.md`: then also upgrade, see [Setup](#setup)), then the last few entries of the newest journal file (`ls .ai/journal | tail -n 1`; never list or read the whole folder). If the branch has no handoff, `ls .ai/handoff/` shows the work open on other branches: those belong to other people or streams, so mention them only if relevant and don't resume them unless the user asks. Don't read older journal files unless you need to know why something was done.
 2. **Verify** against reality: current branch, `git status`, `git log --oneline` since the handoff date, and the verify command in the handoff if there is one. The handoff may be stale: someone else may have worked since, or the previous session may have died before updating it.
 3. **Reconcile.** If the state disagrees with the handoff, or the handoff lists open questions for the user, raise it before acting. Otherwise state in one or two lines what you are resuming and the next step, then do it.
 4. **Respect the history.** Don't redo completed steps. Don't retry a recorded dead end unless something has changed, and say what changed.
@@ -150,7 +150,7 @@ Before finishing, check: could a different model, in a different tool, continue 
 
 When nothing is left for an agent to do on the branch (what remains, if anything, is review and merge by people), don't leave a stale handoff pretending work is in progress:
 
-1. **Keep what must last.** The journal gets buried over time and the handoff is about to go, so look at its Decisions and Dead ends: whatever will matter after this branch (a constraint, a reason, an approach that fails) goes where people will look. A short comment next to the code it concerns; the project's design docs or ADRs if it has them; a custom rule in `.ai/phase.md` if it is a rule to always follow and project-phase is in use. Skip what only mattered during the task.
+1. **Keep what must last.** The journal gets buried over time and the handoff is about to go, so look at its Decisions and Dead ends: whatever will matter after this branch (a constraint, a reason, an approach that fails) goes where people will look. A short comment next to the code it concerns; the project's design docs or ADRs if it has them; a custom rule in `.ai/phase.md` if it is a rule to always follow and project-phase is in use. "It's in the journal" doesn't count, the journal is what gets buried; nor does code that implements a decision without saying why (`batch.slice(0, 500)` doesn't tell the next person that the partner API rejects larger batches). Skip only what mattered during the task alone, and name in the journal entry what you moved or why nothing needed to.
 2. **Delete** `.ai/handoff/<branch>.md`, and write a journal entry with what was completed, what you moved where, and any follow-up for the user.
 
 ## Several people on one project
