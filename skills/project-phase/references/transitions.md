@@ -32,11 +32,11 @@ Example: "This sounds like the app is getting real users. Want to move from prot
 
 ## Transition checklists
 
-Present the relevant checklist as a short prioritized list (must now / should soon / later), adapted to what the repo actually has. Skip items already in place. Agree with the user before starting the work.
+Present the relevant checklist as a short prioritized list (must now / should soon / later), adapted to what the repo actually has. Skip items already in place. Agree with the user before starting the work. Record each gap as an open item with its priority in `.ai/debt.md`, so the plan outlives the session (see the skill, "Changing phase").
 
 ### explore → prototype
 
-- Write down the findings (README or `.ai/` note): what worked, what did not, numbers.
+- Write down the findings where the project keeps design decisions, or in the README: what worked, what did not, numbers.
 - Decide keep or rewrite. Usually rewrite: spike code carries spike assumptions.
 - Choose the stack and the simplest end-to-end slice to build first.
 
@@ -45,6 +45,7 @@ Present the relevant checklist as a short prioritized list (must now / should so
 Also used for prototype → production when the phase set has no stabilize phase; the "must" items then become the first tasks in production.
 
 - Review `.ai/debt.md`: every item gets fix now, fix later or accept.
+- Search inline shortcut markers (`TODO`, `FIXME`, the team's own) and add those that matter to `.ai/debt.md`.
 - Secrets and config: nothing hardcoded, environment-based config, `.env` ignored.
 - Auth and authorization on everything exposed.
 - Input validation at all external boundaries.

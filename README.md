@@ -153,6 +153,12 @@ Why the skills work the way they do, and what was discarded. This repo keeps its
 - A merge into the branch (`develop` → feature) can make the handoff stale. At resume the agent compares `git diff --stat` of the merge with the files the handoff relies on; reading the whole merge diff every time was discarded as too expensive.
 - Not verified: whether GitHub and GitLab merge buttons honor `merge=union`. Local merges do.
 
+**Project phases**
+- The contract wins over generic coding-style instructions (global rules, style plugins) where they conflict, because it is the team's choice for one project; explicit user requests still win for a task. Without this line, a global "always fix the root cause" or "no scaffolding" rule and the phase contract were resolved differently each time. Maintenance makes the most common conflict explicit: fix at the root only if no other caller changes behavior.
+- The plan of a transition (prototype → stabilize takes weeks) lives in `.ai/debt.md` as open items with a priority (`must`, `soon`, `later`), not only in the conversation. Discarded: the handoff (bound to one branch) and a plan section in `phase.md` (a second list next to the debt).
+- Fixed debt items are deleted, not marked: the file stays short, and with `merge=union` two branches changing the same line's status would leave both versions. Accepted items stay, because they record a decision.
+- Explore findings and production observations the user wants to keep go to design decisions, tasks or the debt list: the final message alone gets lost.
+
 **Design decisions and tasks**
 - In `docs/` or a tracker, not in `.ai/`: they are written for people and outlive branches, while `.ai/` is the agents' working state. Both are optional, because some teams want no extra folders.
 - One file per task with no status field: separate branches touch separate files, and the merge closes the task by deleting its file. Discarded: a single `ROADMAP.md` (every branch edits the same lines; `merge=union` would duplicate edited lines), a status field (git and the branch already say it), the agent assigning tasks on its own.

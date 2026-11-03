@@ -561,6 +561,37 @@ console.log('null');`,
     });
   },
 
+  'to-stabilize'() {
+    const changed = changedFiles();
+    const today = new Date().toISOString().slice(0, 10);
+    const phase = read('.ai/phase.md');
+    const debt = read('.ai/debt.md');
+    const openBefore = (atBase('.ai/debt.md').match(/^- \[open\]/gm) || []).length;
+    const newOpen = debt.split('\n').filter((l) => /^- \[open\]/.test(l) && !atBase('.ai/debt.md').includes(l));
+    check('.ai/phase.md records stabilize as current, with a history line dated today', () => {
+      const cur = phase.split('\n').find((l) => /^Current:/.test(l)) || '';
+      const hist = phase.split('\n').find((l) => l.includes(today) && /stabili/i.test(l));
+      return [/stabilize/i.test(cur) && Boolean(hist), `${cur} | ${hist || 'no history line for today'}`];
+    });
+    check('AGENTS.md has the STABILIZE contract block', () => {
+      const b = block(read('AGENTS.md'), 'project-phase');
+      return [/Project phase: STABILIZE/i.test(b), b.split('\n')[1] || 'no block'];
+    });
+    check('No project files changed: the work was not started without agreement', () => {
+      const bad = changed.filter((f) => !isState(f) && f !== 'CLAUDE.md');
+      return [bad.length === 0, bad.join(', ') || 'none'];
+    });
+    check('The gaps found are recorded as at least 3 new open items in .ai/debt.md', () => [newOpen.length >= 3, `${openBefore} open before, ${newOpen.length} new`]);
+    check('New debt items carry a priority (must, soon or later)', () => {
+      const without = newOpen.filter((l) => !/·\s*(must|soon|later)\b/i.test(l));
+      return [newOpen.length > 0 && without.length === 0, without.length ? `without priority: ${without.length}/${newOpen.length}` : `${newOpen.length} with priority`];
+    });
+    check('The existing in-memory store item is still in .ai/debt.md', () => {
+      const l = debt.split('\n').find((x) => /memory/i.test(x));
+      return [Boolean(l), l || 'missing'];
+    });
+  },
+
   'task-done'() {
     const changed = changedFiles();
     check('The list page links to a CSV download with all 3 items, separated by semicolons', () => {

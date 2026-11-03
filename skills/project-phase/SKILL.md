@@ -3,7 +3,7 @@ name: project-phase
 description: Sets and applies the project's lifecycle phase (explore, prototype, stabilize, production, maintenance, sunset) so the agent works the way that phase needs - no over-engineering or unsolicited advice while prototyping, structural suggestions and tech-debt tracking in production, minimal regression-safe diffs in maintenance. Use this skill whenever the user wants to set up, check or change the project phase, mode or stage; says things like "we're just prototyping", "it's a quick POC", "this is live now", "maintenance only", "stop over-engineering", "don't touch anything else"; asks whether the project is ready for production; or wants to review tech debt or shortcuts; or wants to turn it on or off for a project (`/project-phase on`, `/project-phase off`, "disable project-phase here"). Also use it when AGENTS.md or CLAUDE.md contains a project-phase block and it is unclear how the phase applies to the current request.
 license: MIT
 metadata:
-  version: "0.3.0"
+  version: "0.4.0"
 ---
 
 # Project Phase
@@ -46,6 +46,7 @@ The user can turn the skill off for one project, with `/project-phase off`, or b
 
 - **The phase sets defaults, not prohibitions.** An explicit request from the user wins for that task. Do it without lecturing. If the user keeps overriding the contract in the same direction, the phase is probably wrong: say so once.
 - **Some things are never relaxed:** no secrets in code, commits or logs; no destructive operations (data, history, infrastructure) without confirmation; honest reporting of what is untested or incomplete. Speed is never a reason to hide a known risk.
+- **The contract wins over generic coding-style instructions.** Global rules or style skills (minimalism, "always add tests", ...) apply within the phase; where they conflict with the contract, follow the contract, because it is the team's choice for this project. Explicit requests from the user still win for that task.
 - **Never change the phase on your own.** When signals suggest it no longer fits, mention it once in one line and continue under the current phase.
 - **Process cost follows the phase.** In explore and prototype, even this skill's bookkeeping stays minimal: one-line debt entries, no reports.
 - **Talk in the user's language.** This skill is written in English, but reports, questions and the final message go in the language the user writes in. Files (`AGENTS.md` blocks, `.ai/`) keep the language they already use; new ones are in English.
@@ -98,12 +99,13 @@ Answer from the contract block and `phase.md`: current phase and since when, wha
 
 1. Confirm the target phase with the user, unless they already stated it clearly.
 2. Run the transition checklist from [references/transitions.md](references/transitions.md#transition-checklists). Present it as a short prioritized list (must now / should soon / later) and ask what to do now. Some transitions generate real work (prototype → stabilize); others are mostly a change of stance (production → maintenance). Do not start the work without agreement.
+   The plan must outlive the session, because a transition like stabilize takes weeks: add each gap the checklist found as an open item in `.ai/debt.md` (skip those already there), with its priority (`must`, `soon`, `later`). If the user changes the priorities, update the lines. If the `work-journal` block names a task list, larger items also become tasks that link the debt item.
 3. Update `phase.md` (current phase, history line with date and reason) and replace the contract block with the one for the new phase.
 4. If the `work-journal` skill is in use, log the change in the journal.
 
 ### Debt review
 
-Read `.ai/debt.md`, group items by area and impact, and propose what to fix, accept or drop, fitted to the phase. In prototype, only blockers for the next milestone matter. In stabilize, everything must be resolved or consciously accepted. In production, propose the two or three items with best impact per effort. In maintenance, only items that threaten stability. Update item status after the user decides.
+Read `.ai/debt.md`, group items by area and impact, and propose what to fix, accept or drop, fitted to the phase. In prototype, only blockers for the next milestone matter. In stabilize, everything must be resolved or consciously accepted. In production, propose the two or three items with best impact per effort. In maintenance, only items that threaten stability. After the user decides, mark accepted items with the reason, and delete the lines of fixed or dropped items.
 
 ### When unsure how the phase applies
 
@@ -148,8 +150,13 @@ Current: prototype (since 2026-10-02)
 ```markdown
 # Tech debt and shortcuts
 
-<!-- One line per item, newest first. Status: open | accepted | fixed -->
+<!-- One line per item, newest first. Status: open | accepted. Delete the line when fixed (git keeps it). -->
 - [open] 2026-10-02 · `src/auth/` · Auth stubbed: any email logs in. Fix before real users.
+- [accepted] 2026-09-28 · `src/report.js` · Report built in memory: fine up to 10k rows, the expected maximum.
 ```
 
-One line per item: date, area, what and why it matters. In prototype, log only deliberate shortcuts that would hurt later (stubbed auth, no input validation, in-memory storage, hardcoded credentials placeholder), not every hardcoded value.
+One line per item: date, area, what and why it matters. In prototype, log only deliberate shortcuts that would hurt later (stubbed auth, no input validation, in-memory storage, hardcoded credentials placeholder), not every hardcoded value. During a phase transition, a priority goes after the date: `- [open] 2026-11-03 · must · src/auth/ · ...`.
+
+Fixed items are deleted instead of marked: the file stays short, and with `merge=union` two branches changing the status of the same line would otherwise leave both versions. Accepted items stay, because they record a decision.
+
+Inline markers next to the code (`TODO`, `FIXME`, or a team's own marker for deliberate shortcuts) are fine. A shortcut that matters for the whole project also gets a line here, so it is found at the next transition or debt review.

@@ -1,6 +1,6 @@
 {
   "skill_name": "project-phase + work-journal",
-  "notes": "Each eval runs on a fixture repo built by evals/fixtures/build.sh. with_skill gets both skills plus the skill state the fixture defines (AGENTS.md blocks, .ai/); without_skill gets the same repo without them. Programmatic checks live in evals/grade.mjs; checks marked (judgment) are graded by reading the final message and diff. Fixtures with a state-in-baseline file (on/off evals) give without_skill the same AGENTS.md and .ai/ state, so only the skill differs. Evals 8-10 check that triggers work in Italian, French and German. Eval 11 checks per-branch handoffs with a colleague's open handoff in the repo. Eval 12 checks that a merge of develop into the feature branch after the handoff is noticed. Evals 4 and 10 keep the 0.2 single handoff and merge-from-develop keeps the 0.3 block on purpose, to cover the upgrades. Examples in the skill text deliberately differ from the eval scenarios, to avoid teaching to the test. Fixtures reuse other fixtures' base/ and history.txt through symlinks, so there is no copied source to keep in sync. Eval 13 checks that setup finds an existing ADR folder and roadmap instead of creating new places. Eval 14 checks the end of a branch's task with docs/todo/: the task file is deleted, the open question becomes an unassigned task, the decision is kept. Its fixture has state-in-baseline, so the baseline reads the same 0.4 block and does the same: it measures the block, and stays as a regression test.",
+  "notes": "Each eval runs on a fixture repo built by evals/fixtures/build.sh. with_skill gets both skills plus the skill state the fixture defines (AGENTS.md blocks, .ai/); without_skill gets the same repo without them. Programmatic checks live in evals/grade.mjs; checks marked (judgment) are graded by reading the final message and diff. Fixtures with a state-in-baseline file (on/off evals) give without_skill the same AGENTS.md and .ai/ state, so only the skill differs. Evals 8-10 check that triggers work in Italian, French and German. Eval 11 checks per-branch handoffs with a colleague's open handoff in the repo. Eval 12 checks that a merge of develop into the feature branch after the handoff is noticed. Evals 4 and 10 keep the 0.2 single handoff and merge-from-develop keeps the 0.3 block on purpose, to cover the upgrades. Examples in the skill text deliberately differ from the eval scenarios, to avoid teaching to the test. Fixtures reuse other fixtures' base/ and history.txt through symlinks, so there is no copied source to keep in sync. Eval 13 checks that setup finds an existing ADR folder and roadmap instead of creating new places. Eval 14 checks the end of a branch's task with docs/todo/: the task file is deleted, the open question becomes an unassigned task, the decision is kept. Its fixture has state-in-baseline, so the baseline reads the same 0.4 block and does the same: it measures the block, and stays as a regression test. Eval 15 checks the prototype → stabilize transition: the plan is kept as prioritized open items in .ai/debt.md, and no work starts without agreement.",
   "evals": [
     {
       "id": 1,
@@ -252,6 +252,22 @@
         "The handoff .ai/handoff/feature-csv-export.md was deleted",
         "The reason for the semicolon and BOM (Excel with the Swiss locale) is kept in a code comment or in docs/design/",
         "New journal entries name the branch feature/csv-export in the header"
+      ]
+    },
+    {
+      "id": 15,
+      "name": "to-stabilize",
+      "fixture": "evals/fixtures/to-stabilize",
+      "prompt": "We're opening this to the whole billing team next month. Move us to stabilize.",
+      "expected_output": "Runs the prototype → stabilize checklist adapted to the repo (in-memory store, no validation, no tests, no CI, no config), presents it as must now / should soon / later and asks what to start with. Changes the phase in .ai/phase.md and the AGENTS.md block, records each gap as an open item with its priority in .ai/debt.md so the plan outlives the session, and changes no project files.",
+      "expectations": [
+        ".ai/phase.md records stabilize as current, with a history line dated today",
+        "AGENTS.md has the STABILIZE contract block",
+        "No project files changed: the work was not started without agreement",
+        "The gaps found are recorded as at least 3 new open items in .ai/debt.md",
+        "New debt items carry a priority (must, soon or later)",
+        "The existing in-memory store item is still in .ai/debt.md",
+        "(judgment) The final message presents a prioritized checklist adapted to this repo and asks what to start with"
       ]
     }
   ]

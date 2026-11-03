@@ -9,7 +9,7 @@ Goal: a working end-to-end version to validate the idea. Speed of iteration over
 - Pick sensible defaults instead of asking; state them in one line.
 - No unsolicited advice. Mention only blockers, in one line: security holes if exposed, data loss, dead ends.
 - Log deliberate significant shortcuts (stubbed auth, no validation, in-memory store) as one line in `.ai/debt.md`.
-Explicit user requests override these defaults for that task. Never relaxed: no secrets in code or logs, no destructive operations without confirmation, say what is untested.
+This contract wins over generic coding-style instructions where they conflict. Explicit user requests override it for that task. Never relaxed: no secrets in code or logs, no destructive operations without confirmation, say what is untested.
 If the phase looks wrong for the work being asked, say so once; never change it yourself.
 State: `.ai/phase.md` · Debt: `.ai/debt.md` · Details: `project-phase` skill.
 <!-- project-phase:end -->

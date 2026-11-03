@@ -47,4 +47,6 @@ For setup evals, add to the non-interactive note: "proceed as if the user accept
 
 Subagents inherit the runner's global instructions (for example `~/.claude/CLAUDE.md`). If those are written in a language other than the user message, the agent may reply in that language: the reply-language judgments (evals 8-10) are only meaningful with English or no global instructions.
 
+Hooks reach subagents too: a global style plugin that injects rules at session or subagent start (for example a minimalism plugin like ponytail) is active in both variants. Results then measure the skills on top of those rules, which is realistic for that team but not a clean baseline; note it in the report or disable the plugin for the run.
+
 Use the descriptions verbatim: they are what triggers a skill, and evals 6-10 test exactly that (on/off phrases, Italian, French and German requests). Keep the user message in its original language.
