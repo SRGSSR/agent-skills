@@ -72,7 +72,7 @@ At the start of a session in a repo that has a handoff or journal, unless work-j
 2. **Verify** against reality: current branch, `git status`, `git log --oneline` since the handoff date, and the verify command in the handoff if there is one. The handoff may be stale: someone else may have worked since, or the previous session may have died before updating it.
 3. **Reconcile.** If the state disagrees with the handoff, or the handoff lists open questions for the user, raise it before acting. Otherwise state in one or two lines what you are resuming and the next step, then do it.
 4. **Respect the history.** Don't redo completed steps. Don't retry a recorded dead end unless something has changed, and say what changed.
-5. **Log** a journal entry: `Resumed from handoff of <date> (<tool/model>)`, plus any discrepancy you found.
+5. **Log** a journal entry: `Resumed from handoff of <date> (<tool/model>)`, plus any discrepancy you found. If a branch from the last entries was merged since (people often merge without an agent), note it in one line, for example `Merged feature/x into develop (a1b2c3d)`, even when there was no handoff to resume.
 
 ## Journaling
 
