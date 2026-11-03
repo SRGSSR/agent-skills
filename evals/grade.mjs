@@ -63,6 +63,13 @@ const deps = (json) => {
   }
 };
 
+// Headers (`## ...`) of journal entries added since base.
+const newJournalHeads = () => {
+  const added = git('diff', base, '--', '.ai/journal').split('\n').filter((l) => /^\+## /.test(l)).map((l) => l.slice(1));
+  const untracked = git('ls-files', '--others', '--exclude-standard', '--', '.ai/journal').split('\n').filter(Boolean);
+  return [...added, ...untracked.flatMap((f) => read(f).split('\n').filter((l) => l.startsWith('## ')))];
+};
+
 const HANDOFF_UPDATED = 'The handoff reflects the new state (rewritten, moved to .ai/handoff/<branch>.md, or deleted because the task is done)';
 
 const UPGRADED = 'The 0.2 layout was upgraded: no .ai/handoff.md left and the work-journal block uses .ai/handoff/<branch>.md';
@@ -474,9 +481,7 @@ console.log('null');`,
     });
     check('No single .ai/handoff.md was created', () => [!exists('.ai/handoff.md'), exists('.ai/handoff.md') ? 'created' : 'absent']);
     check('New journal entries name the branch feature/itunes-duration in the header', () => {
-      const added = git('diff', base, '--', '.ai/journal').split('\n').filter((l) => /^\+## /.test(l));
-      const untracked = changed.filter((f) => f.startsWith('.ai/journal/') && !atBase(f)).flatMap((f) => read(f).split('\n').filter((l) => l.startsWith('## ')));
-      const heads = [...added.map((l) => l.slice(1)), ...untracked];
+      const heads = newJournalHeads();
       const ok = heads.length > 0 && heads.every((l) => l.includes('feature/itunes-duration'));
       return [ok, heads.join(' | ') || 'no new entries'];
     });
@@ -501,6 +506,96 @@ console.log('null');`,
       return [Boolean(l), l || 'no line about the merge'];
     });
     check('No single .ai/handoff.md was created', () => [!exists('.ai/handoff.md'), exists('.ai/handoff.md') ? 'created' : 'absent']);
+    check('The work-journal block was upgraded to 0.4 (project state not in private memory)', () => {
+      const b = block(read('AGENTS.md'), 'work-journal');
+      return [b.includes('private memory'), b ? (b.includes('private memory') ? '0.4' : 'old') : 'none'];
+    });
+  },
+
+  'setup-docs'() {
+    const changed = changedFiles();
+    const instr = read('AGENTS.md') + '\n' + read('CLAUDE.md');
+    const todos = changed.filter((f) => f.startsWith('docs/todo/') && exists(f));
+    check('Work journal and handoff instructions were written to a file agents load automatically', () => {
+      const ok = /journal/i.test(instr) && /handoff/i.test(instr);
+      return [ok, ok ? 'found' : 'no journal/handoff instructions in AGENTS.md or CLAUDE.md'];
+    });
+    check('Claude Code will see them: CLAUDE.md contains them or imports @AGENTS.md', () => {
+      const c = read('CLAUDE.md');
+      return [/@AGENTS\.md/.test(c) || (/journal/i.test(c) && /handoff/i.test(c)), c.split('\n').slice(0, 3).join(' / ')];
+    });
+    check('The always-loaded instructions name docs/adr/ as the place for design decisions', () => {
+      const l = instr.split('\n').find((x) => x.includes('docs/adr'));
+      return [Boolean(l), l || 'docs/adr not mentioned'];
+    });
+    check('No new place for design decisions was created (docs/design/, docs/decisions*)', () => {
+      const bad = changed.filter((f) => /^docs\/(design|decisions)/.test(f));
+      return [bad.length === 0, bad.join(', ') || 'none'];
+    });
+    check('The existing ADRs are unchanged', () => {
+      const bad = changed.filter((f) => f.startsWith('docs/adr/') && atBase(f));
+      return [bad.length === 0, bad.join(', ') || 'unchanged'];
+    });
+    check('The open work in ROADMAP.md is not ignored: the instructions name it as the task list, or its items moved to docs/todo/', () => {
+      const l = instr.split('\n').find((x) => /ROADMAP\.md|docs\/todo/.test(x));
+      return [Boolean(l), l || 'neither ROADMAP.md nor docs/todo in the instructions'];
+    });
+    check('If ROADMAP.md was split into docs/todo/, every open item has a task file', () => {
+      if (!todos.length) return [true, 'not split'];
+      const text = todos.map(read).join('\n');
+      const items = { 'full-text': /full.?text/i, 'rate limiting': /rate.?limit/i, 'old-importer': /importer/i, authors: /author/i };
+      const missing = Object.keys(items).filter((k) => !items[k].test(text));
+      return [missing.length === 0, missing.length ? `missing: ${missing.join(', ')}` : `${todos.length} task files`];
+    });
+    check('.gitattributes has merge=union for the journal', () => {
+      const l = read('.gitattributes').split('\n').find((x) => x.includes('.ai/journal') && x.includes('merge=union'));
+      return [Boolean(l), l || 'missing'];
+    });
+    check('No source, test, migration or legacy files were modified', () => {
+      const bad = changed.filter((f) => /^(src|test|migrations|legacy|k8s|\.github)\//.test(f) || f === 'package.json');
+      return [bad.length === 0, bad.join(', ') || 'none'];
+    });
+    check('The always-loaded instructions are concise (at most 25 lines added across AGENTS.md and CLAUDE.md)', () => {
+      const n = addedRemoved('AGENTS.md').added + addedRemoved('CLAUDE.md').added;
+      return [n <= 25, `${n} lines added`];
+    });
+  },
+
+  'task-done'() {
+    const changed = changedFiles();
+    check('The list page links to a CSV download with all 3 items, separated by semicolons', () => {
+      const http = callHttpHandler(path.join(repo, 'server.js'), ['/']);
+      if (!http.link) return [false, 'no link containing "csv" found on the list page'];
+      const body = http.csv?.body || '';
+      const all = ['Microphone stand', 'XLR cable 5m', 'Headphones'].every((n) => body.includes(n));
+      return [http.csv?.status === 200 && all && body.includes(';'), `link ${http.link}, status ${http.csv?.status}, all items: ${all}, semicolons: ${body.includes(';')}`];
+    });
+    check('The test suite passes', () => {
+      const t = testsPass();
+      return [t.ok, t.summary];
+    });
+    check('No dependency was added', () => [deps(read('package.json')) === deps(atBase('package.json')), `after: ${deps(read('package.json'))}`]);
+    check('docs/todo/csv-export.md was deleted (the branch closes its task)', () => [!exists('docs/todo/csv-export.md'), exists('docs/todo/csv-export.md') ? 'still there' : 'deleted']);
+    check('The open question about archived items became a new task in docs/todo/', () => {
+      const f = changed.filter((x) => x.startsWith('docs/todo/') && !atBase(x) && /archiv/i.test(read(x)));
+      return [f.length > 0, f.join(', ') || 'no new task about archived items'];
+    });
+    check('Nobody was assigned by the agent: pdf-labels.md unchanged, new task files have no Assignee', () => {
+      const assigned = changed.filter((x) => x.startsWith('docs/todo/') && !atBase(x) && /^Assignee:/m.test(read(x)));
+      const ok = !changed.includes('docs/todo/pdf-labels.md') && assigned.length === 0;
+      return [ok, `pdf-labels changed: ${changed.includes('docs/todo/pdf-labels.md')}, assigned: ${assigned.join(', ') || 'none'}`];
+    });
+    check('The handoff .ai/handoff/feature-csv-export.md was deleted', () => [!exists('.ai/handoff/feature-csv-export.md'), exists('.ai/handoff/feature-csv-export.md') ? 'still there' : 'deleted']);
+    check('The reason for the semicolon and BOM (Excel with the Swiss locale) is kept in a code comment or in docs/design/', () => {
+      const code = git('diff', base, '--', 'export.js', 'server.js').split('\n').find((x) => /^\+/.test(x) && /(\/\/|\*)/.test(x) && /excel|de-CH|swiss|locale/i.test(x));
+      if (code) return [true, code];
+      const doc = changed.filter((x) => x.startsWith('docs/design/') && exists(x) && /excel/i.test(read(x)) && /semicolon|`;`|BOM/i.test(read(x)));
+      return [doc.length > 0, doc.join(', ') || 'not found'];
+    });
+    check('New journal entries name the branch feature/csv-export in the header', () => {
+      const heads = newJournalHeads();
+      return [heads.length > 0 && heads.every((l) => l.includes('feature/csv-export')), heads.join(' | ') || 'no new entries'];
+    });
   },
 };
 graders['setup-production-repo-fr'] = graders['setup-production-repo'];
