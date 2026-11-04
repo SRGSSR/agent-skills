@@ -732,6 +732,33 @@ console.log('null');`,
       return [bad.length === 0, bad.join(', ') || 'none'];
     });
   },
+  'task-new'() {
+    const changed = changedFiles();
+    const added = changed.filter((f) => f.startsWith('docs/tasks/') && !atBase(f) && exists(f));
+    check('Exactly one new task file in docs/tasks/, with a title and a Why line', () => {
+      const ok = added.length === 1 && /^# \S/m.test(read(added[0])) && /^Why:/m.test(read(added[0]));
+      return [ok, added.join(', ') || 'no new task file'];
+    });
+    check('The new task file has no Assignee', () => [added.length > 0 && !added.some((f) => /^Assignee:/m.test(read(f))), added.join(', ') || 'no new task file']);
+    check('The existing task files are unchanged', () => {
+      const bad = changed.filter((f) => f.startsWith('docs/tasks/') && atBase(f));
+      return [bad.length === 0, bad.join(', ') || 'unchanged'];
+    });
+    check('No other project files changed (only the journal may get an entry)', () => {
+      const bad = changed.filter((f) => !f.startsWith('.ai/journal/') && !added.includes(f));
+      return [bad.length === 0, bad.join(', ') || 'none'];
+    });
+  },
+  'task-close-gitlab'() {
+    const changed = changedFiles();
+    const msg = finalMessage();
+    check('The final message gives the glab login command', () => [/glab auth login/.test(msg), /glab auth login/.test(msg) ? 'found' : 'missing']);
+    check('The final message gives the exact command glab issue close 7', () => [/glab issue close 7\b/.test(msg), /glab issue close 7\b/.test(msg) ? 'found' : 'missing']);
+    check('No project files changed (only the journal may get an entry)', () => {
+      const bad = changed.filter((f) => !f.startsWith('.ai/journal/'));
+      return [bad.length === 0, bad.join(', ') || 'only the journal'];
+    });
+  },
 };
 graders['setup-production-repo-fr'] = graders['setup-production-repo'];
 graders['resume-from-handoff-de'] = graders['resume-from-handoff'];

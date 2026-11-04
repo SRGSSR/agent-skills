@@ -1,6 +1,6 @@
 ---
 name: task
-description: Lists the project's open tasks from wherever the work-journal block in AGENTS.md says they live, a task folder (`docs/tasks/`), GitLab issues (`glab`), GitHub issues (`gh`) or another tracker, and points to what to pick up next. Use this skill whenever the user types `/task`, asks what to work on next, which tasks or issues are open, what is assigned to them or to someone else, or asks to see the task list or backlog.
+description: Lists, creates and closes the project's tasks wherever the work-journal block in AGENTS.md says they live, a task folder (`docs/tasks/`), GitLab issues (`glab`), GitHub issues (`gh`) or another tracker, and points to what to pick up next. Use this skill whenever the user types `/task`, `/task new` or `/task close`, asks what to work on next, which tasks or issues are open, what is assigned to them or to someone else, asks to see the task list or backlog, or asks to open, file, add, close or drop a task or issue.
 license: MIT
 metadata:
   version: "0.1.0"
@@ -8,7 +8,13 @@ metadata:
 
 # Task
 
-`/task` shows the open tasks of the project and what to pick up next. Rules for task files, issues and their lifecycle are in the [work-journal skill, Tasks](../work-journal/SKILL.md#tasks); this skill only reads them.
+Commands:
+
+- `/task`: the open tasks and what to pick up next.
+- `/task new <what>`: create a task. See [Creating](#creating-task-new).
+- `/task close <task>`: close a task by file name or issue ID. See [Closing](#closing-task-close).
+
+The same requests in words ("open an issue for ...", "close #42") work the same way. Formats and lifecycle of task files and issues are in the [work-journal skill, Tasks](../work-journal/SKILL.md#tasks); this skill runs them.
 
 Talk in the user's language.
 
@@ -29,12 +35,12 @@ Read the `Tasks:` line of the work-journal block in `AGENTS.md`:
 
 If `glab` or `gh` is missing or not logged in for the host of `origin` (`glab auth status`, `gh auth status`):
 
-1. **Say so and ask whether the user wants to log in now.** Login is interactive (browser or token prompt), so the user runs it, not you: in Claude Code with `! glab auth login --hostname <host>` (or `! gh auth login`), in other tools in a terminal. When they say it is done, check with `auth status` and list.
+1. **Say so and ask whether the user wants to log in now.** Login is interactive (browser or token prompt), so the user runs it, not you: in Claude Code with `! glab auth login --hostname <host>` (or `! gh auth login`), in other tools in a terminal. When they say it is done, check with `auth status` and go on with the command.
 2. **If they don't want to, or you cannot ask** (non-interactive run), explain how to do it later, then stop:
    - install the CLI if missing (for example `brew install glab`, `brew install gh`);
    - run `glab auth login --hostname <host>` (`--hostname` can be left out for gitlab.com) or `gh auth login`;
    - choose browser login, or paste a personal access token into the CLI prompt (GitLab: scope `api`);
-   - check with `glab auth status` / `gh auth status`, then `/task` again.
+   - check with `glab auth status` / `gh auth status`, then run the command again.
 
 Never ask for a token in the chat or write it in a file. Never invent issues and never list `docs/tasks/` instead.
 
@@ -47,6 +53,31 @@ Never ask for a token in the chat or write it in a file. Never invent issues and
 
 Listing only reads, so it needs no confirmation. Never assign or reassign a task while listing.
 
-## Other requests
+## Writes need confirmation
 
-Creating, closing, commenting on or assigning a task follows the work-journal Tasks rules: a task file only when the user asks or at the end of a branch's task; in a tracker, show the exact command and run it only after the user confirms it.
+Creating or closing an issue in a tracker writes outside the repo. Even when the user typed the command, show what will happen (the drafted issue, or the issue to close with its title) and the exact command, and run it only after the user confirms. In a non-interactive run, put both in the final message and run nothing. Task files in the repo need no confirmation: git keeps them and the user reviews the diff.
+
+If the CLI is not logged in, follow [Not logged in](#not-logged-in) first, then go on.
+
+## Creating (`/task new`)
+
+1. **Draft** from the user's words and the conversation, in the task file shape: a title, `Why:`, `Done when:`, optionally `Links:`. Don't invent a reason or a done condition: if one is missing, ask for it in the same message as the draft, or leave a `?` and say so. No assignee unless the user names one.
+2. **Check for duplicates** in the open tasks (titles only); if one looks the same, say so and ask before creating another.
+3. **Create:**
+   - Folder: write `docs/tasks/<name>.md` (the folder the block names), `<name>` being the branch that will do it without its prefix (`csv-export`). Don't create a branch for it.
+   - GitLab: `glab issue create --title "<title>" --description-file - --yes`, with the body on stdin (a heredoc), so quotes and line breaks survive. Add `--assignee <handle>` only if the user named one.
+   - GitHub: `gh issue create --title "<title>" --body-file -`, same body on stdin.
+   - Another tracker: its connector.
+4. **Report** the file name, or the issue number and URL from the command output.
+
+## Closing (`/task close`)
+
+A task normally closes with the branch that does it: the branch deletes the task file, or its merge request says `Closes #42`. `/task close` is for the rest: done elsewhere, dropped, duplicated.
+
+1. **Find it** by file name, issue ID or title. If more than one task matches, list them and ask.
+2. **Warn** if the work looks in progress (a handoff or branch names it), or if it is assigned to someone other than the user. Ask before going on.
+3. **Close:**
+   - Folder: delete the file. Say that the deletion closes the task for everyone when it reaches the shared branch.
+   - GitLab: `glab issue close <id>`. GitHub: `gh issue close <id>`, adding `--reason "not planned"` for a dropped task.
+   - Another tracker: its connector.
+4. If the user gave a reason (duplicate of #12, no longer needed), say it in the confirmation message. Commenting on issues is not part of this skill yet: suggest adding the reason in the tracker by hand.

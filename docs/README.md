@@ -24,4 +24,5 @@ The skills react to plain requests, in any language. A few that cover most needs
 | "Let's stop here, I'll continue tomorrow." | Writes the branch's handoff |
 | "Where were we?" | Reads the handoff, checks it against git, continues |
 | "What should I work on next?" or `/task` | Lists the open tasks (folder, GitLab or GitHub issues): yours, unassigned, others; suggests one |
+| `/task new <what>`, `/task close <task>` | Drafts and creates a task, or closes one; issues only after your confirmation |
 | `/project-phase off`, `/work-journal off` | Replaces the block with an off marker, keeps `.ai/` |

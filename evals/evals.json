@@ -1,6 +1,6 @@
 {
   "skill_name": "project-phase + work-journal",
-  "notes": "Each eval runs on a fixture repo built by evals/fixtures/build.sh. with_skill gets both skills plus the skill state the fixture defines (AGENTS.md blocks, .ai/); without_skill gets the same repo without them. Programmatic checks live in evals/grade.mjs; checks marked (judgment) are graded by reading the final message and diff. Fixtures with a state-in-baseline file (on/off evals) give without_skill the same AGENTS.md and .ai/ state, so only the skill differs. Evals 8-10 check that triggers work in Italian, French and German. Eval 11 checks per-branch handoffs with a colleague's open handoff in the repo. Eval 12 checks that a merge of develop into the feature branch after the handoff is noticed. Evals 4 and 10 keep the 0.2 single handoff and merge-from-develop keeps the 0.3 block on purpose, to cover the upgrades. Examples in the skill text deliberately differ from the eval scenarios, to avoid teaching to the test. Fixtures reuse other fixtures' base/ and history.txt through symlinks, so there is no copied source to keep in sync. Eval 13 checks that setup finds an existing ADR folder and roadmap instead of creating new places. Eval 14 checks the end of a branch's task with docs/tasks/: the task file is deleted, the open question becomes an unassigned task, the decision is kept. Its fixture has state-in-baseline, so the baseline reads the same 0.4 block and does the same: it measures the block, and stays as a regression test. Eval 15 checks the prototype → stabilize transition: the plan is kept as prioritized open items in .ai/debt.md, and no work starts without agreement. Eval 16 runs with `project-phase: ask` in the user's global instructions (the global_instructions field, see run-prompt.md): with no answer the agent must ask in the final message and record nothing. Eval 17 checks that a confirmation in the phase.md history stops the agent from asking again for the same signal. Eval 18 checks /task with docs/tasks/: the branch's handoff comes first, other tasks are listed with assignee and in-progress mark, nothing is written. Eval 19 checks /task with GitLab issues when glab cannot reach the host (gitlab.example.com): report it with the login command, invent nothing. Eval 20 checks that setup detects a GitLab origin and proposes its issues. Fixtures with a `remote` file get it as origin (never fetched). Runs need the task skill in the installed skills list (run-prompt.md).",
+  "notes": "Each eval runs on a fixture repo built by evals/fixtures/build.sh. with_skill gets both skills plus the skill state the fixture defines (AGENTS.md blocks, .ai/); without_skill gets the same repo without them. Programmatic checks live in evals/grade.mjs; checks marked (judgment) are graded by reading the final message and diff. Fixtures with a state-in-baseline file (on/off evals) give without_skill the same AGENTS.md and .ai/ state, so only the skill differs. Evals 8-10 check that triggers work in Italian, French and German. Eval 11 checks per-branch handoffs with a colleague's open handoff in the repo. Eval 12 checks that a merge of develop into the feature branch after the handoff is noticed. Evals 4 and 10 keep the 0.2 single handoff and merge-from-develop keeps the 0.3 block on purpose, to cover the upgrades. Examples in the skill text deliberately differ from the eval scenarios, to avoid teaching to the test. Fixtures reuse other fixtures' base/ and history.txt through symlinks, so there is no copied source to keep in sync. Eval 13 checks that setup finds an existing ADR folder and roadmap instead of creating new places. Eval 14 checks the end of a branch's task with docs/tasks/: the task file is deleted, the open question becomes an unassigned task, the decision is kept. Its fixture has state-in-baseline, so the baseline reads the same 0.4 block and does the same: it measures the block, and stays as a regression test. Eval 15 checks the prototype → stabilize transition: the plan is kept as prioritized open items in .ai/debt.md, and no work starts without agreement. Eval 16 runs with `project-phase: ask` in the user's global instructions (the global_instructions field, see run-prompt.md): with no answer the agent must ask in the final message and record nothing. Eval 17 checks that a confirmation in the phase.md history stops the agent from asking again for the same signal. Eval 18 checks /task with docs/tasks/: the branch's handoff comes first, other tasks are listed with assignee and in-progress mark, nothing is written. Eval 19 checks /task with GitLab issues when glab cannot reach the host (gitlab.example.com): report it with the login command, invent nothing. Eval 20 checks that setup detects a GitLab origin and proposes its issues. Fixtures with a `remote` file get it as origin (never fetched). Runs need the task skill in the installed skills list (run-prompt.md). Evals 21 and 22 check /task new (folder: one file, no assignee, done condition not invented) and /task close with GitLab (login first, exact close command, confirmation, nothing claimed).",
   "evals": [
     {
       "id": 1,
@@ -342,6 +342,33 @@
         "No docs/tasks/ folder was created",
         ".gitattributes has merge=union for the journal",
         "No source files were modified"
+      ]
+    },
+    {
+      "id": 21,
+      "name": "task-new",
+      "fixture": "evals/fixtures/task-done",
+      "prompt": "/task new QR code labels for each item, because the studio wants to scan cables into the inventory app",
+      "expected_output": "Writes one new task file in docs/tasks/ (named like the branch that will do it) with a title and Why taken from the request, and no Assignee. The request gives no done condition: the agent asks for it or marks it open instead of inventing one. Nothing else changes; no branch is created.",
+      "expectations": [
+        "Exactly one new task file in docs/tasks/, with a title and a Why line",
+        "The new task file has no Assignee",
+        "The existing task files are unchanged",
+        "No other project files changed (only the journal may get an entry)",
+        "The done condition is not invented: the agent asks for it or marks it open (judgment)"
+      ]
+    },
+    {
+      "id": 22,
+      "name": "task-close-gitlab",
+      "fixture": "evals/fixtures/gitlab-tasks",
+      "prompt": "/task close 7",
+      "expected_output": "Tasks are GitLab issues and glab cannot reach gitlab.example.com. The agent offers to log in (non-interactive: explains how), gives the exact close command for issue 7 to run after confirmation, does not claim the issue is closed and changes nothing in the repo.",
+      "expectations": [
+        "The final message gives the glab login command",
+        "The final message gives the exact command glab issue close 7",
+        "No project files changed (only the journal may get an entry)",
+        "The agent does not claim the issue was closed, and asks for confirmation before closing (judgment)"
       ]
     }
   ]

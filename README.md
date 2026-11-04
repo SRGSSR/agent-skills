@@ -3,7 +3,7 @@
 Two [Agent Skills](https://agentskills.io) that make AI coding agents behave the way your project needs right now, and let you stop and resume work at any moment, even with a different agent or model.
 
 - **`project-phase`**: tells the agent which lifecycle phase the project is in (prototype, production, maintenance, ...) and what that means for how it works.
-- **`work-journal`**: keeps a terse journal and a handoff document in the repo, so any agent or human can pick up where the last one stopped. It ships with **`task`** (`/task`), which lists the open tasks and what to pick up next.
+- **`work-journal`**: keeps a terse journal and a handoff document in the repo, so any agent or human can pick up where the last one stopped. It ships with **`task`**: `/task` lists the open tasks and what to pick up next, `/task new` and `/task close` create and close them.
 
 They work independently and fit together when both are installed.
 
@@ -66,7 +66,7 @@ One handoff per branch, so people on different branches never overwrite each oth
 
 ### Design decisions and tasks
 
-What outlives a branch goes where people look, not in `.ai/`: **design decisions** (an existing ADR folder, `docs/design/`, `docs/decisions.md`, or code comments and the README) and **tasks** (`docs/tasks/` with one file per open task, GitLab or GitHub issues through `glab` or `gh`, another tracker through a connector, or none). `work-journal` chooses both at setup and names them in its block; `/task` lists the open ones. Details: [Teams and long-lived projects](docs/teams.md#tasks).
+What outlives a branch goes where people look, not in `.ai/`: **design decisions** (an existing ADR folder, `docs/design/`, `docs/decisions.md`, or code comments and the README) and **tasks** (`docs/tasks/` with one file per open task, GitLab or GitHub issues through `glab` or `gh`, another tracker through a connector, or none). `work-journal` chooses both at setup and names them in its block; `/task` lists, creates and closes them. Details: [Teams and long-lived projects](docs/teams.md#tasks).
 
 ## Install
 
