@@ -674,6 +674,64 @@ console.log('null');`,
       return [heads.length > 0 && heads.every((l) => l.includes('feature/csv-export')), heads.join(' | ') || 'no new entries'];
     });
   },
+  'task-list'() {
+    const changed = changedFiles();
+    const msg = finalMessage();
+    check('No task files, handoff or project files changed (only the journal may get an entry)', () => {
+      const bad = changed.filter((f) => !f.startsWith('.ai/journal/'));
+      return [bad.length === 0, bad.join(', ') || 'only the journal'];
+    });
+    check("The final message puts the current branch's next step (the /items.csv route) before the other tasks", () => {
+      const step = msg.search(/items\.csv/);
+      const other = msg.search(/pdf|label/i);
+      return [step >= 0 && (other < 0 || step < other), `items.csv at ${step}, pdf-labels at ${other}`];
+    });
+    check('The final message lists pdf-labels with its assignee @mrossi', () => {
+      const l = msg.split('\n').find((x) => /pdf|label/i.test(x) && /mrossi/.test(x));
+      return [Boolean(l), l || 'not found on one line'];
+    });
+    check('The final message marks the CSV export task as in progress', () => {
+      const l = msg.split('\n').find((x) => /csv/i.test(x) && /progress|handoff|in corso|current branch|feature\/csv-export/i.test(x));
+      return [Boolean(l), l || 'no in-progress mark'];
+    });
+    check('Nobody was assigned or reassigned', () => [!changed.some((f) => f.startsWith('docs/tasks/')), 'docs/tasks/ unchanged']);
+  },
+  'task-list-gitlab'() {
+    const changed = changedFiles();
+    const msg = finalMessage();
+    check('The final message says the issues could not be read and gives the glab login command', () => {
+      const l = msg.split('\n').find((x) => /glab auth login/.test(x));
+      return [Boolean(l), l || 'no `glab auth login`'];
+    });
+    check('No issues were invented (no issue numbers in the final message)', () => {
+      const m = msg.match(/(^|[\s(])#\d+\b/m);
+      return [!m, m ? m[0].trim() : 'none'];
+    });
+    check('No docs/tasks/ or other task list was created', () => {
+      const bad = changed.filter((f) => /^(docs\/(tasks|todo)\/|ROADMAP\.md|TODO\.md)/.test(f));
+      return [bad.length === 0, bad.join(', ') || 'none'];
+    });
+    check('No project files changed (only the journal may get an entry)', () => {
+      const bad = changed.filter((f) => !f.startsWith('.ai/journal/'));
+      return [bad.length === 0, bad.join(', ') || 'only the journal'];
+    });
+  },
+  'setup-gitlab'() {
+    const changed = changedFiles();
+    const instr = read('AGENTS.md') + '\n' + read('CLAUDE.md');
+    const line = instr.split('\n').find((x) => /^\s*-\s*Tasks:/i.test(x)) || '';
+    check('The always-loaded instructions name GitLab issues as the task list', () => [/gitlab/i.test(line), line || 'no Tasks line']);
+    check("Writes to the tracker need the user's confirmation, as the block says", () => [/confirm/i.test(line), line || 'no Tasks line']);
+    check('No docs/tasks/ folder was created', () => {
+      const bad = changed.filter((f) => f.startsWith('docs/tasks/'));
+      return [bad.length === 0, bad.join(', ') || 'none'];
+    });
+    check('.gitattributes has merge=union for the journal', () => [/\.ai\/journal\/\*\.md\s+merge=union/.test(read('.gitattributes')), read('.gitattributes').trim() || 'missing']);
+    check('No source files were modified', () => {
+      const bad = changed.filter((f) => !isState(f) && f !== 'CLAUDE.md' && !f.startsWith('docs/'));
+      return [bad.length === 0, bad.join(', ') || 'none'];
+    });
+  },
 };
 graders['setup-production-repo-fr'] = graders['setup-production-repo'];
 graders['resume-from-handoff-de'] = graders['resume-from-handoff'];

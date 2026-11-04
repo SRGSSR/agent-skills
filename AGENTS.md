@@ -1,6 +1,6 @@
 # Project phase & work journal skills
 
-Open-source Agent Skills: `skills/project-phase/` and `skills/work-journal/`. Eval fixtures, cases and grader in `evals/`.
+Open-source Agent Skills: `skills/project-phase/`, `skills/work-journal/` and `skills/task/` (shipped in the work-journal plugin). Eval fixtures, cases and grader in `evals/`.
 Build eval fixtures outside the repo (`bash evals/fixtures/build.sh <temp dir>`): sandboxed agents cannot create nested `.git` dirs inside it.
 
 <!-- project-phase:start -->

@@ -3,7 +3,7 @@ name: work-journal
 description: Keeps a terse work journal and a handoff document per branch in the repo so work can be paused at any moment and resumed later by the same or a different AI agent, model or tool, or by a human, also when several people work on the same project. Use this skill whenever the user is stopping or pausing ("let's stop here", "I'll continue tomorrow", "pick this up later", "switching to another model"), asks for a handoff, a session summary or a devlog, wants to continue previous work ("where were we?", "resume", "continue from yesterday"), or wants to set up resumable or logged AI sessions, or wants to turn it on or off for a project (`/work-journal on`, `/work-journal off`, "stop keeping the journal here"). Also use it when starting work in a repo that has `.ai/handoff/`, `.ai/handoff.md` or `.ai/journal/`, when a branch's task is done, when the user asks what to work on next or where design decisions and tasks are kept, and before the context runs out on a long task.
 license: MIT
 metadata:
-  version: "0.4.1"
+  version: "0.5.0"
 ---
 
 # Work Journal
@@ -37,8 +37,8 @@ When the user asks to set this up, or the first time you write a journal entry i
 2. Claude Code reads `AGENTS.md` only when there is no `CLAUDE.md`. If `CLAUDE.md` exists and does not import it, add a line `@AGENTS.md` near the top.
 3. **Choose where design decisions and tasks go**, and write the two configuration lines at the top of the block accordingly:
    - Design decisions: if the repo has `docs/adr/`, `docs/decisions/` or `docs/design/`, use it. Otherwise propose `docs/design/` (or a single `docs/decisions.md` for a small project), or none.
-   - Tasks: if a tracker connector is available, propose the tracker; otherwise `docs/tasks/` (one file per open task: no notifications or boards, fine for developers who read the repo), or none. If the repo already keeps open work in a file (`ROADMAP.md`, `TODO.md`), offer to split it into `docs/tasks/` files; without a yes, name that file as the task list and keep its format. A repo that already has `docs/todo/` with one file per task keeps it: name `docs/todo/` in the block.
-   - Line variants: `Design decisions: none (code comments, commit messages, README).`, `Tasks: Jira PODCAST (create issues only with the user's confirmation).`, `Tasks: none (follow-ups go in the final message).`
+   - Tasks: if `origin` is on GitLab or GitHub (`git remote get-url origin`: `gitlab.com`, `github.com`, or a self-hosted host that `glab auth status` lists or whose name says gitlab), propose its issues; likewise another tracker if a connector for it is available. Otherwise `docs/tasks/` (one file per open task: no notifications or boards, fine for developers who read the repo), or none. If the repo already keeps open work in a file (`ROADMAP.md`, `TODO.md`), offer to split it into `docs/tasks/` files; without a yes, name that file as the task list and keep its format. A repo that already has `docs/todo/` with one file per task keeps it: name `docs/todo/` in the block.
+   - Line variants: `Design decisions: none (code comments, commit messages, README).`, `Tasks: GitLab issues of team/podcast (via glab; writes only with the user's confirmation).`, `Tasks: Jira PODCAST (writes only with the user's confirmation).`, `Tasks: none (follow-ups go in the final message).`
    - Ask the user only about what you could not detect, in one question. If setup runs without the user asking for it, don't stop the task for this: ask in the final message and leave the lines out until they answer. A block without them means none for both. Never create the folders now; the first file creates them.
 4. Add this line to `.gitattributes` (create the file if missing) unless it is already there. `merge=union` makes git keep both sides when two branches append to the same day's journal, instead of reporting a conflict; `linguist-generated` collapses journal diffs in GitHub pull requests.
    ```
@@ -163,7 +163,7 @@ Before finishing, check: could a different model, in a different tool, continue 
 When nothing is left for an agent to do on the branch (what remains, if anything, is review and merge by people), don't leave a stale handoff pretending work is in progress:
 
 1. **Keep what must last.** The journal gets buried over time and the handoff is about to go, so look at its Decisions and Dead ends: whatever will matter after this branch (a constraint, a reason, an approach that fails) goes where people will look. A short comment next to the code it concerns; the design decisions named in the block (with none: the README for decisions about the whole project or its users, the commit message otherwise); a custom rule in `.ai/phase.md` if it is a rule to always follow and project-phase is in use. "It's in the journal" doesn't count, the journal is what gets buried; nor does code that implements a decision without saying why (`batch.slice(0, 500)` doesn't tell the next person that the partner API rejects larger batches). Skip only what mattered during the task alone, and name in the journal entry what you moved or why nothing needed to.
-2. **Close the task and file what is left.** Delete the branch's task file, so the merge closes it (with a tracker, say which issue can be closed). Follow-ups and open questions from the handoff become new tasks, not lines buried in the journal. See [Tasks](#tasks).
+2. **Close the task and file what is left.** Delete the branch's task file, so the merge closes it (with a tracker, see [closing an issue](#tasks)). Follow-ups and open questions from the handoff become new tasks, not lines buried in the journal. See [Tasks](#tasks).
 3. **Delete** `.ai/handoff/<branch>.md`, and write a journal entry with what was completed, what you moved where, and the new tasks.
 
 ## Design decisions and tasks
@@ -183,6 +183,8 @@ A superseded document is deleted if it no longer holds at all (git keeps it), or
 
 Open work only: what is done disappears, git keeps it. "To decide" items are tasks too ("Decide whether archived items are exported"), done when the decision is recorded.
 
+Listing open tasks (`/task`, "what should I work on next?" with no handoff on the branch): see the [task skill](../task/SKILL.md).
+
 **`docs/tasks/`**: one file per task, named like the branch that will do it without the prefix (`csv-export.md` → `feature/csv-export`), so separate branches never touch the same file. The same rules apply to `docs/todo/` in repos that already used it.
 
 ```markdown
@@ -194,10 +196,16 @@ Links: docs/design/2026-10-02-csv-export.md
 ```
 
 - No status field: in progress means a branch or handoff exists; done means the file is gone. The branch that does the task deletes its file, so merging the branch closes the task.
-- `Assignee` is optional, a team handle (git or tracker username), never a full name or email. Never assign or reassign a task unless the user asks. When the user asks what to do next and there is no handoff, list the task folder named in the block (`ls docs/tasks`, file names only) and prefer tasks without `Assignee` or assigned to the user (`git config user.name`).
+- `Assignee` is optional, a team handle (git or tracker username), never a full name or email. Never assign or reassign a task unless the user asks.
 - Write new task files only for follow-ups and open questions at the end of a branch's task, or when the user asks.
 
-**A tracker**: propose the issues in the final message; create them only through a connector and with the user's confirmation. Name the issue ID in the handoff and the journal.
+**A tracker** (GitLab or GitHub issues, Jira, ...): reach it through its CLI (`glab` for GitLab, `gh` for GitHub) or a connector.
+
+- Reading (list, view) needs no confirmation. Every write does: create, close, comment, assign, label. Propose each one in the final message with the exact command, and run it only after the user confirms it.
+- If the CLI is missing or not logged in (`glab auth status`, `gh auth status`), say so and give the login command (`glab auth login`, `gh auth login`, with `--hostname <host>` for a self-hosted instance). Never guess issues, and don't switch to `docs/tasks/` on your own.
+- A new issue has the shape of a task file: the title, then Why, Done when and Links in the body. No assignee unless the user asks.
+- Name the issue ID in the handoff and the journal.
+- **Closing an issue:** when the branch's task is done, give in the final message the line for the merge request or pull request description, `Closes #42`: merging then closes the issue, as deleting a task file does. GitLab and GitHub honor it only for merges into the project's default branch; if the branch merges elsewhere (git flow with `main` as default, merging into `develop`), say that the issue stays open until that branch reaches the default one, or propose `glab issue close 42` / `gh issue close 42` after the merge.
 
 **None**: follow-ups and open questions go in the final message and the journal entry of the end of the task.
 

@@ -1,6 +1,6 @@
 {
   "skill_name": "project-phase + work-journal",
-  "notes": "Each eval runs on a fixture repo built by evals/fixtures/build.sh. with_skill gets both skills plus the skill state the fixture defines (AGENTS.md blocks, .ai/); without_skill gets the same repo without them. Programmatic checks live in evals/grade.mjs; checks marked (judgment) are graded by reading the final message and diff. Fixtures with a state-in-baseline file (on/off evals) give without_skill the same AGENTS.md and .ai/ state, so only the skill differs. Evals 8-10 check that triggers work in Italian, French and German. Eval 11 checks per-branch handoffs with a colleague's open handoff in the repo. Eval 12 checks that a merge of develop into the feature branch after the handoff is noticed. Evals 4 and 10 keep the 0.2 single handoff and merge-from-develop keeps the 0.3 block on purpose, to cover the upgrades. Examples in the skill text deliberately differ from the eval scenarios, to avoid teaching to the test. Fixtures reuse other fixtures' base/ and history.txt through symlinks, so there is no copied source to keep in sync. Eval 13 checks that setup finds an existing ADR folder and roadmap instead of creating new places. Eval 14 checks the end of a branch's task with docs/tasks/: the task file is deleted, the open question becomes an unassigned task, the decision is kept. Its fixture has state-in-baseline, so the baseline reads the same 0.4 block and does the same: it measures the block, and stays as a regression test. Eval 15 checks the prototype → stabilize transition: the plan is kept as prioritized open items in .ai/debt.md, and no work starts without agreement. Eval 16 runs with `project-phase: ask` in the user's global instructions (the global_instructions field, see run-prompt.md): with no answer the agent must ask in the final message and record nothing. Eval 17 checks that a confirmation in the phase.md history stops the agent from asking again for the same signal.",
+  "notes": "Each eval runs on a fixture repo built by evals/fixtures/build.sh. with_skill gets both skills plus the skill state the fixture defines (AGENTS.md blocks, .ai/); without_skill gets the same repo without them. Programmatic checks live in evals/grade.mjs; checks marked (judgment) are graded by reading the final message and diff. Fixtures with a state-in-baseline file (on/off evals) give without_skill the same AGENTS.md and .ai/ state, so only the skill differs. Evals 8-10 check that triggers work in Italian, French and German. Eval 11 checks per-branch handoffs with a colleague's open handoff in the repo. Eval 12 checks that a merge of develop into the feature branch after the handoff is noticed. Evals 4 and 10 keep the 0.2 single handoff and merge-from-develop keeps the 0.3 block on purpose, to cover the upgrades. Examples in the skill text deliberately differ from the eval scenarios, to avoid teaching to the test. Fixtures reuse other fixtures' base/ and history.txt through symlinks, so there is no copied source to keep in sync. Eval 13 checks that setup finds an existing ADR folder and roadmap instead of creating new places. Eval 14 checks the end of a branch's task with docs/tasks/: the task file is deleted, the open question becomes an unassigned task, the decision is kept. Its fixture has state-in-baseline, so the baseline reads the same 0.4 block and does the same: it measures the block, and stays as a regression test. Eval 15 checks the prototype → stabilize transition: the plan is kept as prioritized open items in .ai/debt.md, and no work starts without agreement. Eval 16 runs with `project-phase: ask` in the user's global instructions (the global_instructions field, see run-prompt.md): with no answer the agent must ask in the final message and record nothing. Eval 17 checks that a confirmation in the phase.md history stops the agent from asking again for the same signal. Eval 18 checks /task with docs/tasks/: the branch's handoff comes first, other tasks are listed with assignee and in-progress mark, nothing is written. Eval 19 checks /task with GitLab issues when glab cannot reach the host (gitlab.example.com): report it with the login command, invent nothing. Eval 20 checks that setup detects a GitLab origin and proposes its issues. Fixtures with a `remote` file get it as origin (never fetched). Runs need the task skill in the installed skills list (run-prompt.md).",
   "evals": [
     {
       "id": 1,
@@ -299,6 +299,47 @@
         "No test files, CI, Docker or lint config were created",
         "The agent did not ask again about the phase (the history confirms prototype for this reason)",
         "The phase state is unchanged (.ai/phase.md and the block)"
+      ]
+    },
+    {
+      "id": 18,
+      "name": "task-list",
+      "fixture": "evals/fixtures/task-done",
+      "prompt": "/task",
+      "expected_output": "Lists without changing anything. The current branch feature/csv-export has a handoff, so its next step (the GET /items.csv route) comes first. Then the open tasks from docs/tasks/: csv-export marked in progress, pdf-labels assigned to @mrossi. Suggests continuing the CSV export.",
+      "expectations": [
+        "No task files, handoff or project files changed (only the journal may get an entry)",
+        "The final message puts the current branch's next step (the /items.csv route) before the other tasks",
+        "The final message lists pdf-labels with its assignee @mrossi",
+        "The final message marks the CSV export task as in progress",
+        "Nobody was assigned or reassigned"
+      ]
+    },
+    {
+      "id": 19,
+      "name": "task-list-gitlab",
+      "fixture": "evals/fixtures/gitlab-tasks",
+      "prompt": "/task",
+      "expected_output": "The block names GitLab issues of studio/item-list as the task list. glab cannot reach gitlab.example.com (not logged in, or no network), so the agent says it could not read the issues, gives the login command, invents no issues, and does not fall back to docs/tasks/.",
+      "expectations": [
+        "The final message says the issues could not be read and gives the glab login command",
+        "No issues were invented (no issue numbers in the final message)",
+        "No docs/tasks/ or other task list was created",
+        "No project files changed (only the journal may get an entry)"
+      ]
+    },
+    {
+      "id": 20,
+      "name": "setup-gitlab",
+      "fixture": "evals/fixtures/gitlab-setup",
+      "prompt": "Set up the work journal for this repo, so any agent can pick up where the last one stopped.",
+      "expected_output": "origin is on gitlab.example.com, so setup proposes GitLab issues of studio/item-list as the task list (writes only with confirmation) and writes that in the block, instead of docs/tasks/. No task folder is created.",
+      "expectations": [
+        "The always-loaded instructions name GitLab issues as the task list",
+        "Writes to the tracker need the user's confirmation, as the block says",
+        "No docs/tasks/ folder was created",
+        ".gitattributes has merge=union for the journal",
+        "No source files were modified"
       ]
     }
   ]

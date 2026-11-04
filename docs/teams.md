@@ -52,13 +52,26 @@ Links: docs/design/2026-10-02-csv-export.md
 
 - **No status field.** In progress means a branch or handoff exists; done means the file is gone. The branch that does the task deletes its file, so merging the branch closes the task.
 - **`Assignee` is optional**, a team handle, never a full name or email. The agent never assigns or reassigns a task unless you ask. In a public repo the handles are public.
-- **"What should I work on next?"** With no handoff on the current branch, the agent lists the task files (names only) and prefers tasks without an assignee or assigned to you.
+- **"What should I work on next?"** or **`/task`**: the `task` skill puts the current branch's handoff first, then lists the open tasks (title and assignee, no bodies) grouped as yours, unassigned and others, marks those in progress on another branch, and suggests one.
 - **Open questions are tasks too** ("Decide whether archived items are exported"), done when the decision is recorded.
 - **New task files** are written for the follow-ups and open questions of a finished branch, or when you ask.
 
 One file per task, rather than a shared `ROADMAP.md`, is what keeps branches from editing the same lines.
 
-With a tracker, the agent proposes issues in its final message and creates them only through a connector, with your confirmation. With no task list, follow-ups go in the final message and the journal.
+### GitLab and GitHub issues
+
+If `origin` is on GitLab or GitHub, setup proposes its issues as the task list, for example:
+
+```markdown
+- Tasks: GitLab issues of team/podcast (via glab; writes only with the user's confirmation).
+```
+
+- **Access** goes through the CLI, `glab` or `gh`, so it works with any agent. Log in once: `glab auth login` (`--hostname <host>` for a self-hosted GitLab) or `gh auth login`. If the CLI is not logged in, the agent says so and stops; it never invents issues.
+- **Reading** (`/task`, viewing an issue) runs without asking. **Writing** (create, close, comment, assign, label) is proposed with the exact command and runs only after you confirm.
+- **A new issue** has the shape of a task file: title, then Why, Done when and Links. No assignee unless you ask.
+- **Closing:** when a branch's task is done, the agent gives you `Closes #42` for the merge request or pull request description, so the merge closes the issue. GitLab and GitHub honor it only for merges into the default branch: with git flow and `main` as default, an issue closed by a merge into `develop` stays open until the release, or you close it by hand.
+
+Other trackers (Jira, ...) work the same way through a connector. With no task list, follow-ups go in the final message and the journal.
 
 ## Design decisions
 

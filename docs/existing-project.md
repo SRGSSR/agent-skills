@@ -59,7 +59,7 @@ Setup looks for what the repo already uses and asks only about what it could not
 | `docs/adr/`, `docs/decisions/` or `docs/design/` | Used as it is, following its convention | |
 | `ROADMAP.md` or `TODO.md` with open work | | The agent offers to split it into `docs/tasks/` files; without a yes, that file is named as the task list and keeps its format |
 | `docs/todo/` with one file per task | | Kept and named in the block |
-| A tracker connector (for example Jira) | | Proposed as the task list; issues are created only with your confirmation |
+| `origin` on GitLab or GitHub, or a tracker connector (for example Jira) | | Its issues are proposed as the task list; writes (create, close, comment) only with your confirmation |
 | Nothing | `docs/design/`, `docs/decisions.md` or none | `docs/tasks/` or none |
 
 A tracker looks like this in the block:
