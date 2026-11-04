@@ -320,9 +320,11 @@
       "name": "task-list-gitlab",
       "fixture": "evals/fixtures/gitlab-tasks",
       "prompt": "/task",
-      "expected_output": "The block names GitLab issues of studio/item-list as the task list. glab cannot reach gitlab.example.com (not logged in, or no network), so the agent says it could not read the issues, gives the login command, invents no issues, and does not fall back to docs/tasks/.",
+      "expected_output": "The block names GitLab issues of studio/item-list as the task list. glab cannot reach gitlab.example.com (not logged in, or no network). The run is non-interactive, so the agent asks in the final message whether the user wants to log in now and explains how (the login command, browser or token in the CLI prompt, auth status), invents no issues, and does not fall back to docs/tasks/.",
       "expectations": [
         "The final message says the issues could not be read and gives the glab login command",
+        "The final message asks whether the user wants to log in now (judgment)",
+        "The final message never asks for a token in the chat (judgment)",
         "No issues were invented (no issue numbers in the final message)",
         "No docs/tasks/ or other task list was created",
         "No project files changed (only the journal may get an entry)"

@@ -25,7 +25,18 @@ Read the `Tasks:` line of the work-journal block in `AGENTS.md`:
 | Another tracker (Jira, ...) | Its connector, open items of the named project |
 | `none`, or no block | Say there is no task list; offer to choose one (work-journal setup step 3). Don't search the journal for follow-ups. |
 
-If `glab` or `gh` is missing or not logged in, say so with the login command (`glab auth login`, `gh auth login`, with `--hostname <host>` for a self-hosted instance) and stop. Never invent issues and never list `docs/tasks/` instead.
+### Not logged in
+
+If `glab` or `gh` is missing or not logged in for the host of `origin` (`glab auth status`, `gh auth status`):
+
+1. **Say so and ask whether the user wants to log in now.** Login is interactive (browser or token prompt), so the user runs it, not you: in Claude Code with `! glab auth login --hostname <host>` (or `! gh auth login`), in other tools in a terminal. When they say it is done, check with `auth status` and list.
+2. **If they don't want to, or you cannot ask** (non-interactive run), explain how to do it later, then stop:
+   - install the CLI if missing (for example `brew install glab`, `brew install gh`);
+   - run `glab auth login --hostname <host>` (`--hostname` can be left out for gitlab.com) or `gh auth login`;
+   - choose browser login, or paste a personal access token into the CLI prompt (GitLab: scope `api`);
+   - check with `glab auth status` / `gh auth status`, then `/task` again.
+
+Never ask for a token in the chat or write it in a file. Never invent issues and never list `docs/tasks/` instead.
 
 ## What to show
 

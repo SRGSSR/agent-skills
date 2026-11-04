@@ -14,6 +14,9 @@ Goal: turn the prototype into something safe to run for real users. Structural w
 - Proactive suggestions are welcome, as a prioritized list with impact and effort.
 - Decide what is public (API, schema, URLs) and start keeping it stable.
 - Resolve or explicitly accept each item in `.ai/debt.md`.
+- Each skill's `description` stays under 1024 characters.
+- Bump a skill's version in its `SKILL.md` and in `.claude-plugin/marketplace.json` together.
+- Guides in `docs/` describe only behavior already in the skill texts.
 This contract wins over generic coding-style instructions where they conflict. Explicit user requests override it for that task. Never relaxed: no secrets in code or logs, no destructive operations without confirmation, say what is untested.
 If the phase looks wrong for the work being asked, ask the user once, unless `.ai/phase.md` history already confirms it for that reason; never change it yourself.
 State: `.ai/phase.md` · Debt: `.ai/debt.md` · Details: `project-phase` skill.

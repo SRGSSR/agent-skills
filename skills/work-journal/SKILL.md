@@ -202,7 +202,7 @@ Links: docs/design/2026-10-02-csv-export.md
 **A tracker** (GitLab or GitHub issues, Jira, ...): reach it through its CLI (`glab` for GitLab, `gh` for GitHub) or a connector.
 
 - Reading (list, view) needs no confirmation. Every write does: create, close, comment, assign, label. Propose each one in the final message with the exact command, and run it only after the user confirms it.
-- If the CLI is missing or not logged in (`glab auth status`, `gh auth status`), say so and give the login command (`glab auth login`, `gh auth login`, with `--hostname <host>` for a self-hosted instance). Never guess issues, and don't switch to `docs/tasks/` on your own.
+- If the CLI is missing or not logged in (`glab auth status`, `gh auth status`), say so and offer to log in, as the [task skill](../task/SKILL.md#not-logged-in) describes. Never guess issues, and don't switch to `docs/tasks/` on your own.
 - A new issue has the shape of a task file: the title, then Why, Done when and Links in the body. No assignee unless the user asks.
 - Name the issue ID in the handoff and the journal.
 - **Closing an issue:** when the branch's task is done, give in the final message the line for the merge request or pull request description, `Closes #42`: merging then closes the issue, as deleting a task file does. GitLab and GitHub honor it only for merges into the project's default branch; if the branch merges elsewhere (git flow with `main` as default, merging into `develop`), say that the issue stays open until that branch reaches the default one, or propose `glab issue close 42` / `gh issue close 42` after the merge.
