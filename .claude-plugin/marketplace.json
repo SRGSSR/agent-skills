@@ -20,7 +20,7 @@
       "name": "work-journal",
       "source": "./",
       "description": "Keeps a terse work journal and a handoff document in the repo so any agent, model or human can pause and resume work with zero context.",
-      "version": "0.4.0",
+      "version": "0.4.1",
       "license": "MIT",
       "keywords": ["handoff", "journal", "devlog", "resume", "session", "continuity"],
       "skills": ["./skills/work-journal"]

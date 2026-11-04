@@ -525,7 +525,7 @@ console.log('null');`,
   'setup-docs'() {
     const changed = changedFiles();
     const instr = read('AGENTS.md') + '\n' + read('CLAUDE.md');
-    const todos = changed.filter((f) => f.startsWith('docs/todo/') && exists(f));
+    const todos = changed.filter((f) => f.startsWith('docs/tasks/') && exists(f));
     check('Work journal and handoff instructions were written to a file agents load automatically', () => {
       const ok = /journal/i.test(instr) && /handoff/i.test(instr);
       return [ok, ok ? 'found' : 'no journal/handoff instructions in AGENTS.md or CLAUDE.md'];
@@ -546,11 +546,11 @@ console.log('null');`,
       const bad = changed.filter((f) => f.startsWith('docs/adr/') && atBase(f));
       return [bad.length === 0, bad.join(', ') || 'unchanged'];
     });
-    check('The open work in ROADMAP.md is not ignored: the instructions name it as the task list, or its items moved to docs/todo/', () => {
-      const l = instr.split('\n').find((x) => /ROADMAP\.md|docs\/todo/.test(x));
-      return [Boolean(l), l || 'neither ROADMAP.md nor docs/todo in the instructions'];
+    check('The open work in ROADMAP.md is not ignored: the instructions name it as the task list, or its items moved to docs/tasks/', () => {
+      const l = instr.split('\n').find((x) => /ROADMAP\.md|docs\/tasks/.test(x));
+      return [Boolean(l), l || 'neither ROADMAP.md nor docs/tasks in the instructions'];
     });
-    check('If ROADMAP.md was split into docs/todo/, every open item has a task file', () => {
+    check('If ROADMAP.md was split into docs/tasks/, every open item has a task file', () => {
       if (!todos.length) return [true, 'not split'];
       const text = todos.map(read).join('\n');
       const items = { 'full-text': /full.?text/i, 'rate limiting': /rate.?limit/i, 'old-importer': /importer/i, authors: /author/i };
@@ -652,15 +652,15 @@ console.log('null');`,
       return [t.ok, t.summary];
     });
     check('No dependency was added', () => [deps(read('package.json')) === deps(atBase('package.json')), `after: ${deps(read('package.json'))}`]);
-    check('docs/todo/csv-export.md was deleted (the branch closes its task)', () => [!exists('docs/todo/csv-export.md'), exists('docs/todo/csv-export.md') ? 'still there' : 'deleted']);
-    check('The open question about archived items became a new task in docs/todo/', () => {
-      const f = changed.filter((x) => x.startsWith('docs/todo/') && !atBase(x) && /archiv/i.test(read(x)));
+    check('docs/tasks/csv-export.md was deleted (the branch closes its task)', () => [!exists('docs/tasks/csv-export.md'), exists('docs/tasks/csv-export.md') ? 'still there' : 'deleted']);
+    check('The open question about archived items became a new task in docs/tasks/', () => {
+      const f = changed.filter((x) => x.startsWith('docs/tasks/') && !atBase(x) && /archiv/i.test(read(x)));
       return [f.length > 0, f.join(', ') || 'no new task about archived items'];
     });
     check('Nobody was assigned by the agent: pdf-labels.md unchanged, new task files have no Assignee', () => {
-      const assigned = changed.filter((x) => x.startsWith('docs/todo/') && !atBase(x) && /^Assignee:/m.test(read(x)));
-      const ok = !changed.includes('docs/todo/pdf-labels.md') && assigned.length === 0;
-      return [ok, `pdf-labels changed: ${changed.includes('docs/todo/pdf-labels.md')}, assigned: ${assigned.join(', ') || 'none'}`];
+      const assigned = changed.filter((x) => x.startsWith('docs/tasks/') && !atBase(x) && /^Assignee:/m.test(read(x)));
+      const ok = !changed.includes('docs/tasks/pdf-labels.md') && assigned.length === 0;
+      return [ok, `pdf-labels changed: ${changed.includes('docs/tasks/pdf-labels.md')}, assigned: ${assigned.join(', ') || 'none'}`];
     });
     check('The handoff .ai/handoff/feature-csv-export.md was deleted', () => [!exists('.ai/handoff/feature-csv-export.md'), exists('.ai/handoff/feature-csv-export.md') ? 'still there' : 'deleted']);
     check('The reason for the semicolon and BOM (Excel with the Swiss locale) is kept in a code comment or in docs/design/', () => {

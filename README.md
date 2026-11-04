@@ -71,9 +71,9 @@ The skills themselves handle setup, phase changes with transition checklists (fo
 What outlives a branch goes where people look, not in `.ai/`. At setup `work-journal` finds or proposes a place for each, and writes the choice in its `AGENTS.md` block:
 
 - **Design decisions** (why things are the way they are, alternatives discarded): an existing ADR or decisions folder, a new `docs/design/` (one file per decision), a single `docs/decisions.md`, or none (code comments, commit messages, README).
-- **Tasks** (open work and open questions): your issue tracker (the agent proposes issues and creates them only through a connector, with your confirmation), `docs/todo/` (one Markdown file per open task, optionally with an `Assignee:` team handle), or none (follow-ups go in the agent's final message).
+- **Tasks** (open work and open questions): your issue tracker (the agent proposes issues and creates them only through a connector, with your confirmation), `docs/tasks/` (one Markdown file per open task, optionally with an `Assignee:` team handle), or none (follow-ups go in the agent's final message).
 
-With `docs/todo/`, a task file is named like the branch that will do it (`docs/todo/csv-export.md` → `feature/csv-export`), and that branch deletes it when the task is done, so merging the branch closes the task. When a branch's task is done, its follow-ups and open questions become new tasks.
+With `docs/tasks/`, a task file is named like the branch that will do it (`docs/tasks/csv-export.md` → `feature/csv-export`), and that branch deletes it when the task is done, so merging the branch closes the task. When a branch's task is done, its follow-ups and open questions become new tasks.
 
 Project state goes in these files, not in the agent tool's private memory, which other agents and people can't read.
 

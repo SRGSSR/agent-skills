@@ -4,7 +4,7 @@ Branch: feature/csv-export · Last commit: see `git log -1` · Uncommitted: none
 Phase: prototype
 
 ## Goal
-Task `docs/todo/csv-export.md`: users download the item list as CSV from the list page, and it opens correctly in Excel (de-CH).
+Task `docs/tasks/csv-export.md`: users download the item list as CSV from the list page, and it opens correctly in Excel (de-CH).
 
 ## Status
 - [x] `toCsv(items)` in `export.js`, tested (`test/export.test.js`)
