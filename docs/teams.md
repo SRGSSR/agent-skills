@@ -12,7 +12,7 @@ How the skills behave when several people and agents work on the same repo, on d
 | `.ai/journal/YYYY-MM-DD.md` | What was done, decided, abandoned | Committed (or ignored, if the team prefers); `merge=union` |
 | `.ai/handoff/<branch>.md` | State of one branch | Committed; one file per branch |
 | Design decisions (for example `docs/design/`) | Why things are the way they are | Committed, written for people |
-| Tasks (`docs/tasks/` or a tracker) | Open work and open questions | Committed, or in the tracker |
+| Tasks (`docs/backlog/` or a tracker) | Open work and open questions | Committed, or in the tracker |
 
 `.ai/` is the agents' working state; design decisions and tasks are for people. The agents' private memory is not used for project state, because other agents and people can't read it.
 
@@ -40,7 +40,7 @@ Merges are logged in the journal at the next resume, in the next commit the agen
 
 ## Tasks
 
-With `docs/tasks/`, one Markdown file per open task, named like the branch that will do it:
+With `docs/backlog/`, one Markdown file per open task, named like the branch that will do it (a repo that already has `docs/tasks/` or `docs/todo/` keeps it):
 
 ```markdown
 # CSV export from the list page
@@ -52,7 +52,7 @@ Links: docs/design/2026-10-02-csv-export.md
 
 - **No status field.** In progress means a branch or handoff exists; done means the file is gone. The branch that does the task deletes its file, so merging the branch closes the task.
 - **`Assignee` is optional**, a team handle, never a full name or email. The agent never assigns or reassigns a task unless you ask. In a public repo the handles are public.
-- **"What should I work on next?"** or **`/task`**: the `task` skill puts the current branch's handoff first, then lists the open tasks (title and assignee, no bodies) grouped as yours, unassigned and others, marks those in progress on another branch, and suggests one.
+- **"What should I work on next?"** or **`/backlog`**: the `backlog` skill puts the current branch's handoff first, then lists the open tasks (title and assignee, no bodies) grouped as yours, unassigned and others, marks those in progress on another branch, and suggests one.
 - **Open questions are tasks too** ("Decide whether archived items are exported"), done when the decision is recorded.
 - **New task files** are written for the follow-ups and open questions of a finished branch, or when you ask.
 
@@ -67,8 +67,8 @@ If `origin` is on GitLab or GitHub, setup proposes its issues as the task list, 
 ```
 
 - **Access** goes through the CLI, `glab` or `gh`, so it works with any agent. Log in once: `glab auth login` (`--hostname <host>` for a self-hosted GitLab) or `gh auth login`. If the CLI is not logged in, the agent asks whether you want to log in now (you run `! glab auth login` in Claude Code, or the command in a terminal, and it lists again); if not, it explains the steps and stops. It never asks for a token in the chat and never invents issues.
-- **Reading** (`/task`, viewing an issue) runs without asking. **Writing** (create, close, comment, assign, label) is proposed with the exact command and runs only after you confirm.
-- **`/task new <what>`** drafts the issue (title, Why, Done when, Links), asks for what it cannot infer instead of inventing it, checks for duplicates, and creates it after your yes. **`/task close <id>`** shows the issue, warns if it is in progress or assigned to someone else, and closes it after your yes. Both work with `docs/tasks/` too, where they write or delete the file without asking, since git keeps it.
+- **Reading** (`/backlog`, viewing an issue) runs without asking. **Writing** (create, close, comment, assign, label) is proposed with the exact command and runs only after you confirm.
+- **`/backlog new <what>`** drafts the issue (title, Why, Done when, Links), asks for what it cannot infer instead of inventing it, checks for duplicates, and creates it after your yes. **`/backlog close <id>`** shows the issue, warns if it is in progress or assigned to someone else, and closes it after your yes. Both work with a task folder too, where they write or delete the file without asking, since git keeps it.
 - **A new issue** has the shape of a task file: title, then Why, Done when and Links. No assignee unless you ask.
 - **Closing:** when a branch's task is done, the agent gives you `Closes #42` for the merge request or pull request description, so the merge closes the issue. GitLab and GitHub honor it only for merges into the default branch: with git flow and `main` as default, an issue closed by a merge into `develop` stays open until the release, or you close it by hand.
 

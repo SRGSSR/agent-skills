@@ -525,7 +525,7 @@ console.log('null');`,
   'setup-docs'() {
     const changed = changedFiles();
     const instr = read('AGENTS.md') + '\n' + read('CLAUDE.md');
-    const todos = changed.filter((f) => f.startsWith('docs/tasks/') && exists(f));
+    const todos = changed.filter((f) => /^docs\/(backlog|tasks)\//.test(f) && exists(f));
     check('Work journal and handoff instructions were written to a file agents load automatically', () => {
       const ok = /journal/i.test(instr) && /handoff/i.test(instr);
       return [ok, ok ? 'found' : 'no journal/handoff instructions in AGENTS.md or CLAUDE.md'];
@@ -546,11 +546,11 @@ console.log('null');`,
       const bad = changed.filter((f) => f.startsWith('docs/adr/') && atBase(f));
       return [bad.length === 0, bad.join(', ') || 'unchanged'];
     });
-    check('The open work in ROADMAP.md is not ignored: the instructions name it as the task list, or its items moved to docs/tasks/', () => {
-      const l = instr.split('\n').find((x) => /ROADMAP\.md|docs\/tasks/.test(x));
-      return [Boolean(l), l || 'neither ROADMAP.md nor docs/tasks in the instructions'];
+    check('The open work in ROADMAP.md is not ignored: the instructions name it as the task list, or its items moved to docs/backlog/', () => {
+      const l = instr.split('\n').find((x) => /ROADMAP\.md|docs\/(backlog|tasks)/.test(x));
+      return [Boolean(l), l || 'neither ROADMAP.md nor docs/backlog in the instructions'];
     });
-    check('If ROADMAP.md was split into docs/tasks/, every open item has a task file', () => {
+    check('If ROADMAP.md was split into docs/backlog/, every open item has a task file', () => {
       if (!todos.length) return [true, 'not split'];
       const text = todos.map(read).join('\n');
       const items = { 'full-text': /full.?text/i, 'rate limiting': /rate.?limit/i, 'old-importer': /importer/i, authors: /author/i };
@@ -674,7 +674,7 @@ console.log('null');`,
       return [heads.length > 0 && heads.every((l) => l.includes('feature/csv-export')), heads.join(' | ') || 'no new entries'];
     });
   },
-  'task-list'() {
+  'backlog-list'() {
     const changed = changedFiles();
     const msg = finalMessage();
     check('No task files, handoff or project files changed (only the journal may get an entry)', () => {
@@ -696,7 +696,7 @@ console.log('null');`,
     });
     check('Nobody was assigned or reassigned', () => [!changed.some((f) => f.startsWith('docs/tasks/')), 'docs/tasks/ unchanged']);
   },
-  'task-list-gitlab'() {
+  'backlog-list-gitlab'() {
     const changed = changedFiles();
     const msg = finalMessage();
     check('The final message says the issues could not be read and gives the glab login command', () => {
@@ -707,8 +707,8 @@ console.log('null');`,
       const m = msg.match(/(^|[\s(])#\d+\b/m);
       return [!m, m ? m[0].trim() : 'none'];
     });
-    check('No docs/tasks/ or other task list was created', () => {
-      const bad = changed.filter((f) => /^(docs\/(tasks|todo)\/|ROADMAP\.md|TODO\.md)/.test(f));
+    check('No task folder (docs/backlog/, docs/tasks/, docs/todo/) or other task list was created', () => {
+      const bad = changed.filter((f) => /^(docs\/(backlog|tasks|todo)\/|ROADMAP\.md|TODO\.md)/.test(f));
       return [bad.length === 0, bad.join(', ') || 'none'];
     });
     check('No project files changed (only the journal may get an entry)', () => {
@@ -722,8 +722,8 @@ console.log('null');`,
     const line = instr.split('\n').find((x) => /^\s*-\s*Tasks:/i.test(x)) || '';
     check('The always-loaded instructions name GitLab issues as the task list', () => [/gitlab/i.test(line), line || 'no Tasks line']);
     check("Writes to the tracker need the user's confirmation, as the block says", () => [/confirm/i.test(line), line || 'no Tasks line']);
-    check('No docs/tasks/ folder was created', () => {
-      const bad = changed.filter((f) => f.startsWith('docs/tasks/'));
+    check('No task folder (docs/backlog/, docs/tasks/, docs/todo/) was created', () => {
+      const bad = changed.filter((f) => /^docs\/(backlog|tasks|todo)\//.test(f));
       return [bad.length === 0, bad.join(', ') || 'none'];
     });
     check('.gitattributes has merge=union for the journal', () => [/\.ai\/journal\/\*\.md\s+merge=union/.test(read('.gitattributes')), read('.gitattributes').trim() || 'missing']);
@@ -732,7 +732,7 @@ console.log('null');`,
       return [bad.length === 0, bad.join(', ') || 'none'];
     });
   },
-  'task-new'() {
+  'backlog-new'() {
     const changed = changedFiles();
     const added = changed.filter((f) => f.startsWith('docs/tasks/') && !atBase(f) && exists(f));
     check('Exactly one new task file in docs/tasks/, with a title and a Why line', () => {
@@ -749,7 +749,7 @@ console.log('null');`,
       return [bad.length === 0, bad.join(', ') || 'none'];
     });
   },
-  'task-close-gitlab'() {
+  'backlog-close-gitlab'() {
     const changed = changedFiles();
     const msg = finalMessage();
     check('The final message gives the glab login command', () => [/glab auth login/.test(msg), /glab auth login/.test(msg) ? 'found' : 'missing']);

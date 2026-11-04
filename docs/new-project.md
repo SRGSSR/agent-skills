@@ -60,13 +60,13 @@ Current: prototype (since 2026-11-04)
 The agent adds its block to `AGENTS.md` (about 9 lines) and the line `.ai/journal/*.md merge=union linguist-generated=true` to `.gitattributes`. It asks where two things go, because a new repo has nothing to detect:
 
 - **Design decisions**, the why behind the code: `docs/design/` (one file per decision), a single `docs/decisions.md` for a small project, or none (code comments, commit messages, README).
-- **Tasks**, open work and open questions: `docs/tasks/` (one file per task), GitLab or GitHub issues (through `glab` or `gh`) or another tracker with a connector, or none (follow-ups go in the agent's final message).
+- **Tasks**, open work and open questions: `docs/backlog/` (one file per task), GitLab or GitHub issues (through `glab` or `gh`) or another tracker with a connector, or none (follow-ups go in the agent's final message).
 
 The answer becomes the first two lines of the block, for example:
 
 ```markdown
 - Design decisions: `docs/design/`.
-- Tasks: `docs/tasks/`, one file per open task.
+- Tasks: `docs/backlog/`, one file per open task.
 ```
 
 The folders are created by the first file, not at setup. For a quick prototype, `none` for both is a fine start: you can change the two lines later.

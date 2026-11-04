@@ -22,8 +22,8 @@
       "description": "Keeps a terse work journal and a handoff document in the repo so any agent, model or human can pause and resume work with zero context.",
       "version": "0.5.0",
       "license": "MIT",
-      "keywords": ["handoff", "journal", "devlog", "resume", "session", "continuity", "tasks", "issues", "gitlab", "github"],
-      "skills": ["./skills/work-journal", "./skills/task"]
+      "keywords": ["handoff", "journal", "devlog", "resume", "session", "continuity", "tasks", "backlog", "issues", "gitlab", "github"],
+      "skills": ["./skills/work-journal", "./skills/backlog"]
     }
   ]
 }

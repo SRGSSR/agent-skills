@@ -1,6 +1,6 @@
 {
   "skill_name": "project-phase + work-journal",
-  "notes": "Each eval runs on a fixture repo built by evals/fixtures/build.sh. with_skill gets both skills plus the skill state the fixture defines (AGENTS.md blocks, .ai/); without_skill gets the same repo without them. Programmatic checks live in evals/grade.mjs; checks marked (judgment) are graded by reading the final message and diff. Fixtures with a state-in-baseline file (on/off evals) give without_skill the same AGENTS.md and .ai/ state, so only the skill differs. Evals 8-10 check that triggers work in Italian, French and German. Eval 11 checks per-branch handoffs with a colleague's open handoff in the repo. Eval 12 checks that a merge of develop into the feature branch after the handoff is noticed. Evals 4 and 10 keep the 0.2 single handoff and merge-from-develop keeps the 0.3 block on purpose, to cover the upgrades. Examples in the skill text deliberately differ from the eval scenarios, to avoid teaching to the test. Fixtures reuse other fixtures' base/ and history.txt through symlinks, so there is no copied source to keep in sync. Eval 13 checks that setup finds an existing ADR folder and roadmap instead of creating new places. Eval 14 checks the end of a branch's task with docs/tasks/: the task file is deleted, the open question becomes an unassigned task, the decision is kept. Its fixture has state-in-baseline, so the baseline reads the same 0.4 block and does the same: it measures the block, and stays as a regression test. Eval 15 checks the prototype → stabilize transition: the plan is kept as prioritized open items in .ai/debt.md, and no work starts without agreement. Eval 16 runs with `project-phase: ask` in the user's global instructions (the global_instructions field, see run-prompt.md): with no answer the agent must ask in the final message and record nothing. Eval 17 checks that a confirmation in the phase.md history stops the agent from asking again for the same signal. Eval 18 checks /task with docs/tasks/: the branch's handoff comes first, other tasks are listed with assignee and in-progress mark, nothing is written. Eval 19 checks /task with GitLab issues when glab cannot reach the host (gitlab.example.com): report it with the login command, invent nothing. Eval 20 checks that setup detects a GitLab origin and proposes its issues. Fixtures with a `remote` file get it as origin (never fetched). Runs need the task skill in the installed skills list (run-prompt.md). Evals 21 and 22 check /task new (folder: one file, no assignee, done condition not invented) and /task close with GitLab (login first, exact close command, confirmation, nothing claimed).",
+  "notes": "Each eval runs on a fixture repo built by evals/fixtures/build.sh. with_skill gets both skills plus the skill state the fixture defines (AGENTS.md blocks, .ai/); without_skill gets the same repo without them. Programmatic checks live in evals/grade.mjs; checks marked (judgment) are graded by reading the final message and diff. Fixtures with a state-in-baseline file (on/off evals) give without_skill the same AGENTS.md and .ai/ state, so only the skill differs. Evals 8-10 check that triggers work in Italian, French and German. Eval 11 checks per-branch handoffs with a colleague's open handoff in the repo. Eval 12 checks that a merge of develop into the feature branch after the handoff is noticed. Evals 4 and 10 keep the 0.2 single handoff and merge-from-develop keeps the 0.3 block on purpose, to cover the upgrades. Examples in the skill text deliberately differ from the eval scenarios, to avoid teaching to the test. Fixtures reuse other fixtures' base/ and history.txt through symlinks, so there is no copied source to keep in sync. Eval 13 checks that setup finds an existing ADR folder and roadmap instead of creating new places (a split goes to docs/backlog/). Eval 14 checks the end of a branch's task with docs/tasks/: the task file is deleted, the open question becomes an unassigned task, the decision is kept. Its fixture has state-in-baseline, so the baseline reads the same 0.4 block and does the same: it measures the block, and stays as a regression test. Eval 15 checks the prototype → stabilize transition: the plan is kept as prioritized open items in .ai/debt.md, and no work starts without agreement. Eval 16 runs with `project-phase: ask` in the user's global instructions (the global_instructions field, see run-prompt.md): with no answer the agent must ask in the final message and record nothing. Eval 17 checks that a confirmation in the phase.md history stops the agent from asking again for the same signal. Eval 18 checks /backlog with docs/tasks/ (an existing folder kept in the block): the branch's handoff comes first, other tasks are listed with assignee and in-progress mark, nothing is written. Eval 19 checks /backlog with GitLab issues when glab cannot reach the host (gitlab.example.com): report it with the login command, invent nothing. Eval 20 checks that setup detects a GitLab origin and proposes its issues. Fixtures with a `remote` file get it as origin (never fetched). Runs need the backlog skill in the installed skills list (run-prompt.md). Evals 21 and 22 check /backlog new (folder: one file, no assignee, done condition not invented) and /backlog close with GitLab (login first, exact close command, confirmation, nothing claimed).",
   "evals": [
     {
       "id": 1,
@@ -222,15 +222,15 @@
       "name": "setup-docs",
       "fixture": "evals/fixtures/setup-docs",
       "prompt": "Set up the work journal for this repo, so any agent can pick up where the last one stopped.",
-      "expected_output": "Writes the work-journal block, imports it from CLAUDE.md, adds the union line to .gitattributes. Finds docs/adr/ and records it as the place for design decisions without creating docs/design/. Finds ROADMAP.md and either names it as the task list or, if it offers the split as its recommendation, moves every open item to docs/tasks/. Touches no source files.",
+      "expected_output": "Writes the work-journal block, imports it from CLAUDE.md, adds the union line to .gitattributes. Finds docs/adr/ and records it as the place for design decisions without creating docs/design/. Finds ROADMAP.md and either names it as the task list or, if it offers the split as its recommendation, moves every open item to docs/backlog/. Touches no source files.",
       "expectations": [
         "Work journal and handoff instructions were written to a file agents load automatically",
         "Claude Code will see them: CLAUDE.md contains them or imports @AGENTS.md",
         "The always-loaded instructions name docs/adr/ as the place for design decisions",
         "No new place for design decisions was created (docs/design/, docs/decisions*)",
         "The existing ADRs are unchanged",
-        "The open work in ROADMAP.md is not ignored: the instructions name it as the task list, or its items moved to docs/tasks/",
-        "If ROADMAP.md was split into docs/tasks/, every open item has a task file",
+        "The open work in ROADMAP.md is not ignored: the instructions name it as the task list, or its items moved to docs/backlog/",
+        "If ROADMAP.md was split into docs/backlog/, every open item has a task file",
         ".gitattributes has merge=union for the journal",
         "No source, test, migration or legacy files were modified",
         "The always-loaded instructions are concise (at most 25 lines added across AGENTS.md and CLAUDE.md)"
@@ -303,10 +303,10 @@
     },
     {
       "id": 18,
-      "name": "task-list",
+      "name": "backlog-list",
       "fixture": "evals/fixtures/task-done",
-      "prompt": "/task",
-      "expected_output": "Lists without changing anything. The current branch feature/csv-export has a handoff, so its next step (the GET /items.csv route) comes first. Then the open tasks from docs/tasks/: csv-export marked in progress, pdf-labels assigned to @mrossi. Suggests continuing the CSV export.",
+      "prompt": "/backlog",
+      "expected_output": "Lists without changing anything. The current branch feature/csv-export has a handoff, so its next step (the GET /items.csv route) comes first. Then the open tasks from docs/tasks/ (the folder the block names, kept from before backlog): csv-export marked in progress, pdf-labels assigned to @mrossi. Suggests continuing the CSV export.",
       "expectations": [
         "No task files, handoff or project files changed (only the journal may get an entry)",
         "The final message puts the current branch's next step (the /items.csv route) before the other tasks",
@@ -317,16 +317,16 @@
     },
     {
       "id": 19,
-      "name": "task-list-gitlab",
+      "name": "backlog-list-gitlab",
       "fixture": "evals/fixtures/gitlab-tasks",
-      "prompt": "/task",
-      "expected_output": "The block names GitLab issues of studio/item-list as the task list. glab cannot reach gitlab.example.com (not logged in, or no network). The run is non-interactive, so the agent asks in the final message whether the user wants to log in now and explains how (the login command, browser or token in the CLI prompt, auth status), invents no issues, and does not fall back to docs/tasks/.",
+      "prompt": "/backlog",
+      "expected_output": "The block names GitLab issues of studio/item-list as the task list. glab cannot reach gitlab.example.com (not logged in, or no network). The run is non-interactive, so the agent asks in the final message whether the user wants to log in now and explains how (the login command, browser or token in the CLI prompt, auth status), invents no issues, and does not fall back to a task folder.",
       "expectations": [
         "The final message says the issues could not be read and gives the glab login command",
         "The final message asks whether the user wants to log in now (judgment)",
         "The final message never asks for a token in the chat (judgment)",
         "No issues were invented (no issue numbers in the final message)",
-        "No docs/tasks/ or other task list was created",
+        "No task folder (docs/backlog/, docs/tasks/, docs/todo/) or other task list was created",
         "No project files changed (only the journal may get an entry)"
       ]
     },
@@ -335,21 +335,21 @@
       "name": "setup-gitlab",
       "fixture": "evals/fixtures/gitlab-setup",
       "prompt": "Set up the work journal for this repo, so any agent can pick up where the last one stopped.",
-      "expected_output": "origin is on gitlab.example.com, so setup proposes GitLab issues of studio/item-list as the task list (writes only with confirmation) and writes that in the block, instead of docs/tasks/. No task folder is created.",
+      "expected_output": "origin is on gitlab.example.com, so setup proposes GitLab issues of studio/item-list as the task list (writes only with confirmation) and writes that in the block, instead of a task folder. No task folder is created.",
       "expectations": [
         "The always-loaded instructions name GitLab issues as the task list",
         "Writes to the tracker need the user's confirmation, as the block says",
-        "No docs/tasks/ folder was created",
+        "No task folder (docs/backlog/, docs/tasks/, docs/todo/) was created",
         ".gitattributes has merge=union for the journal",
         "No source files were modified"
       ]
     },
     {
       "id": 21,
-      "name": "task-new",
+      "name": "backlog-new",
       "fixture": "evals/fixtures/task-done",
-      "prompt": "/task new QR code labels for each item, because the studio wants to scan cables into the inventory app",
-      "expected_output": "Writes one new task file in docs/tasks/ (named like the branch that will do it) with a title and Why taken from the request, and no Assignee. The request gives no done condition: the agent asks for it or marks it open instead of inventing one. Nothing else changes; no branch is created.",
+      "prompt": "/backlog new QR code labels for each item, because the studio wants to scan cables into the inventory app",
+      "expected_output": "Writes one new task file in docs/tasks/ (the folder the block names) (named like the branch that will do it) with a title and Why taken from the request, and no Assignee. The request gives no done condition: the agent asks for it or marks it open instead of inventing one. Nothing else changes; no branch is created.",
       "expectations": [
         "Exactly one new task file in docs/tasks/, with a title and a Why line",
         "The new task file has no Assignee",
@@ -360,9 +360,9 @@
     },
     {
       "id": 22,
-      "name": "task-close-gitlab",
+      "name": "backlog-close-gitlab",
       "fixture": "evals/fixtures/gitlab-tasks",
-      "prompt": "/task close 7",
+      "prompt": "/backlog close 7",
       "expected_output": "Tasks are GitLab issues and glab cannot reach gitlab.example.com. The agent offers to log in (non-interactive: explains how), gives the exact close command for issue 7 to run after confirmation, does not claim the issue is closed and changes nothing in the repo.",
       "expectations": [
         "The final message gives the glab login command",
