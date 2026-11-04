@@ -794,6 +794,22 @@ console.log('null');`,
       return [bad.length === 0, bad.join(', ') || 'only the journal'];
     });
   },
+  'setup-review-jira'() {
+    const changed = changedFiles();
+    const lines = read('AGENTS.md').split('\n');
+    const tasks = lines.find((x) => /^\s*-\s*Tasks:/i.test(x)) || '';
+    const dd = lines.find((x) => /^\s*-\s*Design decisions:/i.test(x)) || '';
+    check('The Tasks line now names Jira project ITEMS', () => [/jira/i.test(tasks) && /\bITEMS\b/.test(tasks), tasks || 'no Tasks line']);
+    check('The Design decisions line is unchanged (docs/design/)', () => [/docs\/design\//.test(dd), dd || 'no Design decisions line']);
+    check('The existing journal entry is kept', () => {
+      const j = '.ai/journal/2026-09-29.md';
+      return [read(j).startsWith(atBase(j).trimEnd()), read(j).startsWith(atBase(j).trimEnd()) ? 'kept' : 'changed'];
+    });
+    check('No other project files changed (AGENTS.md, the journal, a missing .gitattributes line)', () => {
+      const bad = changed.filter((f) => f !== 'AGENTS.md' && f !== '.gitattributes' && !f.startsWith('.ai/journal/'));
+      return [bad.length === 0, bad.join(', ') || 'none'];
+    });
+  },
   'backlog-new'() {
     const changed = changedFiles();
     const added = changed.filter((f) => f.startsWith('docs/tasks/') && !atBase(f) && exists(f));

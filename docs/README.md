@@ -15,8 +15,8 @@ The skills react to plain requests, in any language. A few that cover most needs
 
 | You say | The agent |
 |---|---|
-| "Set up the project phase for this repo." | Proposes a phase and a set from repo signals, asks you to confirm, writes the block and `.ai/phase.md` |
-| "Set up the work journal." | Adds the journal block, asks where design decisions and tasks go |
+| "Set up the project phase for this repo." or `/project-phase setup` | Proposes a phase and a set from repo signals, asks you to confirm, writes the block and `.ai/phase.md` |
+| "Set up the work journal." or `/work-journal setup` | Adds the journal block, asks where design decisions and tasks go |
 | "We're just prototyping, stop over-engineering." | Checks the phase; proposes prototype if it isn't |
 | "What phase are we in, and what's in the debt list?" or `/project-phase` | Phase and since when, what it means in practice, overrides, open debt |
 | "We're launching next month. Move us to stabilize." | Runs the transition checklist, proposes a prioritized plan, records it in `.ai/debt.md` |
@@ -27,4 +27,5 @@ The skills react to plain requests, in any language. A few that cover most needs
 | `/backlog new <what>`, `/backlog comment <task> <text>`, `/backlog close <task>` | Creates, comments on or closes a task; issues only after your confirmation |
 | `/backlog filter <condition>`, `/backlog help` | Lists only the tasks that match (parent, epic, label, sprint, JQL...); shows the commands |
 | `/project-phase off`, `/work-journal off` | Replaces the block with an off marker, keeps `.ai/` |
+| `/project-phase setup`, `/work-journal setup` on a project already set up | Shows the current choices, proposes only what the repo signals suggest changing (phase, set, task place, filter), changes what you confirm |
 | `/project-phase help`, `/work-journal help` | The skill's commands and its current settings; in Claude Code, typing the command also shows the subcommands |

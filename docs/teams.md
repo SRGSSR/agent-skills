@@ -88,7 +88,7 @@ Typical split: code on GitHub, tasks in Jira Cloud. Setup proposes Jira when bra
 ### Filters
 
 - **`/backlog filter <condition>`** lists only the open tasks that match, for that listing: `/backlog filter parent PODCAST-10`, `/backlog filter label backend`, `/backlog filter jql: sprint in openSprints()`. The agent turns the condition into the tracker's own filter (JQL in Jira, `glab` and `gh` flags, `grep` in a task folder) and says when the tracker cannot express it, instead of guessing.
-- **A fixed filter** in the block, for a repo that works on part of a shared tracker, applies to every listing, and new tasks get the same parent or label. Ask for it at setup or later:
+- **A fixed filter** in the block, for a repo that works on part of a shared tracker, applies to every listing, and new tasks get the same parent or label. Ask for it at setup, or later with `/work-journal setup`:
 
 ```markdown
 - Tasks: Jira PODCAST, parent = PODCAST-10 (via acli; writes only with the user's confirmation).

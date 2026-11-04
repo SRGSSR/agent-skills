@@ -2,9 +2,9 @@
 name: work-journal
 description: Keeps a terse work journal and a handoff document per branch in the repo so work can be paused at any moment and resumed later by the same or a different AI agent, model or tool, or by a human, also when several people work on the same project. Use this skill whenever the user is stopping or pausing ("let's stop here", "I'll continue tomorrow", "pick this up later", "switching to another model"), asks for a handoff, a session summary or a devlog, wants to continue previous work ("where were we?", "resume", "continue from yesterday"), or wants to set up resumable or logged AI sessions, or wants to turn it on or off for a project (`/work-journal on`, `off`, "stop keeping the journal here") or types `/work-journal help`. Also use it when starting work in a repo that has `.ai/handoff/`, `.ai/handoff.md` or `.ai/journal/`, when a branch's task is done, when the user asks what to work on next or where design decisions and tasks are kept, and before the context runs out on a long task.
 license: MIT
-argument-hint: "[on | off | help]"
+argument-hint: "[setup | on | off | help]"
 metadata:
-  version: "0.8.0"
+  version: "0.9.0"
 ---
 
 # Work Journal
@@ -31,16 +31,17 @@ Two more places hold what outlives a branch, both chosen per project at setup an
 Commands:
 
 - `/work-journal`: where things stand, as in [Resuming](#resuming).
+- `/work-journal setup`: set it up, or review where design decisions and tasks go in a project already set up. See [Setup](#setup).
 - `/work-journal on`, `/work-journal off`: turn it on or off for this project. See [On / off](#on--off).
 - `/work-journal help`: this list, with where design decisions and tasks go (or off, or not set up) from the block in `AGENTS.md`, and the `/backlog` commands. Read only the block; run nothing else.
 
-Everything else works in words: set up, "let's stop here", "where were we?", "write a handoff".
+Everything else works in words: "let's stop here", "where were we?", "write a handoff".
 
 Talk in the user's language: this skill is written in English, but reports, questions and the final message go in the language the user writes in. Files (the `AGENTS.md` block, journal, handoff) keep the language they already use; new ones are in English.
 
 ## Setup
 
-When the user asks to set this up, or the first time you write a journal entry in a repo without it (unless it is off, see [On / off](#on--off)):
+When the user asks to set this up (`/work-journal setup`), or the first time you write a journal entry in a repo without it (unless it is off, see [On / off](#on--off); an explicit setup replaces the off marker with the block):
 
 1. Add the block below to `AGENTS.md` (create the file if missing; leave existing content untouched). Agent tools load it on every task, which is what makes the protocol work even when this skill is not loaded.
 2. Claude Code reads `AGENTS.md` only when there is no `CLAUDE.md`. If `CLAUDE.md` exists and does not import it, add a line `@AGENTS.md` near the top.
@@ -55,6 +56,8 @@ When the user asks to set this up, or the first time you write a journal entry i
    ```
 5. Don't create `.ai/` files yet; they are created on first write.
 6. Tell the user, in one line, that `.ai/` is meant to be committed so the handoff travels across machines and people. If they prefer to keep the journal private, add `.ai/journal/` to `.gitignore` and keep `.ai/handoff/` committed (or ignore all of `.ai/`).
+
+**Review (`/work-journal setup` with the block already there).** Show the two configuration lines, run step 3's detection again, and propose only what it suggests changing: issues or Jira keys that appeared since, a task folder that grew into a tracker, a fixed filter if the user asks. Change only the lines the user confirms, update the rest of the block to the current template if it is older, keeping those two lines, and add what steps 2 and 4 find missing (`@AGENTS.md`, the `.gitattributes` line). Never touch the journal, handoffs, task files or design decisions: moving existing tasks to a tracker is a separate step, each issue created with the user's confirmation as in the [backlog skill](../backlog/SKILL.md#creating-backlog-new). If nothing needs to change, say so in one line.
 
 ```markdown
 <!-- work-journal:start -->
