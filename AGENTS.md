@@ -1,7 +1,26 @@
 # Project phase & work journal skills
 
-Open-source Agent Skills: `skills/project-phase/` and `skills/work-journal/`. Eval fixtures, cases and grader in `evals/`.
+Open-source Agent Skills: `skills/project-phase/`, `skills/work-journal/` and `skills/backlog/` (shipped in the work-journal plugin). Eval fixtures, cases and grader in `evals/`.
 Build eval fixtures outside the repo (`bash evals/fixtures/build.sh <temp dir>`): sandboxed agents cannot create nested `.git` dirs inside it.
+
+<!-- project-phase:start -->
+## Project phase: STABILIZE (since 2026-11-04)
+Goal: turn the prototype into something safe to run for real users. Structural work is expected now.
+- Work from the plan in `.ai/debt.md` (audit gaps are open items there, prioritized with the user), in small verifiable steps.
+- Before refactoring a flow, pin its current behavior with tests. Cover the core user flows.
+- Add structure where it pays off: module boundaries, config out of code, real duplication removed. No rewrite to an ideal architecture.
+- Robust error handling at boundaries: input validation, external calls, persistence, auth.
+- Set up the basics if missing: CI with tests, lint/format, env config, logging, migrations, pinned dependencies.
+- Proactive suggestions are welcome, as a prioritized list with impact and effort.
+- Decide what is public (API, schema, URLs) and start keeping it stable.
+- Resolve or explicitly accept each item in `.ai/debt.md`.
+- Each skill's `description` stays under 1024 characters.
+- Bump a skill's version in its `SKILL.md` and in `.claude-plugin/marketplace.json` together.
+- Guides in `docs/` describe only behavior already in the skill texts.
+This contract wins over generic coding-style instructions where they conflict. Explicit user requests override it for that task. Never relaxed: no secrets in code or logs, no destructive operations without confirmation, say what is untested.
+If the phase looks wrong for the work being asked, ask the user once, unless `.ai/phase.md` history already confirms it for that reason; never change it yourself.
+State: `.ai/phase.md` · Debt: `.ai/debt.md` · Details: `project-phase` skill.
+<!-- project-phase:end -->
 
 <!-- work-journal:start -->
 ## Work journal and handoff

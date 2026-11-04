@@ -3,7 +3,7 @@
 Two [Agent Skills](https://agentskills.io) that make AI coding agents behave the way your project needs right now, and let you stop and resume work at any moment, even with a different agent or model.
 
 - **`project-phase`**: tells the agent which lifecycle phase the project is in (prototype, production, maintenance, ...) and what that means for how it works.
-- **`work-journal`**: keeps a terse journal and a handoff document in the repo, so any agent or human can pick up where the last one stopped.
+- **`work-journal`**: keeps a terse journal and a handoff document in the repo, so any agent or human can pick up where the last one stopped. It ships with **`backlog`**: `/backlog` lists the open tasks and what to pick up next, `/backlog new`, `/backlog comment` and `/backlog close` create, comment on and close them.
 
 They work independently and fit together when both are installed.
 
@@ -66,7 +66,7 @@ One handoff per branch, so people on different branches never overwrite each oth
 
 ### Design decisions and tasks
 
-What outlives a branch goes where people look, not in `.ai/`: **design decisions** (an existing ADR folder, `docs/design/`, `docs/decisions.md`, or code comments and the README) and **tasks** (`docs/tasks/` with one file per open task, your issue tracker, or none). `work-journal` chooses both at setup and names them in its block. Details: [Teams and long-lived projects](docs/teams.md#tasks).
+What outlives a branch goes where people look, not in `.ai/`: **design decisions** (an existing ADR folder, `docs/design/`, `docs/decisions.md`, or code comments and the README) and **tasks** (`docs/backlog/` with one file per open task, GitLab or GitHub issues through `glab` or `gh`, another tracker through a connector, or none). `work-journal` chooses both at setup and names them in its block; `/backlog` lists, creates, comments on and closes them. Details: [Teams and long-lived projects](docs/teams.md#tasks).
 
 ## Install
 
@@ -92,7 +92,7 @@ With [`skills`](https://github.com/vercel-labs/skills):
 npx skills add SRGSSR/srgssr-project-status-skill
 ```
 
-Or copy `skills/project-phase/` and `skills/work-journal/` into your tool's skills folder (`.agents/skills/` is read by most tools; Claude Code uses `.claude/skills/`).
+Or copy `skills/project-phase/`, `skills/work-journal/` and `skills/backlog/` into your tool's skills folder (`.agents/skills/` is read by most tools; Claude Code uses `.claude/skills/`).
 
 ### Tool notes
 

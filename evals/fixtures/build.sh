@@ -16,6 +16,7 @@
 #   @merge <name> <ISO_DATE>  merge <name> into the current branch (no fast-forward)
 #   @state <ISO_DATE> commit skill-state/ here instead of at the end (if this variant gets it)
 # Files not claimed by any entry are added by the first commit.
+# An optional `remote` file holds the URL set as `origin` (never fetched).
 set -euo pipefail
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
@@ -38,6 +39,7 @@ build_variant() {
   (
     cd "$dest"
     g init -q --template=
+    [ -f "$src/remote" ] && g remote add origin "$(cat "$src/remote")"
     local claimed
     claimed="$(grep -v '^@' "$src/history.txt" | cut -d'|' -f3 | tr ',' '\n' | sed '/^$/d' || true)"
     local first=1 last_date="" state_done=0
