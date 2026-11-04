@@ -23,6 +23,6 @@ The skills react to plain requests, in any language. A few that cover most needs
 | "Review the tech debt." | Proposes what to fix, accept or drop for the current phase |
 | "Let's stop here, I'll continue tomorrow." | Writes the branch's handoff |
 | "Where were we?" | Reads the handoff, checks it against git, continues |
-| "What should I work on next?" or `/backlog` | Lists the open tasks (folder, GitLab or GitHub issues): yours, unassigned, others; suggests one |
+| "What should I work on next?" or `/backlog` | Lists the open tasks (folder, GitLab or GitHub issues, Jira): yours, unassigned, others; suggests one |
 | `/backlog new <what>`, `/backlog comment <task> <text>`, `/backlog close <task>` | Creates, comments on or closes a task; issues only after your confirmation |
 | `/project-phase off`, `/work-journal off` | Replaces the block with an off marker, keeps `.ai/` |

@@ -1,0 +1,7 @@
+2026-09-22T09:12:00|Initial commit: item list prototype|
+@branch feature/ITEMS-3-create-form
+2026-09-23T15:40:00|ITEMS-3 Add form to create items|
+@checkout main
+@merge feature/ITEMS-3-create-form 2026-09-23T16:02:00
+2026-09-25T11:05:00|ITEMS-5 Show tags in list|
+2026-09-29T17:30:00|ITEMS-8 Seed a few demo items for Friday's demo|

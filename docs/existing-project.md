@@ -59,13 +59,13 @@ Setup looks for what the repo already uses and asks only about what it could not
 | `docs/adr/`, `docs/decisions/` or `docs/design/` | Used as it is, following its convention | |
 | `ROADMAP.md` or `TODO.md` with open work | | The agent offers to split it into `docs/backlog/` files; without a yes, that file is named as the task list and keeps its format |
 | `docs/tasks/` or `docs/todo/` with one file per task | | Kept and named in the block |
-| `origin` on GitLab or GitHub, or a tracker connector (for example Jira) | | Its issues are proposed as the task list; writes (create, close, comment) only with your confirmation |
+| `origin` on GitLab or GitHub, Jira keys in branch names or commit subjects, or a tracker connector | | Its issues are proposed as the task list; writes (create, close, comment) only with your confirmation |
 | Nothing | `docs/design/`, `docs/decisions.md` or none | `docs/backlog/` or none |
 
 A tracker looks like this in the block:
 
 ```markdown
-- Tasks: Jira PODCAST (create issues only with the user's confirmation).
+- Tasks: Jira PODCAST on example.atlassian.net (via acli; writes only with the user's confirmation).
 ```
 
 ## 3. Working in production or maintenance

@@ -732,6 +732,33 @@ console.log('null');`,
       return [bad.length === 0, bad.join(', ') || 'none'];
     });
   },
+  'setup-jira'() {
+    const changed = changedFiles();
+    const instr = read('AGENTS.md') + '\n' + read('CLAUDE.md');
+    const line = instr.split('\n').find((x) => /^\s*-\s*Tasks:/i.test(x)) || '';
+    check('The always-loaded instructions name Jira project ITEMS as the task list', () => [/jira/i.test(line) && /\bITEMS\b/.test(line), line || 'no Tasks line']);
+    check("Writes to the tracker need the user's confirmation, as the block says", () => [/confirm/i.test(line), line || 'no Tasks line']);
+    check('No task folder (docs/backlog/, docs/tasks/, docs/todo/) was created', () => {
+      const bad = changed.filter((f) => /^docs\/(backlog|tasks|todo)\//.test(f));
+      return [bad.length === 0, bad.join(', ') || 'none'];
+    });
+    check('.gitattributes has merge=union for the journal', () => [/\.ai\/journal\/\*\.md\s+merge=union/.test(read('.gitattributes')), read('.gitattributes').trim() || 'missing']);
+    check('No source files were modified', () => {
+      const bad = changed.filter((f) => !isState(f) && f !== 'CLAUDE.md' && !f.startsWith('docs/'));
+      return [bad.length === 0, bad.join(', ') || 'none'];
+    });
+  },
+  'backlog-close-jira'() {
+    const changed = changedFiles();
+    const msg = finalMessage();
+    check('The final message gives the acli login command', () => [/acli jira auth login/.test(msg), /acli jira auth login/.test(msg) ? 'found' : 'missing']);
+    const t = /acli jira workitem transition[^\n]*ITEMS-14/;
+    check('The final message gives an acli transition command for ITEMS-14', () => [t.test(msg), t.test(msg) ? 'found' : 'missing']);
+    check('No project files changed (only the journal may get an entry)', () => {
+      const bad = changed.filter((f) => !f.startsWith('.ai/journal/'));
+      return [bad.length === 0, bad.join(', ') || 'only the journal'];
+    });
+  },
   'backlog-new'() {
     const changed = changedFiles();
     const added = changed.filter((f) => f.startsWith('docs/tasks/') && !atBase(f) && exists(f));

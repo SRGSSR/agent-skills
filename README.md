@@ -66,7 +66,7 @@ One handoff per branch, so people on different branches never overwrite each oth
 
 ### Design decisions and tasks
 
-What outlives a branch goes where people look, not in `.ai/`: **design decisions** (an existing ADR folder, `docs/design/`, `docs/decisions.md`, or code comments and the README) and **tasks** (`docs/backlog/` with one file per open task, GitLab or GitHub issues through `glab` or `gh`, another tracker through a connector, or none). `work-journal` chooses both at setup and names them in its block; `/backlog` lists, creates, comments on and closes them. Details: [Teams and long-lived projects](docs/teams.md#tasks).
+What outlives a branch goes where people look, not in `.ai/`: **design decisions** (an existing ADR folder, `docs/design/`, `docs/decisions.md`, or code comments and the README) and **tasks** (`docs/backlog/` with one file per open task, GitLab or GitHub issues through `glab` or `gh`, Jira through `acli` or the Atlassian connector, another tracker through a connector, or none). `work-journal` chooses both at setup and names them in its block; `/backlog` lists, creates, comments on and closes them. Details: [Teams and long-lived projects](docs/teams.md#tasks).
 
 ## Install
 
