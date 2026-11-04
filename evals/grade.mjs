@@ -759,6 +759,35 @@ console.log('null');`,
       return [bad.length === 0, bad.join(', ') || 'only the journal'];
     });
   },
+  'backlog-comment'() {
+    const changed = changedFiles();
+    const f = 'docs/tasks/pdf-labels.md';
+    const before = atBase(f);
+    const after = read(f);
+    check('docs/tasks/pdf-labels.md has a ## Notes heading with a dated line mentioning A6', () => {
+      const notes = after.split(/^## Notes\s*$/m)[1] || '';
+      const l = notes.split('\n').find((x) => /\d{4}-\d{2}-\d{2}/.test(x) && /A6/.test(x));
+      return [Boolean(l), l || 'no dated A6 line under ## Notes'];
+    });
+    check('The rest of pdf-labels.md is unchanged (title, Assignee, Why, Done when)', () => {
+      const head = after.split(/^## Notes\s*$/m)[0].trimEnd();
+      return [head === before.trimEnd(), head === before.trimEnd() ? 'unchanged' : 'changed above ## Notes'];
+    });
+    check('No other project files changed (only the journal may get an entry)', () => {
+      const bad = changed.filter((x) => !x.startsWith('.ai/journal/') && x !== f);
+      return [bad.length === 0, bad.join(', ') || 'none'];
+    });
+  },
+  'backlog-comment-gitlab'() {
+    const changed = changedFiles();
+    const msg = finalMessage();
+    check('The final message gives the glab login command', () => [/glab auth login/.test(msg), /glab auth login/.test(msg) ? 'found' : 'missing']);
+    check('The final message gives the exact command glab issue note 7', () => [/glab issue note 7\b/.test(msg), /glab issue note 7\b/.test(msg) ? 'found' : 'missing']);
+    check('No project files changed (only the journal may get an entry)', () => {
+      const bad = changed.filter((x) => !x.startsWith('.ai/journal/'));
+      return [bad.length === 0, bad.join(', ') || 'only the journal'];
+    });
+  },
 };
 graders['setup-production-repo-fr'] = graders['setup-production-repo'];
 graders['resume-from-handoff-de'] = graders['resume-from-handoff'];

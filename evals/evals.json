@@ -1,6 +1,6 @@
 {
   "skill_name": "project-phase + work-journal",
-  "notes": "Each eval runs on a fixture repo built by evals/fixtures/build.sh. with_skill gets both skills plus the skill state the fixture defines (AGENTS.md blocks, .ai/); without_skill gets the same repo without them. Programmatic checks live in evals/grade.mjs; checks marked (judgment) are graded by reading the final message and diff. Fixtures with a state-in-baseline file (on/off evals) give without_skill the same AGENTS.md and .ai/ state, so only the skill differs. Evals 8-10 check that triggers work in Italian, French and German. Eval 11 checks per-branch handoffs with a colleague's open handoff in the repo. Eval 12 checks that a merge of develop into the feature branch after the handoff is noticed. Evals 4 and 10 keep the 0.2 single handoff and merge-from-develop keeps the 0.3 block on purpose, to cover the upgrades. Examples in the skill text deliberately differ from the eval scenarios, to avoid teaching to the test. Fixtures reuse other fixtures' base/ and history.txt through symlinks, so there is no copied source to keep in sync. Eval 13 checks that setup finds an existing ADR folder and roadmap instead of creating new places (a split goes to docs/backlog/). Eval 14 checks the end of a branch's task with docs/tasks/: the task file is deleted, the open question becomes an unassigned task, the decision is kept. Its fixture has state-in-baseline, so the baseline reads the same 0.4 block and does the same: it measures the block, and stays as a regression test. Eval 15 checks the prototype → stabilize transition: the plan is kept as prioritized open items in .ai/debt.md, and no work starts without agreement. Eval 16 runs with `project-phase: ask` in the user's global instructions (the global_instructions field, see run-prompt.md): with no answer the agent must ask in the final message and record nothing. Eval 17 checks that a confirmation in the phase.md history stops the agent from asking again for the same signal. Eval 18 checks /backlog with docs/tasks/ (an existing folder kept in the block): the branch's handoff comes first, other tasks are listed with assignee and in-progress mark, nothing is written. Eval 19 checks /backlog with GitLab issues when glab cannot reach the host (gitlab.example.com): report it with the login command, invent nothing. Eval 20 checks that setup detects a GitLab origin and proposes its issues. Fixtures with a `remote` file get it as origin (never fetched). Runs need the backlog skill in the installed skills list (run-prompt.md). Evals 21 and 22 check /backlog new (folder: one file, no assignee, done condition not invented) and /backlog close with GitLab (login first, exact close command, confirmation, nothing claimed).",
+  "notes": "Each eval runs on a fixture repo built by evals/fixtures/build.sh. with_skill gets both skills plus the skill state the fixture defines (AGENTS.md blocks, .ai/); without_skill gets the same repo without them. Programmatic checks live in evals/grade.mjs; checks marked (judgment) are graded by reading the final message and diff. Fixtures with a state-in-baseline file (on/off evals) give without_skill the same AGENTS.md and .ai/ state, so only the skill differs. Evals 8-10 check that triggers work in Italian, French and German. Eval 11 checks per-branch handoffs with a colleague's open handoff in the repo. Eval 12 checks that a merge of develop into the feature branch after the handoff is noticed. Evals 4 and 10 keep the 0.2 single handoff and merge-from-develop keeps the 0.3 block on purpose, to cover the upgrades. Examples in the skill text deliberately differ from the eval scenarios, to avoid teaching to the test. Fixtures reuse other fixtures' base/ and history.txt through symlinks, so there is no copied source to keep in sync. Eval 13 checks that setup finds an existing ADR folder and roadmap instead of creating new places (a split goes to docs/backlog/). Eval 14 checks the end of a branch's task with docs/tasks/: the task file is deleted, the open question becomes an unassigned task, the decision is kept. Its fixture has state-in-baseline, so the baseline reads the same 0.4 block and does the same: it measures the block, and stays as a regression test. Eval 15 checks the prototype → stabilize transition: the plan is kept as prioritized open items in .ai/debt.md, and no work starts without agreement. Eval 16 runs with `project-phase: ask` in the user's global instructions (the global_instructions field, see run-prompt.md): with no answer the agent must ask in the final message and record nothing. Eval 17 checks that a confirmation in the phase.md history stops the agent from asking again for the same signal. Eval 18 checks /backlog with docs/tasks/ (an existing folder kept in the block): the branch's handoff comes first, other tasks are listed with assignee and in-progress mark, nothing is written. Eval 19 checks /backlog with GitLab issues when glab cannot reach the host (gitlab.example.com): report it with the login command, invent nothing. Eval 20 checks that setup detects a GitLab origin and proposes its issues. Fixtures with a `remote` file get it as origin (never fetched). Runs need the backlog skill in the installed skills list (run-prompt.md). Evals 21 and 22 check /backlog new (folder: one file, no assignee, done condition not invented) and /backlog close with GitLab (login first, exact close command, confirmation, nothing claimed). Evals 23 and 24 check /backlog comment: a dated line under ## Notes in a task file, and the exact glab issue note command with confirmation for GitLab.",
   "evals": [
     {
       "id": 1,
@@ -369,6 +369,32 @@
         "The final message gives the exact command glab issue close 7",
         "No project files changed (only the journal may get an entry)",
         "The agent does not claim the issue was closed, and asks for confirmation before closing (judgment)"
+      ]
+    },
+    {
+      "id": 23,
+      "name": "backlog-comment",
+      "fixture": "evals/fixtures/task-done",
+      "prompt": "/backlog comment pdf-labels the studio printer only takes A6 labels, not A7",
+      "expected_output": "Appends a dated line with the user's note under a ## Notes heading at the end of docs/tasks/pdf-labels.md. The rest of the file (title, Assignee, Why, Done when) is unchanged; nothing else changes.",
+      "expectations": [
+        "docs/tasks/pdf-labels.md has a ## Notes heading with a dated line mentioning A6",
+        "The rest of pdf-labels.md is unchanged (title, Assignee, Why, Done when)",
+        "No other project files changed (only the journal may get an entry)",
+        "The comment keeps the user's meaning and adds nothing they did not say (judgment)"
+      ]
+    },
+    {
+      "id": 24,
+      "name": "backlog-comment-gitlab",
+      "fixture": "evals/fixtures/gitlab-tasks",
+      "prompt": "/backlog comment 7 the CSV export is merged, please test it with the billing data",
+      "expected_output": "Tasks are GitLab issues and glab cannot reach gitlab.example.com. The agent offers to log in, shows the comment text and the exact glab issue note 7 command to run after confirmation, posts nothing and changes nothing in the repo.",
+      "expectations": [
+        "The final message gives the glab login command",
+        "The final message gives the exact command glab issue note 7",
+        "No project files changed (only the journal may get an entry)",
+        "The agent does not claim the comment was posted, and asks for confirmation before posting (judgment)"
       ]
     }
   ]

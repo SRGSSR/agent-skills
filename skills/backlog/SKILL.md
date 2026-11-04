@@ -1,6 +1,6 @@
 ---
 name: backlog
-description: Lists, creates and closes the project's tasks wherever the work-journal block in AGENTS.md says they live, a task folder (`docs/backlog/`, or an existing `docs/tasks/` or `docs/todo/`), GitLab issues (`glab`), GitHub issues (`gh`) or another tracker, and points to what to pick up next. Use this skill whenever the user types `/backlog`, `/backlog new` or `/backlog close`, asks what to work on next, which tasks or issues are open, what is assigned to them or to someone else, asks to see the task list or backlog, or asks to open, file, add, close or drop a task or issue.
+description: Lists, creates, comments on and closes the project's tasks wherever the work-journal block in AGENTS.md says they live, a task folder (`docs/backlog/`, or an existing `docs/tasks/` or `docs/todo/`), GitLab issues (`glab`), GitHub issues (`gh`) or another tracker, and points to what to pick up next. Use this skill whenever the user types `/backlog`, `/backlog new`, `/backlog comment` or `/backlog close`, asks what to work on next, which tasks or issues are open, what is assigned to them or to someone else, asks to see the task list or backlog, or asks to open, file, add, comment on, close or drop a task or issue.
 license: MIT
 metadata:
   version: "0.1.0"
@@ -12,9 +12,10 @@ Commands:
 
 - `/backlog`: the open tasks and what to pick up next.
 - `/backlog new <what>`: create a task. See [Creating](#creating-backlog-new).
+- `/backlog comment <task> <text>`: add a comment to a task. See [Commenting](#commenting-backlog-comment).
 - `/backlog close <task>`: close a task by file name or issue ID. See [Closing](#closing-backlog-close).
 
-The same requests in words ("open an issue for ...", "close #42") work the same way. Formats and lifecycle of task files and issues are in the [work-journal skill, Tasks](../work-journal/SKILL.md#tasks); this skill runs them.
+The same requests in words ("open an issue for ...", "note on #42 that ...", "close #42") work the same way. Formats and lifecycle of task files and issues are in the [work-journal skill, Tasks](../work-journal/SKILL.md#tasks); this skill runs them.
 
 Talk in the user's language.
 
@@ -55,7 +56,7 @@ Listing only reads, so it needs no confirmation. Never assign or reassign a task
 
 ## Writes need confirmation
 
-Creating or closing an issue in a tracker writes outside the repo. Even when the user typed the command, show what will happen (the drafted issue, or the issue to close with its title) and the exact command, and run it only after the user confirms. In a non-interactive run, put both in the final message and run nothing. Task files in the repo need no confirmation: git keeps them and the user reviews the diff.
+Creating, commenting on or closing an issue in a tracker writes outside the repo, where others are notified. Even when the user typed the command, show what will happen (the drafted issue, the comment text, or the issue to close with its title) and the exact command, and run it only after the user confirms. In a non-interactive run, put both in the final message and run nothing. Task files in the repo need no confirmation: git keeps them and the user reviews the diff.
 
 If the CLI is not logged in, follow [Not logged in](#not-logged-in) first, then go on.
 
@@ -70,6 +71,17 @@ If the CLI is not logged in, follow [Not logged in](#not-logged-in) first, then 
    - Another tracker: its connector.
 4. **Report** the file name, or the issue number and URL from the command output.
 
+## Commenting (`/backlog comment`)
+
+1. **Find the task** as in [Closing](#closing-backlog-close) step 1.
+2. **Write the comment** from the user's words: keep their meaning, fix only typos, add nothing they did not say. If the user asked you to write it ("tell them the API is ready"), draft it and show it. Point to commits, files or merge requests instead of pasting diffs or logs; never put secrets, tokens or personal data in a comment.
+3. **Post:**
+   - GitLab: `glab issue note <id> -m "<text>"`; for more than one line, pass the text through a quoted heredoc (`-m "$(cat <<'EOF' ... EOF)"`).
+   - GitHub: `gh issue comment <id> --body-file -`, with the text on stdin.
+   - Folder: append a dated line, `- YYYY-MM-DD: <text>`, under a `## Notes` heading at the end of the task file (add the heading if missing).
+   - Another tracker: its connector.
+4. **Report** the comment URL from the command output, or the file changed.
+
 ## Closing (`/backlog close`)
 
 A task normally closes with the branch that does it: the branch deletes the task file, or its merge request says `Closes #42`. `/backlog close` is for the rest: done elsewhere, dropped, duplicated.
@@ -80,4 +92,4 @@ A task normally closes with the branch that does it: the branch deletes the task
    - Folder: delete the file. Say that the deletion closes the task for everyone when it reaches the shared branch.
    - GitLab: `glab issue close <id>`. GitHub: `gh issue close <id>`, adding `--reason "not planned"` for a dropped task.
    - Another tracker: its connector.
-4. If the user gave a reason (duplicate of #12, no longer needed), say it in the confirmation message. Commenting on issues is not part of this skill yet: suggest adding the reason in the tracker by hand.
+4. If the user gave a reason (duplicate of #12, no longer needed), post it as a comment before closing, in the same confirmation: GitLab `glab issue note <id> -m "<reason>"` then `glab issue close <id>`; GitHub `gh issue close <id> --comment "<reason>"`. For a folder task, the reason goes in the commit message that deletes the file.

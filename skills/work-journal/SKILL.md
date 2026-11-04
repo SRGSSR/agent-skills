@@ -183,7 +183,7 @@ A superseded document is deleted if it no longer holds at all (git keeps it), or
 
 Open work only: what is done disappears, git keeps it. "To decide" items are tasks too ("Decide whether archived items are exported"), done when the decision is recorded.
 
-Listing, creating and closing tasks (`/backlog`, `/backlog new`, `/backlog close`, "what should I work on next?" with no handoff on the branch): see the [backlog skill](../backlog/SKILL.md).
+Listing, creating, commenting on and closing tasks (`/backlog`, `/backlog new`, `/backlog comment`, `/backlog close`, "what should I work on next?" with no handoff on the branch): see the [backlog skill](../backlog/SKILL.md).
 
 **`docs/backlog/`**: one file per task, named like the branch that will do it without the prefix (`csv-export.md` → `feature/csv-export`), so separate branches never touch the same file. The same rules apply to `docs/tasks/` and `docs/todo/` in repos that already use them.
 
@@ -195,6 +195,7 @@ Done when: the list page has a link that downloads a CSV that opens in Excel.
 Links: docs/design/2026-10-02-csv-export.md
 ```
 
+- Optional `## Notes` at the end: dated one-line comments (`- 2026-10-05: billing also wants the archived items`), added by `/backlog comment`.
 - No status field: in progress means a branch or handoff exists; done means the file is gone. The branch that does the task deletes its file, so merging the branch closes the task.
 - `Assignee` is optional, a team handle (git or tracker username), never a full name or email. Never assign or reassign a task unless the user asks.
 - Write new task files only for follow-ups and open questions at the end of a branch's task, or when the user asks.
