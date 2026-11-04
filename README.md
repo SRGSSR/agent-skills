@@ -3,7 +3,7 @@
 Two [Agent Skills](https://agentskills.io) that make AI coding agents behave the way your project needs right now, and let you stop and resume work at any moment, even with a different agent or model.
 
 - **`project-phase`**: tells the agent which lifecycle phase the project is in (prototype, production, maintenance, ...) and what that means for how it works.
-- **`work-journal`**: keeps a terse journal and a handoff document in the repo, so any agent or human can pick up where the last one stopped. It ships with **`backlog`**: `/backlog` lists the open tasks and what to pick up next, `/backlog new`, `/backlog comment` and `/backlog close` create, comment on and close them.
+- **`work-journal`**: keeps a terse journal and a handoff document in the repo, so any agent or human can pick up where the last one stopped. It ships with **`backlog`**: `/backlog` lists the open tasks and what to pick up next, `/backlog new`, `/backlog comment` and `/backlog close` create, comment on and close them, `/backlog filter` lists only those that match a condition, `/backlog help` shows the commands.
 
 They work independently and fit together when both are installed.
 

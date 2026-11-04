@@ -1,9 +1,10 @@
 ---
 name: backlog
-description: Lists, creates, comments on and closes the project's tasks wherever the work-journal block in AGENTS.md says they live, a task folder (`docs/backlog/`, or an existing `docs/tasks/` or `docs/todo/`), GitLab issues (`glab`), GitHub issues (`gh`), Jira (`acli` or the Atlassian connector) or another tracker, and points to what to pick up next. Use this skill whenever the user types `/backlog`, `/backlog new`, `/backlog comment` or `/backlog close`, asks what to work on next, which tasks, issues or work items are open, what is assigned to them or to someone else, asks to see the task list or backlog, or asks to open, file, add, comment on, close or drop a task or issue.
+description: Lists, creates, comments on and closes the project's tasks wherever the work-journal block in AGENTS.md says they live, a task folder (`docs/backlog/`, or an existing `docs/tasks/` or `docs/todo/`), GitLab issues (`glab`), GitHub issues (`gh`), Jira (`acli` or the Atlassian connector) or another tracker, and points to what to pick up next. Use this skill whenever the user types `/backlog`, `/backlog new`, `/backlog comment`, `/backlog close`, `/backlog filter` or `/backlog help`, asks what to work on next, which tasks, issues or work items are open (also only those of a parent, epic, label or sprint), what is assigned to them or to someone else, asks to see the task list or backlog, or asks to open, file, add, comment on, close or drop a task or issue.
 license: MIT
+argument-hint: "[new | comment | close | filter | help] ..."
 metadata:
-  version: "0.2.0"
+  version: "0.3.0"
 ---
 
 # Backlog
@@ -14,6 +15,8 @@ Commands:
 - `/backlog new <what>`: create a task. See [Creating](#creating-backlog-new).
 - `/backlog comment <task> <text>`: add a comment to a task. See [Commenting](#commenting-backlog-comment).
 - `/backlog close <task>`: close a task by file name, issue ID or Jira key. See [Closing](#closing-backlog-close).
+- `/backlog filter <condition>`: the open tasks that match a condition (parent, epic, label, milestone, sprint, assignee, text, or JQL). See [Filtering](#filtering-backlog-filter).
+- `/backlog help`: this list of commands, with where the tasks are and the filter in use. Read only the block; run nothing else.
 
 The same requests in words ("open an issue for ...", "note on #42 that ...", "close #42") work the same way. Formats and lifecycle of task files and issues are in the [work-journal skill, Tasks](../work-journal/SKILL.md#tasks); this skill runs them.
 
@@ -32,6 +35,8 @@ Read the `Tasks:` line of the work-journal block in `AGENTS.md`:
 | Jira | `acli jira workitem search --jql "project = <KEY> AND statusCategory != Done ORDER BY Rank" --fields "key,summary,assignee,status" --json`. If `acli` is missing, the Atlassian connector with the same JQL. |
 | Another tracker | Its connector, open items of the named project |
 | `none`, or no block | Say there is no task list; offer to choose one (work-journal setup step 3). Don't search the journal for follow-ups. |
+
+The line can add a fixed filter after the project, for a repo that works on part of a shared tracker: `Jira PODCAST, parent = PODCAST-10`, `GitLab issues of team/podcast, label backend`. Apply it to every listing, on top of any `/backlog filter`, and give new tasks the same parent or label. Say it in the first line of the listing ("PODCAST, parent = PODCAST-10:").
 
 ### Not logged in
 
@@ -52,8 +57,20 @@ Never ask for a token in the chat or write it in a file. Never invent issues and
 2. **Then the open tasks, grouped:** assigned to the user, unassigned, assigned to others (count per handle only, unless the user asks for someone's tasks). The user is `@me` in GitLab and GitHub, the account of `acli jira auth status` in Jira, `git config user.name` for a folder.
 3. One line per task: file name or issue ID, title, assignee, in-progress mark. No bodies.
 4. End with one suggestion: the current branch's next step, else the first task assigned to the user, else the first unassigned one.
+5. Last line: the other commands, `new`, `comment`, `close`, `filter`, `help`, in one line.
 
 Listing only reads, so it needs no confirmation. Never assign or reassign a task while listing.
+
+## Filtering (`/backlog filter`)
+
+Translate the condition into the tracker's own filter, so the tracker does the work, then show the result as in [What to show](#what-to-show), with the filter in its first line. If no task matches, say so and show the query you ran.
+
+- Jira: add it to the JQL with `AND`: `parent = PODCAST-10`, `labels = backend`, `sprint in openSprints()`, `assignee = currentUser()`. A condition the user writes as JQL (`jql: ...`) goes in as it is.
+- GitLab: the `glab issue list` flags: `--epic <id> --group <group>`, `--label`, `--milestone`, `--assignee`, `--search`.
+- GitHub: the `gh issue list` flags: `--label`, `--milestone`, `--assignee`, `--search` with GitHub search syntax.
+- Folder: match titles, `Assignee:` and `Links:` lines with `grep`.
+
+If the tracker cannot express the condition, say so and offer the nearest filter it has; don't list everything and filter by guess. A `/backlog filter` lasts for that listing only; for one that should always apply, offer to add it to the `Tasks:` line.
 
 ## Writes need confirmation
 
@@ -69,7 +86,7 @@ If the CLI is not logged in, follow [Not logged in](#not-logged-in) first, then 
    - Folder: write `<folder>/<name>.md` in the folder the block names, `<name>` being the branch that will do it without its prefix (`csv-export`). Don't create a branch for it.
    - GitLab: `glab issue create --title "<title>" --description-file - --yes`, with the body on stdin (a heredoc), so quotes and line breaks survive. Add `--assignee <handle>` only if the user named one.
    - GitHub: `gh issue create --title "<title>" --body-file -`, same body on stdin.
-   - Jira: `acli jira workitem create --project <KEY> --type Task --summary "<title>" --description "$(cat <<'EOF' ... EOF)" --json`. Use another type only if the user names one; if the project requires more fields, show the error and ask.
+   - Jira: `acli jira workitem create --project <KEY> --type Task --summary "<title>" --description "$(cat <<'EOF' ... EOF)" --json`. Use another type only if the user names one; if the project requires more fields, show the error and ask. With a fixed `parent =` filter, add `--parent <KEY>`.
    - Another tracker: its connector.
 4. **Report** the file name, or the issue number or key and URL from the command output.
 

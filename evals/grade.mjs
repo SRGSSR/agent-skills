@@ -759,6 +759,41 @@ console.log('null');`,
       return [bad.length === 0, bad.join(', ') || 'only the journal'];
     });
   },
+  'backlog-filter-jira'() {
+    const changed = changedFiles();
+    const msg = finalMessage();
+    check('The final message gives the acli login command', () => [/acli jira auth login/.test(msg), /acli jira auth login/.test(msg) ? 'found' : 'missing']);
+    const q = /acli jira workitem search[^\n]*parent\s*=\s*ITEMS-10/;
+    check('The final message gives an acli search whose JQL has parent = ITEMS-10', () => [q.test(msg), q.test(msg) ? 'found' : 'missing']);
+    check('No project files changed (only the journal may get an entry)', () => {
+      const bad = changed.filter((f) => !f.startsWith('.ai/journal/'));
+      return [bad.length === 0, bad.join(', ') || 'only the journal'];
+    });
+  },
+  'backlog-help'() {
+    const changed = changedFiles();
+    const msg = finalMessage();
+    check('The final message names the subcommands new, comment, close and filter', () => {
+      const miss = ['new', 'comment', 'close', 'filter'].filter((c) => !new RegExp('backlog ' + c + '\\b').test(msg));
+      return [miss.length === 0, miss.length ? 'missing: ' + miss.join(', ') : 'all found'];
+    });
+    check('The final message says where the tasks are (docs/tasks/)', () => [/docs\/tasks/.test(msg), /docs\/tasks/.test(msg) ? 'found' : 'missing']);
+    check('No project files changed (only the journal may get an entry)', () => {
+      const bad = changed.filter((f) => !f.startsWith('.ai/journal/'));
+      return [bad.length === 0, bad.join(', ') || 'only the journal'];
+    });
+  },
+  'backlog-new-jira-parent'() {
+    const changed = changedFiles();
+    const msg = finalMessage();
+    const i = msg.indexOf('acli jira workitem create');
+    const c = i < 0 ? '' : msg.slice(i, i + 800);
+    check('The final message gives an acli workitem create command for project ITEMS with --parent ITEMS-10', () => [/--project\s+"?ITEMS\b/.test(c) && /--parent\s+"?ITEMS-10\b/.test(c), c || 'no create command']);
+    check('No project files changed (only the journal may get an entry)', () => {
+      const bad = changed.filter((f) => !f.startsWith('.ai/journal/'));
+      return [bad.length === 0, bad.join(', ') || 'only the journal'];
+    });
+  },
   'backlog-new'() {
     const changed = changedFiles();
     const added = changed.filter((f) => f.startsWith('docs/tasks/') && !atBase(f) && exists(f));
