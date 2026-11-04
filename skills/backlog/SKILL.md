@@ -4,7 +4,7 @@ description: Lists, creates, comments on and closes the project's tasks wherever
 license: MIT
 argument-hint: "[new | comment | close | filter | help] ..."
 metadata:
-  version: "0.3.0"
+  version: "0.4.0"
 ---
 
 # Backlog
@@ -30,11 +30,13 @@ Read the `Tasks:` line of the work-journal block in `AGENTS.md`:
 |---|---|
 | A folder (`docs/backlog/`, `docs/tasks/`, `docs/todo/`) | `grep -m1 -H '^# ' docs/backlog/*.md` (titles) and `grep -H '^Assignee:' docs/backlog/*.md`, with the folder the block names. Don't read the files whole. |
 | A file (`ROADMAP.md`, `TODO.md`) | Its open items, in its own format |
-| GitLab issues | `glab issue list -O json` (open issues; read number, title, assignees) |
-| GitHub issues | `gh issue list --json number,title,assignees` |
-| Jira | `acli jira workitem search --jql "project = <KEY> AND statusCategory != Done ORDER BY Rank" --fields "key,summary,assignee,status" --json`. If `acli` is missing, the Atlassian connector with the same JQL. |
+| GitLab issues | `glab issue list -O json -P 100` (open issues; read number, title, assignees) |
+| GitHub issues | `gh issue list --json number,title,assignees --limit 100` |
+| Jira | `acli jira workitem search --jql "project = <KEY> AND statusCategory != Done ORDER BY Rank" --fields "key,summary,assignee,status" --limit 100 --json`. If `acli` is missing, the Atlassian connector with the same JQL. |
 | Another tracker | Its connector, open items of the named project |
 | `none`, or no block | Say there is no task list; offer to choose one (work-journal setup step 3). Don't search the journal for follow-ups. |
+
+A tracker listing fetches at most 100: if it returns exactly that many, say there may be more and suggest `/backlog filter`.
 
 The line can add a fixed filter after the project, for a repo that works on part of a shared tracker: `Jira PODCAST, parent = PODCAST-10`, `GitLab issues of team/podcast, label backend`. Apply it to every listing, on top of any `/backlog filter`, and give new tasks the same parent or label. Say it in the first line of the listing ("PODCAST, parent = PODCAST-10:").
 
@@ -67,7 +69,7 @@ Translate the condition into the tracker's own filter, so the tracker does the w
 
 - Jira: add it to the JQL with `AND`: `parent = PODCAST-10`, `labels = backend`, `sprint in openSprints()`, `assignee = currentUser()`. A condition the user writes as JQL (`jql: ...`) goes in as it is.
 - GitLab: the `glab issue list` flags: `--epic <id> --group <group>`, `--label`, `--milestone`, `--assignee`, `--search`.
-- GitHub: the `gh issue list` flags: `--label`, `--milestone`, `--assignee`, `--search` with GitHub search syntax.
+- GitHub: the `gh issue list` flags: `--label`, `--milestone`, `--assignee`, `--type`, `--search` with GitHub search syntax. There is no flag for sub-issues of a parent: try it in `--search`, and if the query fails, say so.
 - Folder: match titles, `Assignee:` and `Links:` lines with `grep`.
 
 If the tracker cannot express the condition, say so and offer the nearest filter it has; don't list everything and filter by guess. A `/backlog filter` lasts for that listing only; for one that should always apply, offer to add it to the `Tasks:` line.
@@ -86,8 +88,9 @@ If the CLI is not logged in, follow [Not logged in](#not-logged-in) first, then 
    - Folder: write `<folder>/<name>.md` in the folder the block names, `<name>` being the branch that will do it without its prefix (`csv-export`). Don't create a branch for it.
    - GitLab: `glab issue create --title "<title>" --description-file - --yes`, with the body on stdin (a heredoc), so quotes and line breaks survive. Add `--assignee <handle>` only if the user named one.
    - GitHub: `gh issue create --title "<title>" --body-file -`, same body on stdin.
-   - Jira: `acli jira workitem create --project <KEY> --type Task --summary "<title>" --description "$(cat <<'EOF' ... EOF)" --json`. Use another type only if the user names one; if the project requires more fields, show the error and ask. With a fixed `parent =` filter, add `--parent <KEY>`.
+   - Jira: `acli jira workitem create --project <KEY> --type Task --summary "<title>" --description "$(cat <<'EOF' ... EOF)" --json`. Use another type only if the user names one; if the project requires more fields, show the error and ask.
    - Another tracker: its connector.
+   - A fixed filter in the `Tasks:` line goes on the new task too: a parent with `--parent` (`acli`, `gh`) or `--epic` (`glab`), a label with `--label`.
 4. **Report** the file name, or the issue number or key and URL from the command output.
 
 ## Commenting (`/backlog comment`)
@@ -110,7 +113,7 @@ A task normally closes with the branch that does it: the branch deletes the task
 2. **Warn** if the work looks in progress (a handoff or branch names it), or if it is assigned to someone other than the user. Ask before going on.
 3. **Close:**
    - Folder: delete the file. Say that the deletion closes the task for everyone when it reaches the shared branch.
-   - GitLab: `glab issue close <id>`. GitHub: `gh issue close <id>`, adding `--reason "not planned"` for a dropped task.
+   - GitLab: `glab issue close <id>`. GitHub: `gh issue close <id>`, adding `--reason "not planned"` for a dropped task, or `--duplicate-of <number>` for a duplicate.
    - Jira: `acli jira workitem transition --key <KEY-12> --status "Done" --yes`. Statuses depend on the project's workflow: for a dropped task use its status for that (Won't Do, Cancelled) if the user names one or the work item shows it; if the transition fails, show the error and ask for the status name.
    - Another tracker: its connector.
 4. If the user gave a reason (duplicate of #12, no longer needed), post it as a comment before closing, in the same confirmation: GitLab `glab issue note <id> -m "<reason>"` then `glab issue close <id>`; GitHub `gh issue close <id> --comment "<reason>"`; Jira `acli jira workitem comment create` then `acli jira workitem transition`. For a folder task, the reason goes in the commit message that deletes the file.
