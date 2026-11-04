@@ -117,6 +117,18 @@ Talk to your agent normally, in any language. For example:
 - "We're launching next month. Move us to stabilize."
 - "Let's stop here, I'll continue tomorrow with another model." Then, next time: "Where were we?"
 
+Each skill also has commands. In Claude Code, typing one shows its subcommands:
+
+| Command | Does |
+|---|---|
+| `/project-phase` | Phase, since when, open debt |
+| `/work-journal` | Where things stand on this branch |
+| `/backlog` | Open tasks and what to pick up next |
+| `/project-phase setup`, `/work-journal setup` | Sets the skill up, or reviews the choices of a project already set up |
+| `/project-phase on`, `off` (same for `/work-journal`) | Turns the skill on or off in one project |
+| `/backlog new`, `comment`, `close`, `filter` | Creates, comments on, closes or filters tasks |
+| `help` after any of the three | Its commands and current settings |
+
 More requests, and step-by-step guides for a new project, a project already under way, teams and phase changes: [`docs/`](docs/README.md).
 
 Optional lines for your global agent instructions (for example `~/.claude/CLAUDE.md`): `project-phase set: simple` sets the default phase set; `project-phase: ask` makes the agent ask for the phase in every repo that has none yet ([details](docs/phase-changes.md#when-the-agent-asks-about-the-phase)).

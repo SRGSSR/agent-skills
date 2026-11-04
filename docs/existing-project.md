@@ -6,7 +6,7 @@ For a repo with history: maybe live, maybe with its own `CLAUDE.md`, ADRs, a `RO
 
 > Set up the project phase for this repo.
 
-The agent reads cheap signals only, never the source tree: file listing, README, the last 20 commits, commit count and age, CI, tests, deploy files, version and tags, CHANGELOG. Typical readings:
+Or `/project-phase setup`. The agent reads cheap signals only, never the source tree: file listing, README, the last 20 commits, commit count and age, CI, tests, deploy files, version and tags, CHANGELOG. Typical readings:
 
 | Signals | Proposed phase |
 |---|---|
@@ -52,7 +52,7 @@ Accepted rules go under `## Custom rules` in `.ai/phase.md` and into the contrac
 
 > Set up the work journal.
 
-Setup looks for what the repo already uses and asks only about what it could not detect, in one question:
+Or `/work-journal setup`. Setup looks for what the repo already uses and asks only about what it could not detect, in one question:
 
 | The repo has | Design decisions | Tasks |
 |---|---|---|
@@ -68,6 +68,10 @@ A tracker looks like this in the block:
 - Tasks: Jira PODCAST on example.atlassian.net (via acli; writes only with the user's confirmation).
 ```
 
+### Changing the choices later
+
+Run `/project-phase setup` or `/work-journal setup` again on a project already set up. The agent shows the current choices, reads the signals again and proposes only what they suggest changing, for example Jira keys that appeared in the commits since setup, or a phase that no longer fits. It changes only what you confirm. The journal, handoffs, task files, design decisions, the phase history and the debt list stay as they are; moving existing task files to a tracker is a separate step, one confirmed issue at a time.
+
 ## 3. Working in production or maintenance
 
 **Production:** the agent follows existing patterns, tests new code, adds a regression test to every bug fix, keeps APIs and data backward compatible, and records tech debt. At the end of a task it may add up to three short structural observations about the area it touched (problem, impact, effort). It doesn't implement them unasked; if you want to keep one, it becomes a task or a debt line.
@@ -76,7 +80,7 @@ A tracker looks like this in the block:
 
 ## 4. Upgrading from an older version of the skills
 
-Nothing to do by hand. When the agent resumes work in a repo with an older `work-journal` block, it replaces the block (keeping your configuration lines) and says so in one line. A block from 0.3 or earlier has no configuration lines: the agent asks where design decisions and tasks go. An old single `.ai/handoff.md` becomes the handoff of its branch the next time the handoff is written.
+Nothing to do by hand. When the agent resumes work in a repo with an older `work-journal` block, it replaces the block (keeping your configuration lines) and says so in one line; `/work-journal setup` does the same on request. A block from 0.3 or earlier has no configuration lines: the agent asks where design decisions and tasks go. An old single `.ai/handoff.md` becomes the handoff of its branch the next time the handoff is written.
 
 ## Next
 
