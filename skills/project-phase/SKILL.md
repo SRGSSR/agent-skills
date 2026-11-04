@@ -1,9 +1,10 @@
 ---
 name: project-phase
-description: Sets and applies the project's lifecycle phase (explore, prototype, stabilize, production, maintenance, sunset) so the agent works the way that phase needs: no over-engineering while prototyping, tech-debt tracking in production, minimal regression-safe diffs in maintenance. Use this skill whenever the user wants to set up, check or change the project phase, mode or stage; says things like "we're just prototyping", "it's a quick POC", "this is live now", "maintenance only", "stop over-engineering", "don't touch anything else"; asks whether the project is ready for production; or wants to review tech debt or shortcuts; or wants to turn it on or off for a project (`/project-phase on`, `/project-phase off`, "disable project-phase here"). Also use it when a project-phase block exists and it is unclear how the phase applies or the phase seems wrong, and before a code change in a repo with no project-phase block or off marker when the user's global instructions contain `project-phase: ask`.
+description: Sets and applies the project's lifecycle phase (explore, prototype, stabilize, production, maintenance, sunset) so the agent works the way that phase needs: no over-engineering while prototyping, tech-debt tracking in production, minimal regression-safe diffs in maintenance. Use this skill whenever the user wants to set up, check or change the project phase, mode or stage; says things like "we're just prototyping", "it's a quick POC", "this is live now", "maintenance only", "stop over-engineering", "don't touch anything else"; asks whether the project is ready for production; or wants to review tech debt or shortcuts; or wants to turn it on or off for a project (`/project-phase on`, `off`, "disable project-phase here") or types `/project-phase help`. Also use it when a project-phase block exists and it is unclear how the phase applies or the phase seems wrong, and before a code change in a repo with no project-phase block or off marker when the user's global instructions contain `project-phase: ask`.
 license: MIT
+argument-hint: "[on | off | help]"
 metadata:
-  version: "0.4.0"
+  version: "0.5.0"
 ---
 
 # Project Phase
@@ -11,6 +12,14 @@ metadata:
 The right way to write code depends on where a project is in its life. A prototype needs speed and zero ceremony. A live product needs tests, compatibility and an eye on tech debt. A system in maintenance needs the smallest possible diff. AI agents tend to apply "large project best practices" everywhere: full scaffolding on day one, early generalization, improvement suggestions nobody asked for. Or the opposite: casual sweeping edits in code that must not regress.
 
 This skill makes the phase explicit and gives the agent a behavior contract for it.
+
+Commands:
+
+- `/project-phase`: the [status](#status).
+- `/project-phase on`, `/project-phase off`: turn it on or off for this project. See [On / off](#on--off).
+- `/project-phase help`: this list, with the current phase (or off, or not set up) from the block in `AGENTS.md`. Read only the block; run nothing else.
+
+Everything else works in words: set up, change the phase ("this is live now"), review the debt, add an area override or a custom rule.
 
 ## How it works
 

@@ -1,9 +1,10 @@
 ---
 name: work-journal
-description: Keeps a terse work journal and a handoff document per branch in the repo so work can be paused at any moment and resumed later by the same or a different AI agent, model or tool, or by a human, also when several people work on the same project. Use this skill whenever the user is stopping or pausing ("let's stop here", "I'll continue tomorrow", "pick this up later", "switching to another model"), asks for a handoff, a session summary or a devlog, wants to continue previous work ("where were we?", "resume", "continue from yesterday"), or wants to set up resumable or logged AI sessions, or wants to turn it on or off for a project (`/work-journal on`, `/work-journal off`, "stop keeping the journal here"). Also use it when starting work in a repo that has `.ai/handoff/`, `.ai/handoff.md` or `.ai/journal/`, when a branch's task is done, when the user asks what to work on next or where design decisions and tasks are kept, and before the context runs out on a long task.
+description: Keeps a terse work journal and a handoff document per branch in the repo so work can be paused at any moment and resumed later by the same or a different AI agent, model or tool, or by a human, also when several people work on the same project. Use this skill whenever the user is stopping or pausing ("let's stop here", "I'll continue tomorrow", "pick this up later", "switching to another model"), asks for a handoff, a session summary or a devlog, wants to continue previous work ("where were we?", "resume", "continue from yesterday"), or wants to set up resumable or logged AI sessions, or wants to turn it on or off for a project (`/work-journal on`, `off`, "stop keeping the journal here") or types `/work-journal help`. Also use it when starting work in a repo that has `.ai/handoff/`, `.ai/handoff.md` or `.ai/journal/`, when a branch's task is done, when the user asks what to work on next or where design decisions and tasks are kept, and before the context runs out on a long task.
 license: MIT
+argument-hint: "[on | off | help]"
 metadata:
-  version: "0.7.0"
+  version: "0.8.0"
 ---
 
 # Work Journal
@@ -26,6 +27,14 @@ Everything is plain Markdown with no tool-specific features, so any agent that c
 Project state belongs in the repo: progress, decisions and next steps go in these files (and in the design decisions and tasks below), not in your tool's private memory, which other agents and people can't read. Private memory is for the user's personal preferences.
 
 Two more places hold what outlives a branch, both chosen per project at setup and named in the `AGENTS.md` block: **design decisions** (why things are the way they are) and **tasks** (open work). See [Design decisions and tasks](#design-decisions-and-tasks).
+
+Commands:
+
+- `/work-journal`: where things stand, as in [Resuming](#resuming).
+- `/work-journal on`, `/work-journal off`: turn it on or off for this project. See [On / off](#on--off).
+- `/work-journal help`: this list, with where design decisions and tasks go (or off, or not set up) from the block in `AGENTS.md`, and the `/backlog` commands. Read only the block; run nothing else.
+
+Everything else works in words: set up, "let's stop here", "where were we?", "write a handoff".
 
 Talk in the user's language: this skill is written in English, but reports, questions and the final message go in the language the user writes in. Files (the `AGENTS.md` block, journal, handoff) keep the language they already use; new ones are in English.
 
