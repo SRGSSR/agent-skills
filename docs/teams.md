@@ -72,7 +72,31 @@ If `origin` is on GitLab or GitHub, setup proposes its issues as the task list, 
 - **A new issue** has the shape of a task file: title, then Why, Done when and Links. No assignee unless you ask.
 - **Closing:** when a branch's task is done, the agent gives you `Closes #42` for the merge request or pull request description, so the merge closes the issue. GitLab and GitHub honor it only for merges into the default branch: with git flow and `main` as default, an issue closed by a merge into `develop` stays open until the release, or you close it by hand.
 
-Other trackers (Jira, ...) work the same way through a connector. With no task list, follow-ups go in the final message and the journal.
+### Jira
+
+Typical split: code on GitHub, tasks in Jira Cloud. Setup proposes Jira when branch names or commit subjects keep repeating one key (`PODCAST-123`), or when you name it, and asks for the site if `acli` doesn't show it:
+
+```markdown
+- Tasks: Jira PODCAST on example.atlassian.net (via acli; writes only with the user's confirmation).
+```
+
+- **Access** goes through Atlassian's CLI, `acli` (`brew tap atlassian/homebrew-acli && brew install acli`, then `acli jira auth login --web`), or the Atlassian connector if `acli` is missing. Login, confirmation and the `/backlog` commands work as for GitLab and GitHub, with Jira keys instead of issue numbers.
+- **Listing** uses JQL: open work items of the project (status category not Done), in backlog order. Work items in an In Progress status are marked as in progress.
+- **Linking:** the agent puts the key in the branch name (`feature/PODCAST-123-csv-export`), commit subjects and the pull request title, so Jira's GitHub or GitLab integration links them.
+- **Closing:** `Closes #42` doesn't apply. When a branch's task is done, the agent proposes moving the work item to Done after the merge (`acli jira workitem transition`), unless your Jira automation or smart commits (`PODCAST-123 #done`) already do it. Status names follow the project's workflow: for a dropped task, name the status (Won't Do, Cancelled) or the agent asks.
+
+### Filters
+
+- **`/backlog filter <condition>`** lists only the open tasks that match, for that listing: `/backlog filter parent PODCAST-10`, `/backlog filter label backend`, `/backlog filter jql: sprint in openSprints()`. The agent turns the condition into the tracker's own filter (JQL in Jira, `glab` and `gh` flags, `grep` in a task folder) and says when the tracker cannot express it, instead of guessing.
+- **A fixed filter** in the block, for a repo that works on part of a shared tracker, applies to every listing, and new tasks get the same parent or label. Ask for it at setup, or later with `/work-journal setup`:
+
+```markdown
+- Tasks: Jira PODCAST, parent = PODCAST-10 (via acli; writes only with the user's confirmation).
+```
+
+- **`/backlog help`** lists the commands, where the tasks are and the filter in use. In Claude Code, typing `/backlog` also shows the subcommands as a hint, and every listing ends with them in one line.
+
+Other trackers work the same way through a connector. With no task list, follow-ups go in the final message and the journal.
 
 ## Design decisions
 

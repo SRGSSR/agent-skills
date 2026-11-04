@@ -3,7 +3,7 @@
 Two [Agent Skills](https://agentskills.io) that make AI coding agents behave the way your project needs right now, and let you stop and resume work at any moment, even with a different agent or model.
 
 - **`project-phase`**: tells the agent which lifecycle phase the project is in (prototype, production, maintenance, ...) and what that means for how it works.
-- **`work-journal`**: keeps a terse journal and a handoff document in the repo, so any agent or human can pick up where the last one stopped. It ships with **`backlog`**: `/backlog` lists the open tasks and what to pick up next, `/backlog new`, `/backlog comment` and `/backlog close` create, comment on and close them.
+- **`work-journal`**: keeps a terse journal and a handoff document in the repo, so any agent or human can pick up where the last one stopped. It ships with **`backlog`**: `/backlog` lists the open tasks and what to pick up next, `/backlog new`, `/backlog comment` and `/backlog close` create, comment on and close them, `/backlog filter` lists only those that match a condition, `/backlog help` shows the commands.
 
 They work independently and fit together when both are installed.
 
@@ -66,7 +66,7 @@ One handoff per branch, so people on different branches never overwrite each oth
 
 ### Design decisions and tasks
 
-What outlives a branch goes where people look, not in `.ai/`: **design decisions** (an existing ADR folder, `docs/design/`, `docs/decisions.md`, or code comments and the README) and **tasks** (`docs/backlog/` with one file per open task, GitLab or GitHub issues through `glab` or `gh`, another tracker through a connector, or none). `work-journal` chooses both at setup and names them in its block; `/backlog` lists, creates, comments on and closes them. Details: [Teams and long-lived projects](docs/teams.md#tasks).
+What outlives a branch goes where people look, not in `.ai/`: **design decisions** (an existing ADR folder, `docs/design/`, `docs/decisions.md`, or code comments and the README) and **tasks** (`docs/backlog/` with one file per open task, GitLab or GitHub issues through `glab` or `gh`, Jira through `acli` or the Atlassian connector, another tracker through a connector, or none). `work-journal` chooses both at setup and names them in its block; `/backlog` lists, creates, comments on and closes them. Details: [Teams and long-lived projects](docs/teams.md#tasks).
 
 ## Install
 
@@ -116,6 +116,18 @@ Talk to your agent normally, in any language. For example:
 - "Set up the project phase for this repo."
 - "We're launching next month. Move us to stabilize."
 - "Let's stop here, I'll continue tomorrow with another model." Then, next time: "Where were we?"
+
+Each skill also has commands. In Claude Code, typing one shows its subcommands:
+
+| Command | Does |
+|---|---|
+| `/project-phase` | Phase, since when, open debt |
+| `/work-journal` | Where things stand on this branch |
+| `/backlog` | Open tasks and what to pick up next |
+| `/project-phase setup`, `/work-journal setup` | Sets the skill up, or reviews the choices of a project already set up |
+| `/project-phase on`, `off` (same for `/work-journal`) | Turns the skill on or off in one project |
+| `/backlog new`, `comment`, `close`, `filter` | Creates, comments on, closes or filters tasks |
+| `help` after any of the three | Its commands and current settings |
 
 More requests, and step-by-step guides for a new project, a project already under way, teams and phase changes: [`docs/`](docs/README.md).
 

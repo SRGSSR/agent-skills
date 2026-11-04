@@ -1,9 +1,10 @@
 ---
 name: project-phase
-description: Sets and applies the project's lifecycle phase (explore, prototype, stabilize, production, maintenance, sunset) so the agent works the way that phase needs: no over-engineering while prototyping, tech-debt tracking in production, minimal regression-safe diffs in maintenance. Use this skill whenever the user wants to set up, check or change the project phase, mode or stage; says things like "we're just prototyping", "it's a quick POC", "this is live now", "maintenance only", "stop over-engineering", "don't touch anything else"; asks whether the project is ready for production; or wants to review tech debt or shortcuts; or wants to turn it on or off for a project (`/project-phase on`, `/project-phase off`, "disable project-phase here"). Also use it when a project-phase block exists and it is unclear how the phase applies or the phase seems wrong, and before a code change in a repo with no project-phase block or off marker when the user's global instructions contain `project-phase: ask`.
+description: Sets and applies the project's lifecycle phase (explore, prototype, stabilize, production, maintenance, sunset) so the agent works the way that phase needs: no over-engineering while prototyping, tech-debt tracking in production, minimal regression-safe diffs in maintenance. Use this skill whenever the user wants to set up, check or change the project phase, mode or stage; says things like "we're just prototyping", "it's a quick POC", "this is live now", "maintenance only", "stop over-engineering", "don't touch anything else"; asks whether the project is ready for production; or wants to review tech debt or shortcuts; or wants to turn it on or off for a project (`/project-phase on`, `off`, "disable project-phase here") or types `/project-phase help`. Also use it when a project-phase block exists and it is unclear how the phase applies or the phase seems wrong, and before a code change in a repo with no project-phase block or off marker when the user's global instructions contain `project-phase: ask`.
 license: MIT
+argument-hint: "[setup | on | off | help]"
 metadata:
-  version: "0.4.0"
+  version: "0.6.0"
 ---
 
 # Project Phase
@@ -11,6 +12,15 @@ metadata:
 The right way to write code depends on where a project is in its life. A prototype needs speed and zero ceremony. A live product needs tests, compatibility and an eye on tech debt. A system in maintenance needs the smallest possible diff. AI agents tend to apply "large project best practices" everywhere: full scaffolding on day one, early generalization, improvement suggestions nobody asked for. Or the opposite: casual sweeping edits in code that must not regress.
 
 This skill makes the phase explicit and gives the agent a behavior contract for it.
+
+Commands:
+
+- `/project-phase`: the [status](#status).
+- `/project-phase setup`: set it up, or review the choices of a project already set up. See [Setup](#setup-first-use-in-a-project).
+- `/project-phase on`, `/project-phase off`: turn it on or off for this project. See [On / off](#on--off).
+- `/project-phase help`: this list, with the current phase (or off, or not set up) from the block in `AGENTS.md`. Read only the block; run nothing else.
+
+Everything else works in words: change the phase ("this is live now"), review the debt, add an area override or a custom rule.
 
 ## How it works
 
@@ -89,7 +99,7 @@ If the user's global instructions name a default set (for example `project-phase
 
 ### Setup (first use in a project)
 
-1. **Check for existing state.** If `AGENTS.md` has the `<!-- project-phase:off -->` marker, follow [On / off](#on--off): set up only if the user explicitly asks, and then remove the marker. If `.ai/phase.md` or a contract block exists, show status instead of starting over.
+1. **Check for existing state.** If `AGENTS.md` has the `<!-- project-phase:off -->` marker, follow [On / off](#on--off): set up only if the user explicitly asks, and then remove the marker. If `.ai/phase.md` or a contract block exists, show status instead of starting over; on an explicit `/project-phase setup`, review instead (below).
 2. **Read the signals** cheaply: top-level listing, README, `git log --oneline | head -20`, commit count and age, CI config, tests, deploy files, version and tags, CHANGELOG. The signal table is in [references/transitions.md](references/transitions.md#detecting-the-phase). Do not read the source tree for this.
 3. **Propose, then ask.** Recommend a phase set and a current phase with two or three lines of reasoning, and ask the user to confirm. Signals only suggest: the phase reflects what the team wants to optimize now, not just repo age. A new repo can be production on day one (a rewrite of a live service); an old one can be back in prototype for a new direction. If parts of the repo clearly differ (an experiments folder, a frozen legacy module), propose area overrides.
    Also propose up to three **project-specific rules** that the generic contract cannot know but the signals reveal, especially where a mistake would be costly. For example: migrations that already ran must never be edited; old mobile app versions keep calling the API, so responses only grow; a folder is generated and must not be edited by hand. Only rules grounded in what you read, one line each. Generic best practices don't belong here.
@@ -100,6 +110,8 @@ If the user's global instructions name a default set (for example `project-phase
    - Do not create `.ai/debt.md` yet. It is created on first entry.
    - Add the line `.ai/debt.md merge=union` to `.gitattributes` (create the file if missing) unless it is already there: when two branches add debt items, git keeps both instead of reporting a conflict.
 5. **Report** in two or three lines: phase, set, files touched.
+
+**Review (`/project-phase setup` on a project already set up).** Show the current set, phase, area overrides and custom rules in a few lines, read the signals as in step 2, and propose only what they suggest changing: a phase change (run it as in [Changing phase](#changing-phase)), another set, an override, a rule. Change only what the user confirms, rebuild the block from `phase.md` as in step 4, and add a history line. Never rewrite the history or touch `.ai/debt.md` here. If nothing needs to change, say so in one line.
 
 ### Status
 

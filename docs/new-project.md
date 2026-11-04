@@ -20,7 +20,7 @@ Ask the agent:
 
 > Set up the project phase for this repo.
 
-The agent looks at a few cheap signals (file listing, README, git log, CI, tests, deploy files), proposes a phase and a set with two or three lines of reasoning, and waits for you to confirm. For a new repo the proposal is usually `prototype`. Choose:
+Or `/project-phase setup`. The agent looks at a few cheap signals (file listing, README, git log, CI, tests, deploy files), proposes a phase and a set with two or three lines of reasoning, and waits for you to confirm. For a new repo the proposal is usually `prototype`. Choose:
 
 - **`explore`** if the code is disposable and the output is an answer ("can we parse these feeds fast enough?"). It is in the `full` set or in a `custom` one.
 - **`prototype`** if you are building a first working version to validate the idea.
@@ -57,10 +57,10 @@ Current: prototype (since 2026-11-04)
 
 > Set up the work journal.
 
-The agent adds its block to `AGENTS.md` (about 9 lines) and the line `.ai/journal/*.md merge=union linguist-generated=true` to `.gitattributes`. It asks where two things go, because a new repo has nothing to detect:
+Or `/work-journal setup`. The agent adds its block to `AGENTS.md` (about 9 lines) and the line `.ai/journal/*.md merge=union linguist-generated=true` to `.gitattributes`. It asks where two things go, because a new repo has nothing to detect:
 
 - **Design decisions**, the why behind the code: `docs/design/` (one file per decision), a single `docs/decisions.md` for a small project, or none (code comments, commit messages, README).
-- **Tasks**, open work and open questions: `docs/backlog/` (one file per task), GitLab or GitHub issues (through `glab` or `gh`) or another tracker with a connector, or none (follow-ups go in the agent's final message).
+- **Tasks**, open work and open questions: `docs/backlog/` (one file per task), GitLab or GitHub issues (through `glab` or `gh`), Jira (through `acli` or the Atlassian connector) or another tracker with a connector, or none (follow-ups go in the agent's final message).
 
 The answer becomes the first two lines of the block, for example:
 
@@ -69,7 +69,7 @@ The answer becomes the first two lines of the block, for example:
 - Tasks: `docs/backlog/`, one file per open task.
 ```
 
-The folders are created by the first file, not at setup. For a quick prototype, `none` for both is a fine start: you can change the two lines later.
+The folders are created by the first file, not at setup. For a quick prototype, `none` for both is a fine start: you can change the two lines later, by hand or with `/work-journal setup`, which shows the current choices and proposes changes.
 
 You don't have to ask for the setup: the first time the agent writes a journal entry in a repo without the block (for example when you say "let's stop here"), it sets the journal up and asks about decisions and tasks in its final message.
 

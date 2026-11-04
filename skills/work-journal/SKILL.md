@@ -1,9 +1,10 @@
 ---
 name: work-journal
-description: Keeps a terse work journal and a handoff document per branch in the repo so work can be paused at any moment and resumed later by the same or a different AI agent, model or tool, or by a human, also when several people work on the same project. Use this skill whenever the user is stopping or pausing ("let's stop here", "I'll continue tomorrow", "pick this up later", "switching to another model"), asks for a handoff, a session summary or a devlog, wants to continue previous work ("where were we?", "resume", "continue from yesterday"), or wants to set up resumable or logged AI sessions, or wants to turn it on or off for a project (`/work-journal on`, `/work-journal off`, "stop keeping the journal here"). Also use it when starting work in a repo that has `.ai/handoff/`, `.ai/handoff.md` or `.ai/journal/`, when a branch's task is done, when the user asks what to work on next or where design decisions and tasks are kept, and before the context runs out on a long task.
+description: Keeps a terse work journal and a handoff document per branch in the repo so work can be paused at any moment and resumed later by the same or a different AI agent, model or tool, or by a human, also when several people work on the same project. Use this skill whenever the user is stopping or pausing ("let's stop here", "I'll continue tomorrow", "pick this up later", "switching to another model"), asks for a handoff, a session summary or a devlog, wants to continue previous work ("where were we?", "resume", "continue from yesterday"), or wants to set up resumable or logged AI sessions, or wants to turn it on or off for a project (`/work-journal on`, `off`, "stop keeping the journal here") or types `/work-journal help`. Also use it when starting work in a repo that has `.ai/handoff/`, `.ai/handoff.md` or `.ai/journal/`, when a branch's task is done, when the user asks what to work on next or where design decisions and tasks are kept, and before the context runs out on a long task.
 license: MIT
+argument-hint: "[setup | on | off | help]"
 metadata:
-  version: "0.5.0"
+  version: "0.9.0"
 ---
 
 # Work Journal
@@ -27,18 +28,27 @@ Project state belongs in the repo: progress, decisions and next steps go in thes
 
 Two more places hold what outlives a branch, both chosen per project at setup and named in the `AGENTS.md` block: **design decisions** (why things are the way they are) and **tasks** (open work). See [Design decisions and tasks](#design-decisions-and-tasks).
 
+Commands:
+
+- `/work-journal`: where things stand, as in [Resuming](#resuming).
+- `/work-journal setup`: set it up, or review where design decisions and tasks go in a project already set up. See [Setup](#setup).
+- `/work-journal on`, `/work-journal off`: turn it on or off for this project. See [On / off](#on--off).
+- `/work-journal help`: this list, with where design decisions and tasks go (or off, or not set up) from the block in `AGENTS.md`, and the `/backlog` commands. Read only the block; run nothing else.
+
+Everything else works in words: "let's stop here", "where were we?", "write a handoff".
+
 Talk in the user's language: this skill is written in English, but reports, questions and the final message go in the language the user writes in. Files (the `AGENTS.md` block, journal, handoff) keep the language they already use; new ones are in English.
 
 ## Setup
 
-When the user asks to set this up, or the first time you write a journal entry in a repo without it (unless it is off, see [On / off](#on--off)):
+When the user asks to set this up (`/work-journal setup`), or the first time you write a journal entry in a repo without it (unless it is off, see [On / off](#on--off); an explicit setup replaces the off marker with the block):
 
 1. Add the block below to `AGENTS.md` (create the file if missing; leave existing content untouched). Agent tools load it on every task, which is what makes the protocol work even when this skill is not loaded.
 2. Claude Code reads `AGENTS.md` only when there is no `CLAUDE.md`. If `CLAUDE.md` exists and does not import it, add a line `@AGENTS.md` near the top.
 3. **Choose where design decisions and tasks go**, and write the two configuration lines at the top of the block accordingly:
    - Design decisions: if the repo has `docs/adr/`, `docs/decisions/` or `docs/design/`, use it. Otherwise propose `docs/design/` (or a single `docs/decisions.md` for a small project), or none.
-   - Tasks: if `origin` is on GitLab or GitHub (`git remote get-url origin`: `gitlab.com`, `github.com`, or a self-hosted host that `glab auth status` lists or whose name says gitlab), propose its issues; likewise another tracker if a connector for it is available. Otherwise `docs/backlog/` (one file per open task: no notifications or boards, fine for developers who read the repo), or none. If the repo already keeps open work in a file (`ROADMAP.md`, `TODO.md`), offer to split it into `docs/backlog/` files; without a yes, name that file as the task list and keep its format. A repo that already has `docs/tasks/` or `docs/todo/` with one file per task keeps it: name that folder in the block.
-   - Line variants: `Design decisions: none (code comments, commit messages, README).`, `Tasks: GitLab issues of team/podcast (via glab; writes only with the user's confirmation).`, `Tasks: Jira PODCAST (writes only with the user's confirmation).`, `Tasks: none (follow-ups go in the final message).`
+   - Tasks: if `origin` is on GitLab or GitHub (`git remote get-url origin`: `gitlab.com`, `github.com`, or a self-hosted host that `glab auth status` lists or whose name says gitlab), propose its issues. Jira comes first if branch names or commit subjects keep repeating one issue key (`git branch -a` and `git log -200 --format=%s`, pattern `[A-Z][A-Z0-9]+-[0-9]+`, ignoring names like `UTF-8` or `SHA-256`), or if the user names Jira: propose that project. Add the site (`<name>.atlassian.net`) to the line if `acli jira auth status` shows it; if not, write the line without it and ask for the site, which the user needs only to log in. The code can live on GitHub or GitLab with the tasks in Jira. Likewise another tracker if a connector for it is available. Otherwise `docs/backlog/` (one file per open task: no notifications or boards, fine for developers who read the repo), or none. If the repo already keeps open work in a file (`ROADMAP.md`, `TODO.md`), offer to split it into `docs/backlog/` files; without a yes, name that file as the task list and keep its format. A repo that already has `docs/tasks/` or `docs/todo/` with one file per task keeps it: name that folder in the block.
+   - Line variants: `Design decisions: none (code comments, commit messages, README).`, `Tasks: GitLab issues of team/podcast (via glab; writes only with the user's confirmation).`, `Tasks: Jira PODCAST on example.atlassian.net (via acli; writes only with the user's confirmation).`, `Tasks: Jira PODCAST, parent = PODCAST-10 (via acli; writes only with the user's confirmation).` (a fixed filter, only if the user asks for one), `Tasks: none (follow-ups go in the final message).`
    - Ask the user only about what you could not detect, in one question. If setup runs without the user asking for it, don't stop the task for this: ask in the final message and leave the lines out until they answer. A block without them means none for both. Never create the folders now; the first file creates them.
 4. Add this line to `.gitattributes` (create the file if missing) unless it is already there. `merge=union` makes git keep both sides when two branches append to the same day's journal, instead of reporting a conflict; `linguist-generated` collapses journal diffs in GitHub pull requests.
    ```
@@ -46,6 +56,8 @@ When the user asks to set this up, or the first time you write a journal entry i
    ```
 5. Don't create `.ai/` files yet; they are created on first write.
 6. Tell the user, in one line, that `.ai/` is meant to be committed so the handoff travels across machines and people. If they prefer to keep the journal private, add `.ai/journal/` to `.gitignore` and keep `.ai/handoff/` committed (or ignore all of `.ai/`).
+
+**Review (`/work-journal setup` with the block already there).** Show the two configuration lines, run step 3's detection again, and propose only what it suggests changing: issues or Jira keys that appeared since, a task folder that grew into a tracker, a fixed filter if the user asks. Change only the lines the user confirms, update the rest of the block to the current template if it is older, keeping those two lines, and add what steps 2 and 4 find missing (`@AGENTS.md`, the `.gitattributes` line). Never touch the journal, handoffs, task files or design decisions: moving existing tasks to a tracker is a separate step, each issue created with the user's confirmation as in the [backlog skill](../backlog/SKILL.md#creating-backlog-new). If nothing needs to change, say so in one line.
 
 ```markdown
 <!-- work-journal:start -->
@@ -200,13 +212,14 @@ Links: docs/design/2026-10-02-csv-export.md
 - `Assignee` is optional, a team handle (git or tracker username), never a full name or email. Never assign or reassign a task unless the user asks.
 - Write new task files only for follow-ups and open questions at the end of a branch's task, or when the user asks.
 
-**A tracker** (GitLab or GitHub issues, Jira, ...): reach it through its CLI (`glab` for GitLab, `gh` for GitHub) or a connector.
+**A tracker** (GitLab or GitHub issues, Jira, ...): reach it through its CLI (`glab` for GitLab, `gh` for GitHub, `acli` for Jira Cloud) or a connector (for Jira, the Atlassian connector if `acli` is missing).
 
 - Reading (list, view) needs no confirmation. Every write does: create, close, comment, assign, label. Propose each one in the final message with the exact command, and run it only after the user confirms it.
-- If the CLI is missing or not logged in (`glab auth status`, `gh auth status`), say so and offer to log in, as the [backlog skill](../backlog/SKILL.md#not-logged-in) describes. Never guess issues, and don't switch to a task folder on your own.
+- If the CLI is missing or not logged in (`glab auth status`, `gh auth status`, `acli jira auth status`), say so and offer to log in, as the [backlog skill](../backlog/SKILL.md#not-logged-in) describes. Never guess issues, and don't switch to a task folder on your own.
 - A new issue has the shape of a task file: the title, then Why, Done when and Links in the body. No assignee unless the user asks.
-- Name the issue ID in the handoff and the journal.
+- Name the issue ID in the handoff and the journal. For Jira, also put the key in the branch name (`feature/PODCAST-123-csv-export`) and in commit subjects and the pull or merge request title: Jira's GitHub and GitLab integrations link them to the work item.
 - **Closing an issue:** when the branch's task is done, give in the final message the line for the merge request or pull request description, `Closes #42`: merging then closes the issue, as deleting a task file does. GitLab and GitHub honor it only for merges into the project's default branch; if the branch merges elsewhere (git flow with `main` as default, merging into `develop`), say that the issue stays open until that branch reaches the default one, or propose `glab issue close 42` / `gh issue close 42` after the merge.
+- **Closing a Jira work item:** `Closes` doesn't apply. Propose in the final message `acli jira workitem transition --key PODCAST-123 --status "Done" --yes` to run after the merge (the status name follows the project's workflow), unless the team moves work items with Jira automation or smart commits (`PODCAST-123 #done`).
 
 **None**: follow-ups and open questions go in the final message and the journal entry of the end of the task.
 
