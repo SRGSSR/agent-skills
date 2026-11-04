@@ -62,20 +62,11 @@ The skills themselves handle setup, phase changes with transition checklists (fo
 
 ### Teams and long-lived projects
 
-- **One handoff per branch**, deleted when the branch's task is done: people and agents on different branches never overwrite each other's state.
-- **Shared journal and debt list without merge conflicts:** setup adds `merge=union` for `.ai/journal/*.md` and `.ai/debt.md` to `.gitattributes`, so git keeps both sides when two branches append. Web UIs that merge pull requests may ignore it; the conflict is then trivial (keep both sides).
-- **The journal can grow for years:** resuming reads only the newest file, so the cost does not grow. When a branch's task is done, decisions and dead ends that must last are moved to code comments or design decisions, where people will look. The skills never delete old journal files; to prune them, delete them by hand (git keeps them).
+One handoff per branch, so people on different branches never overwrite each other's state; the journal and the debt list are shared and merge without conflicts (`merge=union`); resuming reads only the newest journal file, so the cost doesn't grow over the years. Details: [Teams and long-lived projects](docs/teams.md).
 
 ### Design decisions and tasks
 
-What outlives a branch goes where people look, not in `.ai/`. At setup `work-journal` finds or proposes a place for each, and writes the choice in its `AGENTS.md` block:
-
-- **Design decisions** (why things are the way they are, alternatives discarded): an existing ADR or decisions folder, a new `docs/design/` (one file per decision), a single `docs/decisions.md`, or none (code comments, commit messages, README).
-- **Tasks** (open work and open questions): your issue tracker (the agent proposes issues and creates them only through a connector, with your confirmation), `docs/tasks/` (one Markdown file per open task, optionally with an `Assignee:` team handle), or none (follow-ups go in the agent's final message).
-
-With `docs/tasks/`, a task file is named like the branch that will do it (`docs/tasks/csv-export.md` → `feature/csv-export`), and that branch deletes it when the task is done, so merging the branch closes the task. When a branch's task is done, its follow-ups and open questions become new tasks.
-
-Project state goes in these files, not in the agent tool's private memory, which other agents and people can't read.
+What outlives a branch goes where people look, not in `.ai/`: **design decisions** (an existing ADR folder, `docs/design/`, `docs/decisions.md`, or code comments and the README) and **tasks** (`docs/tasks/` with one file per open task, your issue tracker, or none). `work-journal` chooses both at setup and names them in its block. Details: [Teams and long-lived projects](docs/teams.md#tasks).
 
 ## Install
 
@@ -120,22 +111,15 @@ Removing a skill does not change how the agent behaves in projects already set u
 
 ## Usage
 
-Step-by-step guides for a new project, a project already under way, teams and phase changes are in [`docs/`](docs/README.md).
+Talk to your agent normally, in any language. For example:
 
-Talk to your agent normally. Examples:
+- "Set up the project phase for this repo."
+- "We're launching next month. Move us to stabilize."
+- "Let's stop here, I'll continue tomorrow with another model." Then, next time: "Where were we?"
 
-- "Set up the project phase for this repo." The agent reads a few cheap signals (git history, CI, tests, deploy files), proposes a phase and a set, and asks you to confirm.
-- "We're just prototyping, stop over-engineering."
-- "We're launching next month. Move us to stabilize." The agent runs the transition checklist and proposes a prioritized plan.
-- "What phase are we in, and what's in the debt list?"
-- "Let's stop here, I'll continue tomorrow with another model." The agent writes the handoff.
-- "Where were we?" The agent reads the handoff, checks it against git and continues.
+More requests, and step-by-step guides for a new project, a project already under way, teams and phase changes: [`docs/`](docs/README.md).
 
-To set a default phase set for all your projects, put a line like `project-phase set: simple` in your global agent instructions (for example `~/.claude/CLAUDE.md`).
-
-To be asked for the phase in every repo that has none yet, add `project-phase: ask` there too. Before the first code change in such a repo the agent asks which phase it is in (with a guess from the repo), sets it up from your answer, or adds the off marker if you don't want phases there. Without that line the skill never sets itself up unasked.
-
-The agent also asks when the recorded phase looks wrong (a prototype that gained real users, `AGENTS.md` and `.ai/phase.md` disagreeing), and records your answer as a history line in `.ai/phase.md`, so it doesn't ask again for the same reason.
+Optional lines for your global agent instructions (for example `~/.claude/CLAUDE.md`): `project-phase set: simple` sets the default phase set; `project-phase: ask` makes the agent ask for the phase in every repo that has none yet ([details](docs/phase-changes.md#when-the-agent-asks-about-the-phase)).
 
 ## Cost
 

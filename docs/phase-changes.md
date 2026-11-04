@@ -60,12 +60,6 @@ If you don't answer or say "later", nothing is recorded. The agent continues und
 
 ## Turning the skills off
 
-> /project-phase off
-
-> /work-journal off
-
-You can also ask in words ("turn project-phase off here"). The block in `AGENTS.md` is replaced by a one-line marker such as `<!-- project-phase:off -->`, which also stops the skill from setting itself up again. `.ai/` is kept. While off, the agent still does what you explicitly ask, once, and reminds you in one line that the skill is off. `/project-phase on` and `/work-journal on` restore the blocks; the phase block is rebuilt from `.ai/phase.md`, so bullets you added to it by hand are first moved to its custom rules.
+`/project-phase off` and `/work-journal off` (or the same in words) replace the block in `AGENTS.md` with an off marker and keep `.ai/`; `/project-phase on` and `/work-journal on` restore it. Details, and how to remove a skill: [Disable or uninstall](../README.md#disable-or-uninstall).
 
 Often you want less rigor rather than none: moving to `prototype` usually fits better than turning `project-phase` off.
-
-To remove a skill altogether, see [Disable or uninstall](../README.md#disable-or-uninstall).
