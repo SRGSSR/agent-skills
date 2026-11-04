@@ -120,6 +120,8 @@ Removing a skill does not change how the agent behaves in projects already set u
 
 ## Usage
 
+Step-by-step guides for a new project, a project already under way, teams and phase changes are in [`docs/`](docs/README.md).
+
 Talk to your agent normally. Examples:
 
 - "Set up the project phase for this repo." The agent reads a few cheap signals (git history, CI, tests, deploy files), proposes a phase and a set, and asks you to confirm.
