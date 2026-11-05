@@ -839,8 +839,8 @@ console.log('null');`,
     const changed = changedFiles();
     const msg = finalMessage();
     check('The final message gives the acli login command', () => [/acli jira auth login/.test(msg), /acli jira auth login/.test(msg) ? 'found' : 'missing']);
-    check('The final message gives a search for the current sprint (sprint in openSprints())', () => [/sprint in openSprints\(\)/.test(msg), /sprint in openSprints\(\)/.test(msg) ? 'found' : 'missing']);
-    check('The final message gives a search for the rest (sprint is EMPTY or not in openSprints())', () => [/sprint is EMPTY|sprint not in openSprints\(\)/.test(msg), /sprint is EMPTY|sprint not in openSprints\(\)/.test(msg) ? 'found' : 'missing']);
+    const sp = /openSprints\(\)|current sprint/i;
+    check('The final message gives the sprint-first searches or says the current sprint comes first', () => [sp.test(msg), sp.test(msg) ? 'found' : 'missing']);
     check('No project files changed (only the journal may get an entry)', () => {
       const bad = changed.filter((f) => !f.startsWith('.ai/journal/'));
       return [bad.length === 0, bad.join(', ') || 'only the journal'];

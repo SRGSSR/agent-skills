@@ -504,11 +504,10 @@
       "name": "backlog-list-jira-sprint",
       "fixture": "evals/fixtures/jira-team",
       "prompt": "/backlog",
-      "expected_output": "Tasks are in Jira ITEMS and acli cannot reach the site. The agent gives the login command and the two searches it would run, current sprint first (sprint in openSprints()) and then the rest, ordered by priority; it invents nothing and changes nothing.",
+      "expected_output": "Tasks are in Jira ITEMS and acli cannot reach the site. The agent gives the login command, says the listing will start from the current sprint (or shows the two searches), invents nothing and changes nothing. Showing the queries is not required while logged out: the skill stops at login.",
       "expectations": [
         "The final message gives the acli login command",
-        "The final message gives a search for the current sprint (sprint in openSprints())",
-        "The final message gives a search for the rest (sprint is EMPTY or not in openSprints())",
+        "The final message gives the sprint-first searches or says the current sprint comes first",
         "No project files changed (only the journal may get an entry)"
       ]
     }
