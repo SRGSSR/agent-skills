@@ -873,6 +873,19 @@ console.log('null');`,
       return [head === base && ch.length === 0, `HEAD ${head === base ? 'same' : 'moved'}; changed: ${ch.join(', ') || 'none'}`];
     });
   },
+  'finish-help'() {
+    const msg = finalMessage();
+    check('The final message names the modes merge, merge-request and pull-request', () => {
+      const miss = ['merge', 'merge-request', 'pull-request'].filter((m) => !new RegExp('\\b' + m + '\\b').test(msg));
+      return [miss.length === 0, miss.length ? 'missing: ' + miss.join(', ') : 'all found'];
+    });
+    check('The final message names develop as the base', () => [/\bdevelop\b/.test(msg), /\bdevelop\b/.test(msg) ? 'found' : 'missing']);
+    check('Nothing changed: same branch, same commit, no changed files', () => {
+      const head = git('rev-parse', 'HEAD').trim();
+      const ch = changedFiles();
+      return [head === base && ch.length === 0, `HEAD ${head === base ? 'same' : 'moved'}; changed: ${ch.join(', ') || 'none'}`];
+    });
+  },
   'finish-merge-base'() {
     const anc = (b) => spawnSync('git', ['-C', repo, 'merge-base', '--is-ancestor', base, b]).status === 0;
     check('develop contains the feature work', () => [anc('develop'), anc('develop') ? 'merged' : 'not merged']);
