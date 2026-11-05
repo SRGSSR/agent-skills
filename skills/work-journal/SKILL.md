@@ -4,7 +4,7 @@ description: Keeps a terse work journal and a handoff document per branch in the
 license: MIT
 argument-hint: "[setup | on | off | help]"
 metadata:
-  version: "0.10.0"
+  version: "0.11.0"
 ---
 
 # Work Journal
@@ -34,6 +34,8 @@ Commands:
 - `/work-journal setup`: set it up, or review where design decisions and tasks go in a project already set up. See [Setup](#setup).
 - `/work-journal on`, `/work-journal off`: turn it on or off for this project. See [On / off](#on--off).
 - `/work-journal help`: this list, with where design decisions and tasks go (or off, or not set up) from the block in `AGENTS.md`, and the `/backlog` commands. Read only the block; run nothing else.
+
+In the same plugin, `/start <task or name>` opens a branch for a task with its first handoff, and `/finish <merge | mr | pr>` checks that the work is done and documented, then merges it or prepares the merge or pull request (see the [start](../start/SKILL.md) and [finish](../finish/SKILL.md) skills).
 
 Everything else works in words: "let's stop here", "where were we?", "write a handoff".
 
@@ -135,7 +137,7 @@ Write for a capable reader who has never seen this project or conversation. The 
 ```markdown
 # Handoff
 Updated: 2026-10-02 17:40 · by: claude-code/claude-opus-5-5
-Branch: feature/csv-export · Last commit: a1b2c3d · Uncommitted: `src/export.js` (work in progress)
+Branch: feature/csv-export · Base: develop · Last commit: a1b2c3d · Uncommitted: `src/export.js` (work in progress)
 Phase: prototype   <!-- only if the project-phase block exists -->
 
 ## Goal
@@ -168,11 +170,13 @@ Users can export the item list as CSV from the list page. Done when the button d
 - Key files: `src/export.js`, `src/routes/items.js`
 ```
 
+`Base:` is the branch this one started from, written by `/start` (or, without it, the branch it was created from if you know it). Keep it when rewriting: `/finish merge` merges there.
+
 Before finishing, check: could a different model, in a different tool, continue from this file plus the repo, without the conversation? If not, add what is missing.
 
 ### When the branch's task is done
 
-When nothing is left for an agent to do on the branch (what remains, if anything, is review and merge by people), don't leave a stale handoff pretending work is in progress:
+When nothing is left for an agent to do on the branch (what remains, if anything, is review and merge by people), don't leave a stale handoff pretending work is in progress. `/finish` runs these steps with its checks, then merges or prepares the merge request:
 
 1. **Keep what must last.** The journal gets buried over time and the handoff is about to go, so look at its Decisions and Dead ends: whatever will matter after this branch (a constraint, a reason, an approach that fails) goes where people will look. A short comment next to the code it concerns; the design decisions named in the block (with none: the README for decisions about the whole project or its users, the commit message otherwise); a custom rule in `.ai/phase.md` if it is a rule to always follow and project-phase is in use. "It's in the journal" doesn't count, the journal is what gets buried; nor does code that implements a decision without saying why (`batch.slice(0, 500)` doesn't tell the next person that the partner API rejects larger batches). Skip only what mattered during the task alone, and name in the journal entry what you moved or why nothing needed to.
 2. **Close the task and file what is left.** Delete the branch's task file, so the merge closes it (with a tracker, see [closing an issue](#tasks)). Follow-ups and open questions from the handoff become new tasks, not lines buried in the journal. See [Tasks](#tasks).

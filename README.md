@@ -3,7 +3,7 @@
 Two [Agent Skills](https://agentskills.io) that make AI coding agents behave the way your project needs right now, and let you stop and resume work at any moment, even with a different agent or model.
 
 - **`project-phase`**: tells the agent which lifecycle phase the project is in (prototype, production, maintenance, ...) and what that means for how it works.
-- **`work-journal`**: keeps a terse journal and a handoff document in the repo, so any agent or human can pick up where the last one stopped. It ships with **`backlog`**: `/backlog` lists the open tasks and what to pick up next, `/backlog new`, `/backlog edit`, `/backlog comment` and `/backlog close` create, edit, comment on and close them, `/backlog filter` lists only those that match a condition, `/backlog help` shows the commands.
+- **`work-journal`**: keeps a terse journal and a handoff document in the repo, so any agent or human can pick up where the last one stopped. It ships with **`backlog`**: `/backlog` lists the open tasks and what to pick up next, `/backlog new`, `/backlog edit`, `/backlog comment` and `/backlog close` create, edit, comment on and close them, `/backlog filter` lists only those that match a condition, `/backlog help` shows the commands. And with **`start`** and **`finish`**: `/start <task>` opens a branch for a task with its first handoff, `/finish <merge | mr | pr>` checks that the work is done and documented, then merges it or prepares the merge or pull request.
 
 They work independently and fit together when both are installed.
 
@@ -93,7 +93,7 @@ With [`skills`](https://github.com/vercel-labs/skills):
 npx skills add SRGSSR/srgssr-project-status-skill
 ```
 
-Or copy `skills/project-phase/`, `skills/work-journal/` and `skills/backlog/` into your tool's skills folder (`.agents/skills/` is read by most tools; Claude Code uses `.claude/skills/`).
+Or copy `skills/project-phase/`, `skills/work-journal/`, `skills/backlog/`, `skills/start/` and `skills/finish/` into your tool's skills folder (`.agents/skills/` is read by most tools; Claude Code uses `.claude/skills/`).
 
 ### Tool notes
 
@@ -128,6 +128,8 @@ Each skill also has commands. In Claude Code, typing one shows its subcommands:
 | `/project-phase setup`, `/work-journal setup` | Sets the skill up, or reviews the choices of a project already set up |
 | `/project-phase on`, `off` (same for `/work-journal`) | Turns the skill on or off in one project |
 | `/backlog new`, `edit`, `comment`, `close`, `filter` | Creates, edits, comments on, closes or filters tasks |
+| `/start <task or name> [context]` | Opens a branch for the task (git flow if the repo uses it), writes its first handoff, offers to assign the task to you |
+| `/finish merge`, `/finish mr`, `/finish pr` | Checks that the work is done and documented; then merges, or prepares the merge or pull request |
 | `help` after any of the three | Its commands and current settings |
 
 Examples of each `/backlog` command: [Backlog commands](docs/teams.md#backlog-commands). More requests, and step-by-step guides for a new project, a project already under way, teams and phase changes: [`docs/`](docs/README.md).
@@ -175,6 +177,7 @@ Why the skills work the way they do, and what was discarded. This repo keeps its
 - Sprints are the team's planning: new work items go to the backlog, and the agent never moves a work item into or out of a sprint, deletes or archives one. The listing runs two searches, current sprint and the rest, because JQL can't sort by "in an open sprint".
 - Subcommands are fixed words: `/backlog filter <condition>` rather than `/backlog <condition>`, which would clash with a condition like "close". Names chosen to avoid clashes: `/backlog` (not `/task`, close to built-in commands) and `setup` (not `init`, which Claude Code uses; "setup" is also the skills' own term).
 - `.ai/team.md` is a Markdown table the agent reads, not a script: the skills stay plain Markdown for any agent, a few dozen rows need no program, and two people with the same nickname need a question anyway. It is per project and ignored by git, because colleagues' handles and account IDs don't belong in the history; Jira gets the account ID, not the email.
+- `/start` and `/finish` bracket one branch, not one session: a branch spans many sessions, paused and resumed through its handoff. `/finish` requires the mode (`merge`, `mr`, `pr`) because how work is integrated is the user's choice; without git flow, `merge` goes back into the branch recorded as `Base:` in the handoff, since git doesn't remember where a branch started. Names: `/finish` rather than `/close`, which `/backlog close` already uses for tasks, and the words of git flow (`feature start`, `feature finish`). With `mr` and `pr`, the handoff deletion is committed in the request itself, so merging it in the web UI completes the work.
 - A listing fetches at most 100 tasks (the CLIs default to 30, which silently cut longer backlogs) and says when there may be more.
 
 ## Related work

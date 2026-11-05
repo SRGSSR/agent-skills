@@ -846,6 +846,64 @@ console.log('null');`,
       return [bad.length === 0, bad.join(', ') || 'only the journal'];
     });
   },
+  'start-task'() {
+    const changed = changedFiles();
+    const cur = git('branch', '--show-current').trim();
+    check('The current branch is feature/pdf-labels', () => [cur === 'feature/pdf-labels', cur]);
+    const h = '.ai/handoff/feature-pdf-labels.md';
+    check('The handoff .ai/handoff/feature-pdf-labels.md exists and says Base: develop', () => [/Base:\s*`?develop`?/.test(read(h)), exists(h) ? (read(h).match(/^.*Base:.*$/m) || ['no Base line'])[0] : 'missing']);
+    check('develop is unchanged', () => {
+      const dev = git('rev-parse', 'develop').trim();
+      return [dev === base, dev === base ? 'unchanged' : `develop at ${dev.slice(0, 7)}, was ${base.slice(0, 7)}`];
+    });
+    check('No source files changed (only .ai/ and the task file may change)', () => {
+      const bad = changed.filter((f) => !f.startsWith('.ai/') && f !== 'docs/tasks/pdf-labels.md');
+      return [bad.length === 0, bad.join(', ') || 'none'];
+    });
+  },
+  'finish-no-mode'() {
+    const msg = finalMessage();
+    check('The final message names the modes merge, mr and pr', () => {
+      const miss = ['merge', 'mr', 'pr'].filter((m) => !new RegExp('\\b' + m + '\\b').test(msg));
+      return [miss.length === 0, miss.length ? 'missing: ' + miss.join(', ') : 'all found'];
+    });
+    check('Nothing changed: same branch, same commit, no changed files', () => {
+      const head = git('rev-parse', 'HEAD').trim();
+      const ch = changedFiles();
+      return [head === base && ch.length === 0, `HEAD ${head === base ? 'same' : 'moved'}; changed: ${ch.join(', ') || 'none'}`];
+    });
+  },
+  'finish-merge-base'() {
+    const anc = (b) => spawnSync('git', ['-C', repo, 'merge-base', '--is-ancestor', base, b]).status === 0;
+    check('develop contains the feature work', () => [anc('develop'), anc('develop') ? 'merged' : 'not merged']);
+    check('main does not contain the feature work', () => [!anc('main'), anc('main') ? 'merged into main' : 'main untouched']);
+    check('The current branch is develop and feature/csv-helper is deleted', () => {
+      const cur = git('branch', '--show-current').trim();
+      const still = git('branch', '--list', 'feature/csv-helper').trim();
+      return [cur === 'develop' && !still, `current ${cur}; feature branch ${still ? 'still there' : 'deleted'}`];
+    });
+    check('On develop, the handoff and docs/tasks/csv-helper.md are gone and a journal entry exists', () => {
+      const files = git('ls-tree', '-r', '--name-only', 'develop').split('\n');
+      const h = files.includes('.ai/handoff/feature-csv-helper.md');
+      const t = files.includes('docs/tasks/csv-helper.md');
+      const j = files.some((f) => f.startsWith('.ai/journal/'));
+      return [!h && !t && j, `handoff ${h ? 'present' : 'gone'}, task ${t ? 'present' : 'gone'}, journal ${j ? 'yes' : 'no'}`];
+    });
+  },
+  'finish-pr'() {
+    const msg = finalMessage();
+    const anc = spawnSync('git', ['-C', repo, 'merge-base', '--is-ancestor', base, 'develop']).status === 0;
+    check('develop is unchanged', () => [!anc, anc ? 'feature merged into develop' : 'unchanged']);
+    check('The cleanup is committed on the branch (no handoff in HEAD)', () => {
+      const files = git('ls-tree', '-r', '--name-only', 'feature/csv-helper').split('\n');
+      const h = files.includes('.ai/handoff/feature-csv-helper.md');
+      return [!h, h ? 'handoff still in the branch' : 'handoff deleted in a commit'];
+    });
+    const pushRe = /git push -u origin feature\/csv-helper|git push --set-upstream origin feature\/csv-helper/;
+    check('The final message gives the push command for feature/csv-helper', () => [pushRe.test(msg), pushRe.test(msg) ? 'found' : 'missing']);
+    const prRe = /gh pr create[^\n]*(--base|-B)\s+develop/;
+    check('The final message gives gh pr create with --base develop', () => [prRe.test(msg), prRe.test(msg) ? 'found' : 'missing']);
+  },
   'backlog-new'() {
     const changed = changedFiles();
     const added = changed.filter((f) => f.startsWith('docs/tasks/') && !atBase(f) && exists(f));
