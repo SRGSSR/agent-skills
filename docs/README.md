@@ -25,6 +25,7 @@ The skills react to plain requests, in any language. A few that cover most needs
 | "Where were we?" or `/work-journal` | Reads the handoff, checks it against git, continues |
 | "What should I work on next?" or `/backlog` | Lists the open tasks (folder, GitLab or GitHub issues, Jira): yours, unassigned, others; suggests one |
 | `/backlog new <what>`, `/backlog edit <task> <change>`, `/backlog comment <task> <text>`, `/backlog close <task>` | Creates, edits, comments on or closes a task; issues only after your confirmation |
+| "Who could take PODCAST-57?" | Suggests people whose Roles in `.ai/team.md` match the task, with their open tasks; assigns only if you ask |
 | "Assign #42 to Simo." | Finds Simo's handle for that tracker in `.ai/team.md` (or asks and adds the row), shows the change, assigns after your confirmation |
 | `/backlog filter <condition>`, `/backlog help` | Lists only the tasks that match (parent, epic, label, sprint, person, JQL...); shows the commands |
 | "Let's start on PODCAST-42." or `/start PODCAST-42` | Opens `feature/PODCAST-42-<slug>` from the development branch (git flow if used), writes the handoff with the task's goal, offers to assign the task to you and mark it in progress |

@@ -37,6 +37,28 @@ The agent checks everything first: no stray uncommitted changes, build and tests
 | `/finish mr`, `/finish merge-request` | A GitLab merge request into the base, with title, description and `Closes #42` (or the Jira key) |
 | `/finish pr`, `/finish pull-request` | The same as a GitHub pull request |
 
+If a check fails, nothing is committed or merged, for example:
+
+```markdown
+/finish merge stopped: one problem.
+- docs/usage.md shows a command line for npm start and npm test, but not for the new
+  `node bin/export.js > items.csv`. Add it there and in docs/csv-export.md?
+Everything else is ready: tests 2/2, handoff closed, decisions in docs/csv-export.md.
+```
+
+For `/finish pr` the agent prepares the title and body from the task and the handoff:
+
+```markdown
+PODCAST-42 CSV export
+
+Users download the item list as CSV, and it opens in Excel (de-CH).
+- `toCsv(items)` in export.js: `;` separator and UTF-8 BOM
+- "Download CSV" link on the list page
+How to verify: `npm test`, then open the list page and click the link.
+
+PODCAST-42
+```
+
 The mode is required: `/finish` alone shows the syntax. Nothing is pushed: for a merge or pull request, the agent gives you `git push -u origin <branch>`, then creates the request after your yes. The cleanup commit is part of the request, so merging it completes the work. `hotfix/` and `release/` branches are left to you, because finishing them is a release.
 
 `ls .ai/handoff/` is the list of work in progress. An agent that starts on a branch without a handoff sees the others, mentions them only if relevant, and doesn't resume them unless you ask.
@@ -91,7 +113,7 @@ The same commands work with a task folder, GitLab, GitHub and Jira. In a tracker
 | Command | Example | What happens |
 |---|---|---|
 | `/backlog` | `/backlog` | The current branch's next step, then the open tasks: yours, unassigned, a count of the others'. Ends with one suggestion and the list of commands. |
-| `/backlog new <what>` | `/backlog new Export the item list as PDF. The client wants printable lists; done when the PDF has the CSV columns.` | Drafts title, Why, Done when; asks for what is missing instead of inventing it; checks for duplicates; creates the task file or the issue. No assignee unless you name one. |
+| `/backlog new <what>` | `/backlog new Export the item list as PDF. The client wants printable lists; done when the PDF has the CSV columns.` | Drafts title, Why, Done when; asks for what is missing instead of inventing it; checks for duplicates; creates the task file or the issue. No assignee unless you name one; with Roles in `.ai/team.md`, it suggests who could take it. |
 | `/backlog edit <task> <change>` | `/backlog edit PODCAST-42 title "Export as PDF and CSV"` · `/backlog edit #42 assign to Simo` | Shows before → after; changes title, description, labels, type or assignee. |
 | `/backlog comment <task> <text>` | `/backlog comment #42 the API is ready on staging` | Posts your words as they are (only typos fixed); in a task file, a dated line under `## Notes`. |
 | `/backlog close <task> [reason]` | `/backlog close #42 duplicate of #12` · `/backlog close PODCAST-7 we dropped it` | Warns if the task is in progress or assigned to someone else; posts the reason as a comment, then closes (GitHub "not planned" or duplicate, Jira the status you name). A task file is deleted. |
@@ -114,7 +136,7 @@ PODCAST, backlog:
 - PODCAST-57 Dark mode toggle · unassigned
 - 12 assigned to others
 
-Suggestion: PODCAST-42, yours in the current sprint.
+Suggestion: PODCAST-42, yours in the current sprint. To begin: /start PODCAST-42
 Commands: new, edit, comment, close, filter, help.
 ```
 
@@ -171,8 +193,22 @@ The same person can be `monacosi` in GitLab, `simone-monaco` on GitHub and an ac
 
 - "Assign #42 to Simo", "Simo's tasks": the agent matches the name against handles and aliases, ignoring case, and uses the handle of the system in use. With two matches it asks.
 - An unknown name: the agent looks the person up in the tracker (project members in GitLab, collaborators on GitHub, an existing assignee or the Atlassian connector in Jira), proposes the row and adds it when you confirm who it is.
-- **Filled at setup:** `/work-journal setup` proposes the table from the git authors of the last 12 months and the tracker's members (GitLab project members, GitHub collaborators, Jira assignees), matched by name. Uncertain matches are marked `?` for you to confirm; bots are left out; the first name becomes an alias; Roles stays empty for you to fill. On a project already set up, `/work-journal setup` proposes only the people missing.
-- **Roles** (free text: `backend`, `frontend`, `QA`, `PO`) let the agent suggest who could take a new task, with how many open tasks each already has. It only suggests: assigning is up to you.
+- **Filled at setup:** `/work-journal setup` proposes the table from the git authors of the last 12 months and the tracker's members (GitLab project members, GitHub collaborators, Jira assignees), matched by name. Uncertain matches are marked `?` for you to confirm; bots are left out; the first name becomes an alias; Roles stays empty for you to fill. On a project already set up, `/work-journal setup` proposes only the people missing. A proposal looks like this:
+
+  ```markdown
+  | Handle | Git | GitLab | GitHub | Jira | Roles | Aliases |
+  |---|---|---|---|---|---|---|
+  | monacosi | Simone Monaco | | simone-monaco | 712020:3f1c... | | Simone |
+  | rossial | Alessandro Rossi | | arossi? | 712020:9a2b... | | Alessandro |
+
+  `arossi?`: GitHub collaborator without a display name; is it Alessandro Rossi? dependabot[bot] left out.
+  ```
+- **Roles** (free text: `backend`, `frontend`, `QA`, `PO`) let the agent suggest who could take a new task, with how many open tasks each already has. It only suggests: assigning is up to you. For example, after `/backlog new Dark mode toggle for the list page`:
+
+  ```markdown
+  Who could take it (frontend): giulia-bianchi (2 open tasks), monacosi (5 open tasks).
+  Assign it to one of them? Otherwise it stays unassigned.
+  ```
 - **Committed**, because everyone with access to the repo already sees these names in git and the tracker. In a public repo it is ignored by git instead, so that accounts, nicknames and roles don't go online; if the agent can't tell whether the repo is public, it asks and keeps the file ignored until you answer. Only handles, account IDs, display names, roles and aliases, no emails. Edit it by hand whenever you like.
 - Task files use the Handle column in `Assignee:`. The row whose Git column matches your `git config user.name` is you, so a task folder can tell which tasks are yours.
 

@@ -96,7 +96,28 @@ The journal stays light in explore and prototype: entries only for decisions, de
 
 > Let's stop here, I'll continue tomorrow.
 
-The agent writes `.ai/handoff/<branch>.md` (for `main`: `.ai/handoff/main.md`): goal, status, next steps, decisions, dead ends, open questions, how to verify. It is written for a reader with zero context, so the next session can be another tool or model.
+The agent writes `.ai/handoff/<branch>.md` (for `main`: `.ai/handoff/main.md`): goal, status, next steps, decisions, dead ends, open questions, how to verify. It is written for a reader with zero context, so the next session can be another tool or model:
+
+```markdown
+# Handoff
+Updated: 2026-11-04 17:40 · by: claude-code/claude-opus-5-5
+Branch: feature/csv-export · Base: develop · Last commit: a1b2c3d · Uncommitted: none
+
+## Goal
+Users download the item list as CSV, and it opens correctly in Excel.
+
+## Status
+- [x] `GET /items.csv` streams the rows
+- [ ] Download link on the list page
+
+## Next steps
+1. Add the "Download CSV" link to `renderList()` in `server.js`.
+
+## How to verify
+- `npm test`, then open http://localhost:3000 and click the link.
+```
+
+Decisions, dead ends and open questions get their own sections when there are any. `Base:` is the branch this one started from, written by `/start`.
 
 > Where were we?
 

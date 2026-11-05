@@ -72,7 +72,7 @@ A tracker looks like this in the block:
 
 ### Changing the choices later
 
-Run `/project-phase setup` or `/work-journal setup` again on a project already set up. The agent shows the current choices, reads the signals again and proposes only what they suggest changing, for example Jira keys that appeared in the commits since setup, or a phase that no longer fits. It changes only what you confirm. The journal, handoffs, task files, design decisions, the phase history and the debt list stay as they are; moving existing task files to a tracker is a separate step, one confirmed issue at a time.
+Run `/project-phase setup` or `/work-journal setup` again on a project already set up. The agent shows the current choices, reads the signals again and proposes only what they suggest changing, for example Jira keys that appeared in the commits since setup, people missing from `.ai/team.md`, or a phase that no longer fits. It changes only what you confirm. The journal, handoffs, task files, design decisions, the phase history and the debt list stay as they are; moving existing task files to a tracker is a separate step, one confirmed issue at a time.
 
 ## 3. Working in production or maintenance
 
