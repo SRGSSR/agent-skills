@@ -29,7 +29,7 @@ The agent checks that nothing is left uncommitted or half done, reads the task, 
 
 > /finish merge
 
-The agent checks everything first: no stray uncommitted changes, build and tests green, nothing open in the handoff, docs updated for the changed behavior, decisions and dead ends moved, follow-ups filed as tasks. If anything is missing it stops, lists it and asks. Otherwise it closes the task, deletes the handoff, writes the journal entry, commits, and integrates the way you named:
+The agent checks everything first: no stray uncommitted changes, build and tests green, nothing open in the handoff, docs complete for what the branch changed (each new command, option or behavior described where users look, with an example wherever similar things have one, nothing describing the old behavior), decisions and dead ends moved, follow-ups filed as tasks. If anything is missing it stops, lists it and asks. Otherwise it closes the task, deletes the handoff, writes the journal entry, commits, and integrates the way you named:
 
 | Mode | What happens |
 |---|---|

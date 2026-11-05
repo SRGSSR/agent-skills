@@ -4,7 +4,7 @@ description: Finishes the work on the current branch. It checks that everything 
 license: MIT
 argument-hint: "<merge | mr | pr>"
 metadata:
-  version: "0.1.1"
+  version: "0.2.0"
 ---
 
 # Finish
@@ -30,7 +30,13 @@ Run every check, then report all problems at once. If there is any, stop: one li
 - **Working tree:** uncommitted changes are listed; ask whether they belong to the work.
 - **Build and tests:** the commands in the project's instructions (`AGENTS.md`, `CLAUDE.md`, README, package scripts). A failure stops; no commands found, say so.
 - **Handoff:** no open status items or next steps, no open questions for the user.
-- **Docs:** for behavior the branch changed (`git diff --stat <base>...HEAD`), the docs that describe it (README, `docs/`, help texts) are updated. Name what looks missing.
+- **Docs**, for what the branch changed (`git diff --stat <base>...HEAD`), not an audit of all docs:
+  - everything new a user can see (command, option, config, file format, behavior) is described where users look for it: README, the guide on that topic, help texts;
+  - where the docs show examples for similar things (a command line, a config block, an output), the new one has one too; if the project's docs use no examples, none is required;
+  - nothing still describes the old behavior: `grep` the docs for names the branch renamed or removed;
+  - rules the project sets for its docs (in `AGENTS.md` or `CLAUDE.md`) hold.
+
+  Name each gap with the file where it belongs.
 - **What must last:** decisions and dead ends moved where people look, follow-ups and open questions filed as tasks, deliberate shortcuts in `.ai/debt.md` if project-phase is in use (work-journal, [When the branch's task is done](../work-journal/SKILL.md#when-the-branchs-task-is-done)).
 
 ## 2. Close the work on the branch

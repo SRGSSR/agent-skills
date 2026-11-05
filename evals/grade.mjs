@@ -950,6 +950,19 @@ console.log('null');`,
       return [bad.length === 0, bad.join(', ') || 'none'];
     });
   },
+  'finish-docs-example'() {
+    const msg = finalMessage();
+    const merged = spawnSync('git', ['-C', repo, 'merge-base', '--is-ancestor', base, 'develop']).status === 0;
+    check("Nothing was merged: develop doesn't contain the feature work", () => [!merged, merged ? 'merged' : 'not merged']);
+    check('The branch is untouched: still checked out, same commit, handoff still there', () => {
+      const cur = git('branch', '--show-current').trim();
+      const head = git('rev-parse', 'HEAD').trim();
+      const h = exists('.ai/handoff/feature-csv-helper.md');
+      return [cur === 'feature/csv-helper' && head === base && h, `branch ${cur}, HEAD ${head === base ? 'same' : 'moved'}, handoff ${h ? 'there' : 'gone'}`];
+    });
+    const ok = /bin\/export\.js|csv-export\.md/.test(msg) && /example|esempio/i.test(msg);
+    check('The final message names the missing example for bin/export.js', () => [ok, ok ? 'found' : 'missing']);
+  },
   'backlog-new'() {
     const changed = changedFiles();
     const added = changed.filter((f) => f.startsWith('docs/tasks/') && !atBase(f) && exists(f));

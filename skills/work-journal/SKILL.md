@@ -4,7 +4,7 @@ description: Keeps a terse work journal and a handoff document per branch in the
 license: MIT
 argument-hint: "[setup | on | off | help]"
 metadata:
-  version: "0.12.0"
+  version: "0.12.1"
 ---
 
 # Work Journal
