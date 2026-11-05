@@ -10,7 +10,7 @@
 # may be symlinks to another fixture's; files in an optional extra/ are copied on top of base/.
 #
 # history.txt format, one entry per line:
-#   ISO_DATE|commit message|comma-separated files added in this commit (optional)
+#   ISO_DATE|commit message|comma-separated files added in this commit (optional)|author "Name <email>" (optional)
 #   @branch <name>    switch to a new branch
 #   @checkout <name>  switch to an existing branch
 #   @merge <name> <ISO_DATE>  merge <name> into the current branch (no fast-forward)
@@ -67,10 +67,11 @@ build_variant() {
           [ "$with_state" = 1 ] && commit_state "${line#@state }"
           state_done=1; continue ;;
       esac
-      local date msg files
+      local date msg files author
       date="$(cut -d'|' -f1 <<<"$line")"
       msg="$(cut -d'|' -f2 <<<"$line")"
       files="$(cut -d'|' -f3 <<<"$line")"
+      author="$(cut -d'|' -f4 <<<"$line")"
       if [ "$first" = 1 ]; then
         g add -A
         [ -n "$claimed" ] && while IFS= read -r f; do g reset -q -- "$f"; done <<<"$claimed"
@@ -78,7 +79,7 @@ build_variant() {
       elif [ -n "$files" ]; then
         tr ',' '\n' <<<"$files" | while IFS= read -r f; do g add -- "$f"; done
       fi
-      GIT_AUTHOR_DATE="$date" GIT_COMMITTER_DATE="$date" g commit -q --allow-empty -m "$msg"
+      GIT_AUTHOR_DATE="$date" GIT_COMMITTER_DATE="$date" g commit -q --allow-empty -m "$msg" ${author:+--author="$author"}
       last_date="$date"
     done <"$src/history.txt"
     if [ "$with_state" = 1 ] && [ "$state_done" = 0 ]; then

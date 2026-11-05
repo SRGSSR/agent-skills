@@ -925,6 +925,31 @@ console.log('null');`,
     const msg = finalMessage();
     check('The final message says git flow feature finish was used', () => [/git flow feature finish/.test(msg), /git flow feature finish/.test(msg) ? 'found' : 'missing']);
   },
+  'setup-team'() {
+    const changed = changedFiles();
+    const t = read('.ai/team.md');
+    const rows = t.split('\n').filter((l) => /^\s*\|/.test(l)).map((l) => l.split('|').slice(1, -1).map((c) => c.trim()));
+    const head = rows[0] || [];
+    const body = rows.slice(2);
+    check('.ai/team.md exists with a Roles column', () => [head.some((c) => /^roles$/i.test(c)), head.join(' | ') || 'missing']);
+    const people = ['Simone Monaco', 'Alessandro Rossi', 'Giulia Bianchi'];
+    const rowOf = (n) => body.find((r) => r.some((c) => c.includes(n)));
+    check('.ai/team.md has a row for each of Simone Monaco, Alessandro Rossi and Giulia Bianchi, and none for dependabot', () => {
+      const miss = people.filter((n) => !rowOf(n));
+      const bot = /dependabot/i.test(t);
+      return [miss.length === 0 && !bot, `missing: ${miss.join(', ') || 'none'}; dependabot ${bot ? 'present' : 'absent'}`];
+    });
+    const ai = head.findIndex((c) => /^aliases$/i.test(c));
+    check('Each row has the first name among its aliases', () => {
+      const bad = people.filter((n) => { const r = rowOf(n); return !r || ai < 0 || !new RegExp('\\b' + n.split(' ')[0] + '\\b', 'i').test(r[ai] || ''); });
+      return [bad.length === 0, bad.join(', ') || 'all'];
+    });
+    check('.ai/team.md contains no email address', () => [!/[\w.+-]+@[\w-]+\.[\w.]+/.test(t), /@/.test(t) ? 'has @' : 'none']);
+    check('No source files were modified', () => {
+      const bad = changed.filter((f) => !isState(f) && f !== 'CLAUDE.md' && f !== '.gitignore' && !f.startsWith('docs/'));
+      return [bad.length === 0, bad.join(', ') || 'none'];
+    });
+  },
   'backlog-new'() {
     const changed = changedFiles();
     const added = changed.filter((f) => f.startsWith('docs/tasks/') && !atBase(f) && exists(f));

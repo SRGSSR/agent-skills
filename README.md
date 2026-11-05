@@ -50,7 +50,7 @@ AGENTS.md                 ← contract blocks (about 15 + 9 lines), loaded on ev
 .ai/
 ├── phase.md              ← phase set, current phase, area overrides, history
 ├── debt.md               ← one-line register of shortcuts and tech debt
-├── team.md               ← people's handles on each system and nicknames (ignored by git)
+├── team.md               ← people's handles on each system, roles and nicknames
 ├── handoff/
 │   └── feature-x.md      ← current state of one branch: goal, status, next steps, open questions
 └── journal/
@@ -59,7 +59,7 @@ AGENTS.md                 ← contract blocks (about 15 + 9 lines), loaded on ev
 
 The skills themselves handle setup, phase changes with transition checklists (for example prototype → stabilize: secrets, auth, validation, tests, CI, ...), debt reviews, and the handoff and resume protocol.
 
-`.ai/` is meant to be committed, so the handoff travels across machines and people, except `.ai/team.md`, which stays on each machine. You can ignore `.ai/journal/` if you prefer to keep the log private.
+`.ai/` is meant to be committed, so the handoff travels across machines and people; in a public repo `.ai/team.md` is ignored by git. You can ignore `.ai/journal/` if you prefer to keep the log private.
 
 ### Teams and long-lived projects
 
@@ -176,7 +176,7 @@ Why the skills work the way they do, and what was discarded. This repo keeps its
 - Jira is detected from issue keys repeated in branch names and commit subjects, because the git remote says nothing about it; the code can stay on GitHub or GitLab. Jira has no `Closes #42`: a work item is moved to Done after the merge, with the status names of the project's workflow (asked when unclear).
 - Sprints are the team's planning: new work items go to the backlog, and the agent never moves a work item into or out of a sprint, deletes or archives one. The listing runs two searches, current sprint and the rest, because JQL can't sort by "in an open sprint".
 - Subcommands are fixed words: `/backlog filter <condition>` rather than `/backlog <condition>`, which would clash with a condition like "close". Names chosen to avoid clashes: `/backlog` (not `/task`, close to built-in commands) and `setup` (not `init`, which Claude Code uses; "setup" is also the skills' own term).
-- `.ai/team.md` is a Markdown table the agent reads, not a script: the skills stay plain Markdown for any agent, a few dozen rows need no program, and two people with the same nickname need a question anyway. It is per project and ignored by git, because colleagues' handles and account IDs don't belong in the history; Jira gets the account ID, not the email.
+- `.ai/team.md` is a Markdown table the agent reads, not a script: the skills stay plain Markdown for any agent, a few dozen rows need no program, and two people with the same nickname need a question anyway. It is committed: everyone with access to the repo already sees the names in `git log` and the tracker, and one shared file saves each person from building their own (a first version ignored it by git, so each machine kept its own). In a public repo it is ignored, because linking accounts, nicknames and roles would put them online. Setup fills it from git authors and tracker members, matching people by name and asking about uncertain matches; Jira gets the account ID, never an email. Roles only drive suggestions: the agent never assigns on its own.
 - `/start` and `/finish` bracket one branch, not one session: a branch spans many sessions, paused and resumed through its handoff. `/finish` requires the mode (`merge`, `mr`, `pr`) because how work is integrated is the user's choice; without git flow, `merge` goes back into the branch recorded as `Base:` in the handoff, since git doesn't remember where a branch started. Names: `/finish` rather than `/close`, which `/backlog close` already uses for tasks, and the words of git flow (`feature start`, `feature finish`). With `mr` and `pr`, the handoff deletion is committed in the request itself, so merging it in the web UI completes the work.
 - A listing fetches at most 100 tasks (the CLIs default to 30, which silently cut longer backlogs) and says when there may be more.
 

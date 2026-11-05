@@ -4,7 +4,7 @@ description: Lists, creates, edits, comments on and closes the project's tasks w
 license: MIT
 argument-hint: "[new | edit | comment | close | filter | help] ..."
 metadata:
-  version: "0.6.0"
+  version: "0.7.0"
 ---
 
 # Backlog
@@ -142,18 +142,19 @@ A task normally closes with the branch that does it: the branch deletes the task
 
 ## People (`.ai/team.md`)
 
-The same person often has a different handle in git, GitLab, GitHub and Jira, and people name each other by first name ("assign it to Simo"). `.ai/team.md` maps them, one row per person, for this project only:
+The same person often has a different handle in git, GitLab, GitHub and Jira, and people name each other by first name ("assign it to Simo"). `.ai/team.md` maps them, one row per person, for this project:
 
 ```markdown
 # Team
 
-| Handle | Git | GitLab | GitHub | Jira | Aliases |
-|---|---|---|---|---|---|
-| monacosi | Simone Monaco | monacosi | simone-monaco | 712020:3f1c... | Simone, Simo, Simon |
+| Handle | Git | GitLab | GitHub | Jira | Roles | Aliases |
+|---|---|---|---|---|---|---|
+| monacosi | Simone Monaco | monacosi | simone-monaco | 712020:3f1c... | backend, PO | Simone, Simo, Simon |
 ```
 
-- **Handle** is the name used in task files (`Assignee:`) and in listings. The other columns hold the handle on each system; leave a cell empty if the person is not there. Jira takes the account ID, not the email.
+- **Handle** is the name used in task files (`Assignee:`) and in listings. The other columns hold the handle on each system; leave a cell empty if the person is not there. Jira takes the account ID, not the email. **Roles** is free text (`backend`, `frontend`, `QA`, `PO`), filled in by the team; empty until then.
 - **Lookup:** when a request names a person, read the file and match the name against Handle, the system columns and Aliases, ignoring case. One match: use that row's handle for the system in use. More than one: list them and ask. A match with an empty cell for the system in use counts as none.
 - **None:** look the person up in the tracker (GitLab `glab api "projects/:id/members/all?query=<name>"`, GitHub `gh api "repos/{owner}/{repo}/collaborators" --jq '.[].login'`, Jira the assignee of a work item they have, `acli jira workitem view <KEY> --json`, or the Atlassian connector's user lookup), propose the row with what you found, and ask who it is. Add or complete the row when the user confirms; don't guess between similar names.
-- **Private and per project:** the file is ignored by git, because handles and account IDs of colleagues are not for the repo history. When you create it, add `.ai/team.md` to `.gitignore` unless it is there. Only handles, account IDs, display names and aliases: no emails, phone numbers or other personal data.
-- Create it on first need, not at setup. The user can edit it by hand.
+- **Suggesting an assignee:** when a new task has no assignee, or the user asks who could take one, suggest the people whose Roles match the task's area, with how many open tasks each already has. Only suggest: assign when the user asks, and in a tracker after their confirmation.
+- **Committed, unless the repo is public:** everyone with access to the repo already sees these names in `git log` and the tracker, and one shared file saves each person from building their own. In a public repo, linking people's accounts, nicknames and roles would put them online: there the file is ignored by git (add `.ai/team.md` to `.gitignore`). Visibility: `gh repo view --json visibility` or `glab repo view` (shows public); if you can't tell, ask, and keep it ignored until the user answers. Only handles, account IDs, display names, roles and aliases: no emails, phone numbers or other personal data.
+- **Created** at work-journal setup, filled from git and the tracker (see the [work-journal skill, Setup](../work-journal/SKILL.md#setup)), or on first need with the row of the person asked for. The user can edit it by hand.
