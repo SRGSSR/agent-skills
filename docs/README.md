@@ -24,7 +24,8 @@ The skills react to plain requests, in any language. A few that cover most needs
 | "Let's stop here, I'll continue tomorrow." | Writes the branch's handoff |
 | "Where were we?" or `/work-journal` | Reads the handoff, checks it against git, continues |
 | "What should I work on next?" or `/backlog` | Lists the open tasks (folder, GitLab or GitHub issues, Jira): yours, unassigned, others; suggests one |
-| `/backlog new <what>`, `/backlog comment <task> <text>`, `/backlog close <task>` | Creates, comments on or closes a task; issues only after your confirmation |
+| `/backlog new <what>`, `/backlog edit <task> <change>`, `/backlog comment <task> <text>`, `/backlog close <task>` | Creates, edits, comments on or closes a task; issues only after your confirmation |
+| "Assign #42 to Simo." | Finds Simo's handle for that tracker in `.ai/team.md` (or asks and adds the row), shows the change, assigns after your confirmation |
 | `/backlog filter <condition>`, `/backlog help` | Lists only the tasks that match (parent, epic, label, sprint, JQL...); shows the commands |
 | `/project-phase off`, `/work-journal off` | Replaces the block with an off marker, keeps `.ai/` |
 | `/project-phase setup`, `/work-journal setup` on a project already set up | Shows the current choices, proposes only what the repo signals suggest changing (phase, set, task place, filter), changes what you confirm |

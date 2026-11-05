@@ -68,7 +68,7 @@ If `origin` is on GitLab or GitHub, setup proposes its issues as the task list, 
 
 - **Access** goes through the CLI, `glab` or `gh`, so it works with any agent. Log in once: `glab auth login` (`--hostname <host>` for a self-hosted GitLab) or `gh auth login`. If the CLI is not logged in, the agent asks whether you want to log in now (you run `! glab auth login` in Claude Code, or the command in a terminal, and it lists again); if not, it explains the steps and stops. It never asks for a token in the chat and never invents issues.
 - **Reading** (`/backlog`, viewing an issue) runs without asking. **Writing** (create, close, comment, assign, label) is proposed with the exact command and runs only after you confirm.
-- **`/backlog new <what>`** drafts the issue (title, Why, Done when, Links), asks for what it cannot infer instead of inventing it, checks for duplicates, and creates it after your yes. **`/backlog close <id>`** shows the issue, warns if it is in progress or assigned to someone else, and closes it after your yes, posting your reason as a comment first if you gave one. **`/backlog comment <id> <text>`** shows the comment and posts it after your yes. All three work with a task folder too, where they write, annotate (a dated line under `## Notes`) or delete the file without asking, since git keeps it.
+- **`/backlog new <what>`** drafts the issue (title, Why, Done when, Links), asks for what it cannot infer instead of inventing it, checks for duplicates, and creates it after your yes. **`/backlog close <id>`** shows the issue, warns if it is in progress or assigned to someone else, and closes it after your yes, posting your reason as a comment first if you gave one. **`/backlog edit <id> <change>`** shows the change as before → after (title, description, labels, type, assignee) and applies it after your yes. **`/backlog comment <id> <text>`** shows the comment and posts it after your yes. All four work with a task folder too, where they write, edit, annotate (a dated line under `## Notes`) or delete the file without asking, since git keeps it.
 - **A new issue** has the shape of a task file: title, then Why, Done when and Links. No assignee unless you ask.
 - **Closing:** when a branch's task is done, the agent gives you `Closes #42` for the merge request or pull request description, so the merge closes the issue. GitLab and GitHub honor it only for merges into the default branch: with git flow and `main` as default, an issue closed by a merge into `develop` stays open until the release, or you close it by hand.
 
@@ -81,7 +81,8 @@ Typical split: code on GitHub, tasks in Jira Cloud. Setup proposes Jira when bra
 ```
 
 - **Access** goes through Atlassian's CLI, `acli` (`brew tap atlassian/homebrew-acli && brew install acli`, then `acli jira auth login --web`), or the Atlassian connector if `acli` is missing. Login, confirmation and the `/backlog` commands work as for GitLab and GitHub, with Jira keys instead of issue numbers.
-- **Listing** uses JQL: open work items of the project (status category not Done), in backlog order. Work items in an In Progress status are marked as in progress.
+- **Listing** uses JQL: open work items of the project (status category not Done), the current sprint first, then the backlog; in each, yours, unassigned, then others, by priority and then backlog order. A project without sprints gets one list. Work items in an In Progress status are marked as in progress.
+- **Sprints** are planned by the team in Jira: new work items go to the backlog, and the agent never moves a work item into or out of a sprint, nor deletes or archives one. Work items in a sprint can be edited, commented on and closed, with your confirmation. `acli` cannot change the priority: the agent uses the Atlassian connector, or tells you to do it in Jira.
 - **Linking:** the agent puts the key in the branch name (`feature/PODCAST-123-csv-export`), commit subjects and the pull request title, so Jira's GitHub or GitLab integration links them.
 - **Closing:** `Closes #42` doesn't apply. When a branch's task is done, the agent proposes moving the work item to Done after the merge (`acli jira workitem transition`), unless your Jira automation or smart commits (`PODCAST-123 #done`) already do it. Status names follow the project's workflow: for a dropped task, name the status (Won't Do, Cancelled) or the agent asks.
 
@@ -95,6 +96,21 @@ Typical split: code on GitHub, tasks in Jira Cloud. Setup proposes Jira when bra
 ```
 
 - **`/backlog help`** lists the commands, where the tasks are and the filter in use. In Claude Code, typing `/backlog` also shows the subcommands as a hint, and every listing ends with them in one line.
+
+### People
+
+The same person can be `monacosi` in GitLab, `simone-monaco` on GitHub and an account ID in Jira, and you call them Simo. `.ai/team.md` maps them, one row per person:
+
+```markdown
+| Handle | Git | GitLab | GitHub | Jira | Aliases |
+|---|---|---|---|---|---|
+| monacosi | Simone Monaco | monacosi | simone-monaco | 712020:3f1c... | Simone, Simo, Simon |
+```
+
+- "Assign #42 to Simo", "Simo's tasks": the agent matches the name against handles and aliases, ignoring case, and uses the handle of the system in use. With two matches it asks.
+- An unknown name: the agent looks the person up in the tracker (project members in GitLab, collaborators on GitHub, an existing assignee or the Atlassian connector in Jira), proposes the row and adds it when you confirm who it is.
+- The file is per project and ignored by git: the agent adds it to `.gitignore` when it creates it. Only handles, account IDs, display names and aliases, no emails. Edit it by hand whenever you like.
+- Task files use the Handle column in `Assignee:`.
 
 Other trackers work the same way through a connector. With no task list, follow-ups go in the final message and the journal.
 

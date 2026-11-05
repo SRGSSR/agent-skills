@@ -810,6 +810,42 @@ console.log('null');`,
       return [bad.length === 0, bad.join(', ') || 'none'];
     });
   },
+  'backlog-assign-alias'() {
+    const changed = changedFiles();
+    const msg = finalMessage();
+    const l = msg.split('\n').find((x) => /acli jira workitem (assign|edit)/.test(x) && /ITEMS-14/.test(x) && /712020:3f1c-simone/.test(x));
+    check('The final message gives an acli assign or edit command for ITEMS-14 with the account ID 712020:3f1c-simone', () => [Boolean(l), l || 'missing']);
+    check('No project files changed (only the journal may get an entry)', () => {
+      const bad = changed.filter((f) => !f.startsWith('.ai/journal/'));
+      return [bad.length === 0, bad.join(', ') || 'only the journal'];
+    });
+  },
+  'backlog-new-sprint'() {
+    const changed = changedFiles();
+    const msg = finalMessage();
+    const i = msg.indexOf('acli jira workitem create');
+    const c = i < 0 ? '' : msg.slice(i, i + 800);
+    check('The final message gives an acli workitem create command for project ITEMS', () => [/--project\s+"?ITEMS\b/.test(c), c ? 'found' : 'no create command']);
+    check('No acli command in the final message sets a sprint (searches excepted)', () => {
+      const bad = msg.split('\n').filter((x) => /acli/.test(x) && /sprint|customfield/i.test(x) && !/workitem search/.test(x));
+      return [bad.length === 0, bad.join(' | ') || 'none'];
+    });
+    check('No project files changed (only the journal may get an entry)', () => {
+      const bad = changed.filter((f) => !f.startsWith('.ai/journal/'));
+      return [bad.length === 0, bad.join(', ') || 'only the journal'];
+    });
+  },
+  'backlog-list-jira-sprint'() {
+    const changed = changedFiles();
+    const msg = finalMessage();
+    check('The final message gives the acli login command', () => [/acli jira auth login/.test(msg), /acli jira auth login/.test(msg) ? 'found' : 'missing']);
+    const sp = /openSprints\(\)|current sprint/i;
+    check('The final message gives the sprint-first searches or says the current sprint comes first', () => [sp.test(msg), sp.test(msg) ? 'found' : 'missing']);
+    check('No project files changed (only the journal may get an entry)', () => {
+      const bad = changed.filter((f) => !f.startsWith('.ai/journal/'));
+      return [bad.length === 0, bad.join(', ') || 'only the journal'];
+    });
+  },
   'backlog-new'() {
     const changed = changedFiles();
     const added = changed.filter((f) => f.startsWith('docs/tasks/') && !atBase(f) && exists(f));
