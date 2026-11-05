@@ -62,6 +62,8 @@ Or `/work-journal setup`. Setup looks for what the repo already uses and asks on
 | `origin` on GitLab or GitHub, Jira keys in branch names or commit subjects, or a tracker connector | | Its issues are proposed as the task list; writes (create, close, comment) only with your confirmation |
 | Nothing | `docs/design/`, `docs/decisions.md` or none | `docs/backlog/` or none |
 
+If the repo has more than one author in the last year, or a tracker, setup also proposes `.ai/team.md`, filled from git and the tracker: who is who on each system, with nicknames and an empty Roles column for you. See [People](teams.md#people).
+
 A tracker looks like this in the block:
 
 ```markdown

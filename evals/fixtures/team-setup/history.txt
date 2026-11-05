@@ -1,0 +1,5 @@
+2026-03-02T09:12:00|Initial commit: item list prototype||Simone Monaco <simone.monaco@example.com>
+2026-04-14T15:40:00|Add form to create items||Alessandro Rossi <a.rossi@example.com>
+2026-05-20T10:00:00|Bump express from 4.18 to 4.19||dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>
+2026-09-25T11:05:00|Show tags in list||Simone Monaco <simone.monaco@example.com>
+2026-09-29T17:30:00|Seed a few demo items for Friday's demo||Giulia Bianchi <giulia.bianchi@example.com>
