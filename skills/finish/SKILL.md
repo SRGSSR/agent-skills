@@ -1,10 +1,10 @@
 ---
 name: finish
-description: Finishes the work on the current branch. It checks that everything is done and documented (commits, build and tests, handoff, docs, decisions, follow-ups, debt) and stops to explain and ask if not. Otherwise it closes the branch the way the user names, `merge` (git flow feature finish, or a merge into the branch it started from) or `mr` / `pr` (prepares a merge request or pull request). Use this skill whenever the user types `/finish` with or without `merge`, `mr`, `merge-request`, `pr` or `pull-request`, or asks to finish, wrap up or close the feature or branch, merge it, or open a merge or pull request for it. Part of the work-journal plugin; `/start` begins the work.
+description: Finishes the work on the current branch. It checks that everything is done and documented (commits, build and tests, handoff, docs, decisions, follow-ups, debt) and stops to explain and ask if not. Otherwise it closes the branch the way the user names, `merge` (git flow feature finish, or a merge into the branch it started from) or `mr` / `pr` (prepares a merge request or pull request). Use this skill whenever the user types `/finish` with or without `merge`, `mr`, `merge-request`, `pr`, `pull-request` or `help`, or asks to finish, wrap up or close the feature or branch, merge it, or open a merge or pull request for it. Part of the work-journal plugin; `/start` begins the work.
 license: MIT
-argument-hint: "<merge | mr | pr>"
+argument-hint: "<merge | merge-request | mr | pull-request | pr | help>"
 metadata:
-  version: "0.2.0"
+  version: "0.3.0"
 ---
 
 # Finish
@@ -16,6 +16,8 @@ metadata:
 | `merge` | git flow: `git flow feature finish`. Otherwise a merge into the branch it started from, then deletes the branch. |
 | `merge-request`, `mr` | Prepares a GitLab merge request into the base. |
 | `pull-request`, `pr` | Prepares a GitHub pull request into the base. |
+
+`/finish help` shows this table, the base the branch would go into (the handoff's `Base:`, or "to confirm" without one) and, in one line, what gets checked before (step 1). Read only the handoff; run nothing else.
 
 Without a mode, or with another word, show this table in one line and stop: never pick or recommend a mode. A request in words counts when it names the mode ("finish and merge it", "open a PR"); "finish the feature" alone doesn't, so ask.
 
