@@ -4,7 +4,7 @@ description: Finishes the work on the current branch. It checks that everything 
 license: MIT
 argument-hint: "<merge | mr | pr>"
 metadata:
-  version: "0.1.0"
+  version: "0.1.1"
 ---
 
 # Finish
@@ -41,7 +41,7 @@ All modes: close the branch's task (delete its task file; for a tracker see step
 
 ### `merge`
 
-- git flow: `GIT_MERGE_AUTOEDIT=no git flow feature finish <name>` (merges into the development branch without fast-forward, deletes the branch).
+- git flow: `GIT_MERGE_AUTOEDIT=no git flow feature finish <name>` (merges into the development branch, deletes the branch).
 - Otherwise: `git switch <base>`, `git merge --no-ff <branch>`, then `git branch -d <branch>`: only the local branch, only once merged, never `-D` and never the remote one.
 - If the base is the default branch (`main`, `master`), ask once before merging: many teams protect it and review there; mention `/finish pr` or `mr`.
 - Conflicts: stop, list the files, and ask whether to resolve them or abort the merge. Don't resolve them on your own.

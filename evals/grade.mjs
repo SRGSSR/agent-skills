@@ -904,6 +904,27 @@ console.log('null');`,
     const prRe = /gh pr create[^\n]*(--base|-B)\s+develop/;
     check('The final message gives gh pr create with --base develop', () => [prRe.test(msg), prRe.test(msg) ? 'found' : 'missing']);
   },
+  'start-gitflow'() {
+    const changed = changedFiles();
+    const cur = git('branch', '--show-current').trim();
+    check('The current branch is feature/pdf-labels', () => [cur === 'feature/pdf-labels', cur]);
+    const dev = git('rev-parse', 'develop').trim();
+    const fromDev = spawnSync('git', ['-C', repo, 'merge-base', '--is-ancestor', dev, 'feature/pdf-labels']).status === 0;
+    check("The branch starts from develop's tip, not from main", () => [fromDev, fromDev ? 'develop tip is an ancestor' : 'not based on develop']);
+    const h = '.ai/handoff/feature-pdf-labels.md';
+    check('The handoff .ai/handoff/feature-pdf-labels.md exists and says Base: develop', () => [/Base:\s*`?develop`?/.test(read(h)), exists(h) ? (read(h).match(/^.*Base:.*$/m) || ['no Base line'])[0] : 'missing']);
+    const devLog = git('log', '-1', '--format=%s', 'develop').trim();
+    check('develop is unchanged', () => [devLog === 'Show tags in list', devLog]);
+    check('No source files changed (only .ai/ and the task file may change)', () => {
+      const bad = changed.filter((f) => !f.startsWith('.ai/') && f !== 'docs/tasks/pdf-labels.md');
+      return [bad.length === 0, bad.join(', ') || 'none'];
+    });
+  },
+  'finish-gitflow-merge'() {
+    graders['finish-merge-base']();
+    const msg = finalMessage();
+    check('The final message says git flow feature finish was used', () => [/git flow feature finish/.test(msg), /git flow feature finish/.test(msg) ? 'found' : 'missing']);
+  },
   'backlog-new'() {
     const changed = changedFiles();
     const added = changed.filter((f) => f.startsWith('docs/tasks/') && !atBase(f) && exists(f));
