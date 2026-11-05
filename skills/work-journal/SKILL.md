@@ -4,7 +4,7 @@ description: Keeps a terse work journal and a handoff document per branch in the
 license: MIT
 argument-hint: "[setup | on | off | help]"
 metadata:
-  version: "0.9.0"
+  version: "0.10.0"
 ---
 
 # Work Journal
@@ -209,7 +209,7 @@ Links: docs/design/2026-10-02-csv-export.md
 
 - Optional `## Notes` at the end: dated one-line comments (`- 2026-10-05: billing also wants the archived items`), added by `/backlog comment`.
 - No status field: in progress means a branch or handoff exists; done means the file is gone. The branch that does the task deletes its file, so merging the branch closes the task.
-- `Assignee` is optional, a team handle (git or tracker username), never a full name or email. Never assign or reassign a task unless the user asks.
+- `Assignee` is optional, a team handle (the Handle column of `.ai/team.md` if the project has one, see the [backlog skill](../backlog/SKILL.md#people-aiteammd); otherwise a git or tracker username), never a full name or email. Never assign or reassign a task unless the user asks.
 - Write new task files only for follow-ups and open questions at the end of a branch's task, or when the user asks.
 
 **A tracker** (GitLab or GitHub issues, Jira, ...): reach it through its CLI (`glab` for GitLab, `gh` for GitHub, `acli` for Jira Cloud) or a connector (for Jira, the Atlassian connector if `acli` is missing).
@@ -234,7 +234,7 @@ The journal grows forever, and that is fine: resuming reads only the newest file
 
 ## Privacy and safety
 
-These files are usually committed and readable by everyone with repo access. Never write secrets, tokens, passwords, connection strings, customer data or personal data. Refer to them by name ("the staging API key in the team vault"). If the repo is public, write as if the journal were public, because it is. The one exception is the optional `Assignee:` team handle in task files; in a public repo, say once that handles there are public.
+These files are usually committed and readable by everyone with repo access. Never write secrets, tokens, passwords, connection strings, customer data or personal data. Refer to them by name ("the staging API key in the team vault"). If the repo is public, write as if the journal were public, because it is. The one exception is the optional `Assignee:` team handle in task files; in a public repo, say once that handles there are public. `.ai/team.md`, which maps people to their handles on each system, is ignored by git and stays on each machine.
 
 ## With the project-phase skill
 

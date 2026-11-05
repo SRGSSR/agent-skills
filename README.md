@@ -3,7 +3,7 @@
 Two [Agent Skills](https://agentskills.io) that make AI coding agents behave the way your project needs right now, and let you stop and resume work at any moment, even with a different agent or model.
 
 - **`project-phase`**: tells the agent which lifecycle phase the project is in (prototype, production, maintenance, ...) and what that means for how it works.
-- **`work-journal`**: keeps a terse journal and a handoff document in the repo, so any agent or human can pick up where the last one stopped. It ships with **`backlog`**: `/backlog` lists the open tasks and what to pick up next, `/backlog new`, `/backlog comment` and `/backlog close` create, comment on and close them, `/backlog filter` lists only those that match a condition, `/backlog help` shows the commands.
+- **`work-journal`**: keeps a terse journal and a handoff document in the repo, so any agent or human can pick up where the last one stopped. It ships with **`backlog`**: `/backlog` lists the open tasks and what to pick up next, `/backlog new`, `/backlog edit`, `/backlog comment` and `/backlog close` create, edit, comment on and close them, `/backlog filter` lists only those that match a condition, `/backlog help` shows the commands.
 
 They work independently and fit together when both are installed.
 
@@ -126,7 +126,7 @@ Each skill also has commands. In Claude Code, typing one shows its subcommands:
 | `/backlog` | Open tasks and what to pick up next |
 | `/project-phase setup`, `/work-journal setup` | Sets the skill up, or reviews the choices of a project already set up |
 | `/project-phase on`, `off` (same for `/work-journal`) | Turns the skill on or off in one project |
-| `/backlog new`, `comment`, `close`, `filter` | Creates, comments on, closes or filters tasks |
+| `/backlog new`, `edit`, `comment`, `close`, `filter` | Creates, edits, comments on, closes or filters tasks |
 | `help` after any of the three | Its commands and current settings |
 
 More requests, and step-by-step guides for a new project, a project already under way, teams and phase changes: [`docs/`](docs/README.md).
