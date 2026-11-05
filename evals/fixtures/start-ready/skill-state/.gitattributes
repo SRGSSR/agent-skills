@@ -1,0 +1,2 @@
+.ai/journal/*.md merge=union linguist-generated=true
+.ai/debt.md merge=union

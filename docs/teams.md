@@ -21,6 +21,24 @@ How the skills behave when several people and agents work on the same repo, on d
 
 Each branch has its own handoff (`feature/csv-export` → `.ai/handoff/feature-csv-export.md`), so people on different branches never overwrite each other's state. When the branch's task is done, its handoff is deleted.
 
+### Starting and finishing a branch
+
+> /start PODCAST-42 export the item list as CSV
+
+The agent checks that nothing is left uncommitted or half done, reads the task, and opens `feature/PODCAST-42-csv-export`: with `git flow feature start` if the repo uses git flow, otherwise from the development branch. It writes the handoff with the task's goal and `Base: develop` (where the branch started), adds a journal entry, commits both on the new branch, and offers to assign the task to you and move it to In Progress (Jira), after your yes. If a branch for the task already exists, it resumes it instead. Asked in words ("let's start on PODCAST-42"), it proposes `/start` and waits.
+
+> /finish merge
+
+The agent checks everything first: no stray uncommitted changes, build and tests green, nothing open in the handoff, docs updated for the changed behavior, decisions and dead ends moved, follow-ups filed as tasks. If anything is missing it stops, lists it and asks. Otherwise it closes the task, deletes the handoff, writes the journal entry, commits, and integrates the way you named:
+
+| Mode | What happens |
+|---|---|
+| `/finish merge` | git flow: `git flow feature finish`. Otherwise a merge into the `Base:` branch and the local branch deleted; if the base is `main`, it asks once first. A tracker task is closed after your yes, since a local merge doesn't trigger `Closes #42`. |
+| `/finish mr`, `/finish merge-request` | A GitLab merge request into the base, with title, description and `Closes #42` (or the Jira key) |
+| `/finish pr`, `/finish pull-request` | The same as a GitHub pull request |
+
+The mode is required: `/finish` alone shows the syntax. Nothing is pushed: for a merge or pull request, the agent gives you `git push -u origin <branch>`, then creates the request after your yes. The cleanup commit is part of the request, so merging it completes the work. `hotfix/` and `release/` branches are left to you, because finishing them is a release.
+
 `ls .ai/handoff/` is the list of work in progress. An agent that starts on a branch without a handoff sees the others, mentions them only if relevant, and doesn't resume them unless you ask.
 
 The journal and the debt list are shared by all branches. Setup adds `merge=union` for them to `.gitattributes`, so when two branches append on the same day, git keeps both sides. Merge buttons in web UIs may ignore `.gitattributes`; the conflict is then trivial: keep both sides, ordered by time.
@@ -167,6 +185,8 @@ A document that no longer holds is deleted (git keeps it). One that holds in par
 With `none`, decisions go in a comment next to the code they concern, in the README for decisions about the whole project, or in the commit message.
 
 ## When a branch's task is done
+
+`/finish` runs these steps after its checks; without it, the agent does them when nothing is left on the branch.
 
 1. **Keep what must last.** Decisions and dead ends from the handoff that will matter after the branch go where people look: a comment next to the code, the design decisions, or a custom rule in `.ai/phase.md` if it is a rule to always follow. "It's in the journal" doesn't count: the journal gets buried.
 2. **Close the task, file the rest.** The branch's task file is deleted; follow-ups and open questions become new tasks.

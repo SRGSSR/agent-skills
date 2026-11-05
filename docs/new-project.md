@@ -106,7 +106,7 @@ Write the handoff before you need it: on long tasks the agent also rewrites it a
 
 ## 6. When a piece of work is done
 
-When nothing is left for the agent on a branch, it closes the loop instead of leaving a stale handoff:
+Start each piece of work with `/start <task or name>`, which opens its branch and handoff, and end it with `/finish merge` (or `mr`, `pr`), which checks that it is done and documented before merging. When nothing is left for the agent on a branch, it closes the loop instead of leaving a stale handoff:
 
 1. Decisions and dead ends that matter beyond the branch go to code comments or the design decisions.
 2. The branch's task file is deleted (merging the branch closes the task); follow-ups and open questions become new tasks.
