@@ -50,6 +50,7 @@ AGENTS.md                 ← contract blocks (about 15 + 9 lines), loaded on ev
 .ai/
 ├── phase.md              ← phase set, current phase, area overrides, history
 ├── debt.md               ← one-line register of shortcuts and tech debt
+├── team.md               ← people's handles on each system and nicknames (ignored by git)
 ├── handoff/
 │   └── feature-x.md      ← current state of one branch: goal, status, next steps, open questions
 └── journal/
@@ -58,7 +59,7 @@ AGENTS.md                 ← contract blocks (about 15 + 9 lines), loaded on ev
 
 The skills themselves handle setup, phase changes with transition checklists (for example prototype → stabilize: secrets, auth, validation, tests, CI, ...), debt reviews, and the handoff and resume protocol.
 
-`.ai/` is meant to be committed, so the handoff travels across machines and people. You can ignore `.ai/journal/` if you prefer to keep the log private.
+`.ai/` is meant to be committed, so the handoff travels across machines and people, except `.ai/team.md`, which stays on each machine. You can ignore `.ai/journal/` if you prefer to keep the log private.
 
 ### Teams and long-lived projects
 
@@ -66,7 +67,7 @@ One handoff per branch, so people on different branches never overwrite each oth
 
 ### Design decisions and tasks
 
-What outlives a branch goes where people look, not in `.ai/`: **design decisions** (an existing ADR folder, `docs/design/`, `docs/decisions.md`, or code comments and the README) and **tasks** (`docs/backlog/` with one file per open task, GitLab or GitHub issues through `glab` or `gh`, Jira through `acli` or the Atlassian connector, another tracker through a connector, or none). `work-journal` chooses both at setup and names them in its block; `/backlog` lists, creates, comments on and closes them. Details: [Teams and long-lived projects](docs/teams.md#tasks).
+What outlives a branch goes where people look, not in `.ai/`: **design decisions** (an existing ADR folder, `docs/design/`, `docs/decisions.md`, or code comments and the README) and **tasks** (`docs/backlog/` with one file per open task, GitLab or GitHub issues through `glab` or `gh`, Jira through `acli` or the Atlassian connector, another tracker through a connector, or none). `work-journal` chooses both at setup and names them in its block; `/backlog` lists, filters, creates, edits, comments on and closes tasks, and finds people by nickname through `.ai/team.md`. Details and examples: [Backlog commands](docs/teams.md#backlog-commands).
 
 ## Install
 
@@ -129,7 +130,7 @@ Each skill also has commands. In Claude Code, typing one shows its subcommands:
 | `/backlog new`, `edit`, `comment`, `close`, `filter` | Creates, edits, comments on, closes or filters tasks |
 | `help` after any of the three | Its commands and current settings |
 
-More requests, and step-by-step guides for a new project, a project already under way, teams and phase changes: [`docs/`](docs/README.md).
+Examples of each `/backlog` command: [Backlog commands](docs/teams.md#backlog-commands). More requests, and step-by-step guides for a new project, a project already under way, teams and phase changes: [`docs/`](docs/README.md).
 
 Optional lines for your global agent instructions (for example `~/.claude/CLAUDE.md`): `project-phase set: simple` sets the default phase set; `project-phase: ask` makes the agent ask for the phase in every repo that has none yet ([details](docs/phase-changes.md#when-the-agent-asks-about-the-phase)).
 
@@ -166,6 +167,15 @@ Why the skills work the way they do, and what was discarded. This repo keeps its
 - In `docs/` or a tracker, not in `.ai/`: they are written for people and outlive branches, while `.ai/` is the agents' working state. Both are optional, because some teams want no extra folders.
 - One file per task with no status field: separate branches touch separate files, and the merge closes the task by deleting its file. Discarded: a single `ROADMAP.md` (every branch edits the same lines; `merge=union` would duplicate edited lines), a status field (git and the branch already say it), the agent assigning tasks on its own.
 - Follow-ups and open questions become tasks at the end of a branch, because in the journal nobody finds them again.
+
+**Trackers and `/backlog`**
+- Trackers are reached through their CLIs (`glab`, `gh`, `acli`), with a connector only as fallback: a CLI works with any agent, a connector only in tools that support it. Every write to a tracker needs the user's confirmation, even when typed as a command, because others are notified and git can't undo it; task files don't, because git can.
+- When a CLI is not logged in, the agent offers the login command and stops. It never asks for a token in the chat, and never falls back to a task folder or to guessed issues.
+- Jira is detected from issue keys repeated in branch names and commit subjects, because the git remote says nothing about it; the code can stay on GitHub or GitLab. Jira has no `Closes #42`: a work item is moved to Done after the merge, with the status names of the project's workflow (asked when unclear).
+- Sprints are the team's planning: new work items go to the backlog, and the agent never moves a work item into or out of a sprint, deletes or archives one. The listing runs two searches, current sprint and the rest, because JQL can't sort by "in an open sprint".
+- Subcommands are fixed words: `/backlog filter <condition>` rather than `/backlog <condition>`, which would clash with a condition like "close". Names chosen to avoid clashes: `/backlog` (not `/task`, close to built-in commands) and `setup` (not `init`, which Claude Code uses; "setup" is also the skills' own term).
+- `.ai/team.md` is a Markdown table the agent reads, not a script: the skills stay plain Markdown for any agent, a few dozen rows need no program, and two people with the same nickname need a question anyway. It is per project and ignored by git, because colleagues' handles and account IDs don't belong in the history; Jira gets the account ID, not the email.
+- A listing fetches at most 100 tasks (the CLIs default to 30, which silently cut longer backlogs) and says when there may be more.
 
 ## Related work
 
