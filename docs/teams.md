@@ -224,7 +224,7 @@ With `none`, decisions go in a comment next to the code they concern, in the REA
 
 ## When a branch's task is done
 
-`/finish` runs these steps after its checks; without it, the agent does them when nothing is left on the branch.
+When nothing is left on the branch, the agent says so and suggests `/finish`, without picking a mode, and waits. `/finish` runs these steps after its checks; the agent runs them without it only if you want the task closed that way (an abandoned branch, a merge you do by hand).
 
 1. **Keep what must last.** Decisions and dead ends from the handoff that will matter after the branch go where people look: a comment next to the code, the design decisions, or a custom rule in `.ai/phase.md` if it is a rule to always follow. "It's in the journal" doesn't count: the journal gets buried.
 2. **Close the task, file the rest.** The branch's task file is deleted; follow-ups and open questions become new tasks.
