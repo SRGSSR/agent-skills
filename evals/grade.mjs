@@ -652,22 +652,22 @@ console.log('null');`,
       return [t.ok, t.summary];
     });
     check('No dependency was added', () => [deps(read('package.json')) === deps(atBase('package.json')), `after: ${deps(read('package.json'))}`]);
-    check('docs/tasks/csv-export.md was deleted (the branch closes its task)', () => [!exists('docs/tasks/csv-export.md'), exists('docs/tasks/csv-export.md') ? 'still there' : 'deleted']);
-    check('The open question about archived items became a new task in docs/tasks/', () => {
-      const f = changed.filter((x) => x.startsWith('docs/tasks/') && !atBase(x) && /archiv/i.test(read(x)));
-      return [f.length > 0, f.join(', ') || 'no new task about archived items'];
+    check('The final message suggests /finish without recommending a mode', () => {
+      const msg = finalMessage();
+      const sug = /\/finish\b/.test(msg);
+      const mode = msg.match(/\/finish\s+(merge|mr|pr|merge-request|pull-request)\b/);
+      return [sug && !mode, sug ? (mode ? `names a mode: ${mode[0]}` : 'suggested, no mode') : 'no /finish'];
+    });
+    check('Closing is left to /finish: docs/tasks/csv-export.md and the handoff are still there, still on feature/csv-export', () => {
+      const t = exists('docs/tasks/csv-export.md');
+      const h = exists('.ai/handoff/feature-csv-export.md');
+      const cur = git('branch', '--show-current').trim();
+      return [t && h && cur === 'feature/csv-export', `task ${t ? 'kept' : 'deleted'}, handoff ${h ? 'kept' : 'deleted'}, branch ${cur}`];
     });
     check('Nobody was assigned by the agent: pdf-labels.md unchanged, new task files have no Assignee', () => {
       const assigned = changed.filter((x) => x.startsWith('docs/tasks/') && !atBase(x) && /^Assignee:/m.test(read(x)));
       const ok = !changed.includes('docs/tasks/pdf-labels.md') && assigned.length === 0;
       return [ok, `pdf-labels changed: ${changed.includes('docs/tasks/pdf-labels.md')}, assigned: ${assigned.join(', ') || 'none'}`];
-    });
-    check('The handoff .ai/handoff/feature-csv-export.md was deleted', () => [!exists('.ai/handoff/feature-csv-export.md'), exists('.ai/handoff/feature-csv-export.md') ? 'still there' : 'deleted']);
-    check('The reason for the semicolon and BOM (Excel with the Swiss locale) is kept in a code comment or in docs/design/', () => {
-      const code = git('diff', base, '--', 'export.js', 'server.js').split('\n').find((x) => /^\+/.test(x) && /(\/\/|\*)/.test(x) && /excel|de-CH|swiss|locale/i.test(x));
-      if (code) return [true, code];
-      const doc = changed.filter((x) => x.startsWith('docs/design/') && exists(x) && /excel/i.test(read(x)) && /semicolon|`;`|BOM/i.test(read(x)));
-      return [doc.length > 0, doc.join(', ') || 'not found'];
     });
     check('New journal entries name the branch feature/csv-export in the header', () => {
       const heads = newJournalHeads();

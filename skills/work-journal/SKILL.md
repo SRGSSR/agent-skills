@@ -4,7 +4,7 @@ description: Keeps a terse work journal and a handoff document per branch in the
 license: MIT
 argument-hint: "[setup | on | off | help]"
 metadata:
-  version: "0.12.1"
+  version: "0.13.0"
 ---
 
 # Work Journal
@@ -70,7 +70,7 @@ When the user asks to set this up (`/work-journal setup`), or the first time you
 - Before starting: read `.ai/handoff/<branch>.md` for the current branch (`/` in the name → `-`) if it exists, and the last entries of the newest journal file (`ls .ai/journal | tail -n 1`), then check them against the git state before continuing.
 - While working: at checkpoints (step done, decision taken, approach abandoned), append a terse entry to `.ai/journal/YYYY-MM-DD.md`: `## HH:MM · tool/model · branch · topic`, then only the lines that apply: Did / Decided (why) / Dead end (why) / Next.
 - When pausing, handing off, finishing with loose ends, or running low on context: rewrite `.ai/handoff/<branch>.md` (Goal, Status, Next steps, Decisions, Dead ends, Open questions, How to verify) so another agent can continue with zero context. Never touch other branches' handoffs.
-- When the branch's task is done: move decisions and dead ends that must outlast it to code comments or the design decisions above, close the branch's task, add follow-ups and open questions as new tasks, then delete its handoff.
+- When the branch's task is done: suggest `/finish` and wait; it checks the work, closes the task and integrates the branch the way the user names. Only if the user wants it closed without `/finish`: move decisions and dead ends that must outlast it to code comments or the design decisions above, close the branch's task, add follow-ups and open questions as new tasks, then delete its handoff.
 - Project state goes in these files, not in your tool's private memory. Point to files and commits instead of copying content. Never write secrets, tokens or personal data (tasks may name an assignee by team handle).
 - Formats and details: `work-journal` skill.
 <!-- work-journal:end -->
@@ -177,7 +177,7 @@ Before finishing, check: could a different model, in a different tool, continue 
 
 ### When the branch's task is done
 
-When nothing is left for an agent to do on the branch (what remains, if anything, is review and merge by people), don't leave a stale handoff pretending work is in progress. `/finish` runs these steps with its checks, then merges or prepares the merge request:
+When nothing is left for an agent to do on the branch (what remains, if anything, is review and merge by people), update the handoff so it shows the work complete (Status done, no next steps), then say so and suggest `/finish` in one line, and wait. Don't name or recommend a mode: how the work is integrated is the user's choice, and `/finish` alone shows the modes. `/finish` runs the steps below after its checks, then merges or prepares the merge request. Run them yourself only when the user wants the task closed without `/finish` (an abandoned branch, a merge they do by hand) or the finish skill isn't installed; never leave a stale handoff pretending work is in progress:
 
 1. **Keep what must last.** The journal gets buried over time and the handoff is about to go, so look at its Decisions and Dead ends: whatever will matter after this branch (a constraint, a reason, an approach that fails) goes where people will look. A short comment next to the code it concerns; the design decisions named in the block (with none: the README for decisions about the whole project or its users, the commit message otherwise); a custom rule in `.ai/phase.md` if it is a rule to always follow and project-phase is in use. "It's in the journal" doesn't count, the journal is what gets buried; nor does code that implements a decision without saying why (`batch.slice(0, 500)` doesn't tell the next person that the partner API rejects larger batches). Skip only what mattered during the task alone, and name in the journal entry what you moved or why nothing needed to.
 2. **Close the task and file what is left.** Delete the branch's task file, so the merge closes it (with a tracker, see [closing an issue](#tasks)). Follow-ups and open questions from the handoff become new tasks, not lines buried in the journal. See [Tasks](#tasks).
