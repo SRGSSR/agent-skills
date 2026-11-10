@@ -4,7 +4,7 @@ description: Lists, creates, edits, comments on and closes the project's tasks w
 license: MIT
 argument-hint: "[new | edit | comment | close | filter | help] ..."
 metadata:
-  version: "0.7.0"
+  version: "0.8.0"
 ---
 
 # Backlog
@@ -29,10 +29,10 @@ Read the `Tasks:` line of the work-journal block in `AGENTS.md`:
 
 | Line names | List with |
 |---|---|
-| A folder (`docs/backlog/`, `docs/tasks/`, `docs/todo/`) | `grep -m1 -H '^# ' docs/backlog/*.md` (titles) and `grep -H '^Assignee:' docs/backlog/*.md`, with the folder the block names. Don't read the files whole. |
+| A folder (`docs/backlog/`, `docs/tasks/`, `docs/todo/`) | `grep -m1 -H '^# ' docs/backlog/*.md` (titles) and `grep -H '^Assignee:' docs/backlog/*.md`, with the folder the block names. Don't read the files whole. Creation order, oldest first: `git log --diff-filter=A --format= --name-only --reverse -- docs/backlog/` (skip files no longer there; files not yet committed come last). |
 | A file (`ROADMAP.md`, `TODO.md`) | Its open items, in its own format |
-| GitLab issues | `glab issue list -O json -P 100` (open issues; read number, title, assignees) |
-| GitHub issues | `gh issue list --json number,title,assignees --limit 100` |
+| GitLab issues | `glab issue list --order created_at --sort asc -O json -P 100` (open issues, oldest first; read number, title, assignees) |
+| GitHub issues | `gh issue list --search "sort:created-asc" --json number,title,assignees --limit 100` (oldest first) |
 | Jira | Two searches, the current sprint and the rest: `acli jira workitem search --jql "project = <KEY> AND statusCategory != Done AND sprint in openSprints() ORDER BY priority DESC, Rank" --fields "key,summary,assignee,status,priority" --limit 100 --json`, then the same with `AND (sprint is EMPTY OR sprint not in openSprints())`. A project without sprints (Kanban) gives an error or nothing for the first: use only the second, without the sprint condition. If `acli` is missing, the Atlassian connector with the same JQL. |
 | Another tracker | Its connector, open items of the named project |
 | `none`, or no block | Say there is no task list; offer to choose one (work-journal setup step 3). Don't search the journal for follow-ups. |
@@ -57,7 +57,7 @@ Never ask for a token in the chat or write it in a file. Never invent issues and
 ## What to show
 
 1. **Work in progress first.** If the current branch has a handoff (`.ai/handoff/<branch>.md`), its next step comes before any new task. A task with a handoff on another branch is in progress there: mark it (`docs/backlog/csv-export.md` ↔ `.ai/handoff/feature-csv-export.md`; for an issue, a handoff or branch that names its ID; in Jira, also status category In Progress).
-2. **Then the open tasks, grouped:** assigned to the user, unassigned, assigned to others (count per handle only, unless the user asks for someone's tasks). In Jira, the current sprint comes first with these three groups, then the backlog with the same three; within a group, higher priority first, then the tracker's order. The user is `@me` in GitLab and GitHub, the account of `acli jira auth status` in Jira, `git config user.name` for a folder (or the row of `.ai/team.md` with that git name).
+2. **Then the open tasks, grouped:** assigned to the user, unassigned, assigned to others (count per handle only, unless the user asks for someone's tasks). In Jira, the current sprint comes first with these three groups, then the backlog with the same three; within a group, the order the user asked for (priority, due date, ...), else higher priority first; ties go by Rank in Jira, by creation date, oldest first, in GitLab, GitHub and a folder. The user is `@me` in GitLab and GitHub, the account of `acli jira auth status` in Jira, `git config user.name` for a folder (or the row of `.ai/team.md` with that git name).
 3. One line per task: file name or issue ID, title, assignee (its handle in `.ai/team.md` if there), priority if the tracker has one and it is not the default, in-progress mark. No bodies.
 4. End with one suggestion: the current branch's next step, else the first task assigned to the user (in Jira, in the current sprint first), else the first unassigned one. For a new task, add how to begin it: `/start <ID or file name>`.
 5. Last line: the other commands, `new`, `edit`, `comment`, `close`, `filter`, `help`, in one line.
@@ -70,7 +70,7 @@ Translate the condition into the tracker's own filter, so the tracker does the w
 
 - Jira: add it to the JQL with `AND`: `parent = PODCAST-10`, `labels = backend`, `sprint in openSprints()`, `assignee = currentUser()`. A condition the user writes as JQL (`jql: ...`) goes in as it is.
 - GitLab: the `glab issue list` flags: `--epic <id> --group <group>`, `--label`, `--milestone`, `--assignee`, `--search`.
-- GitHub: the `gh issue list` flags: `--label`, `--milestone`, `--assignee`, `--type`, `--search` with GitHub search syntax. There is no flag for sub-issues of a parent: try it in `--search`, and if the query fails, say so.
+- GitHub: the `gh issue list` flags: `--label`, `--milestone`, `--assignee`, `--type`, `--search` with GitHub search syntax (keep `sort:created-asc` in it). There is no flag for sub-issues of a parent: try it in `--search`, and if the query fails, say so.
 - Folder: match titles, `Assignee:` and `Links:` lines with `grep`.
 - A person ("Simo's tasks"): their handle for that tracker from [`.ai/team.md`](#people-aiteammd).
 

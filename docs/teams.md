@@ -93,7 +93,7 @@ Links: docs/design/2026-10-02-csv-export.md
 
 - **No status field.** In progress means a branch or handoff exists; done means the file is gone. The branch that does the task deletes its file, so merging the branch closes the task.
 - **`Assignee` is optional**, a team handle, never a full name or email. The agent never assigns or reassigns a task unless you ask. In a public repo the handles are public.
-- **"What should I work on next?"** or **`/backlog`**: the `backlog` skill puts the current branch's handoff first, then lists the open tasks (title and assignee, no bodies) grouped as yours, unassigned and others, marks those in progress on another branch, and suggests one.
+- **"What should I work on next?"** or **`/backlog`**: the `backlog` skill puts the current branch's handoff first, then lists the open tasks (title and assignee, no bodies) grouped as yours, unassigned and others (by priority, or the order you ask for, then by backlog order in Jira and oldest first elsewhere), marks those in progress on another branch, and suggests one.
 - **Notes** go at the end of the file, one dated line each, added by `/backlog comment`:
 
   ```markdown
@@ -165,7 +165,7 @@ Typical split: code on GitHub, tasks in Jira Cloud. Setup proposes Jira when bra
 ```
 
 - **Access** goes through Atlassian's CLI, `acli` (`brew tap atlassian/homebrew-acli && brew install acli`, then `acli jira auth login --web`), or the Atlassian connector if `acli` is missing. Login, confirmation and the `/backlog` commands work as for GitLab and GitHub, with Jira keys instead of issue numbers.
-- **Listing** uses JQL: open work items of the project (status category not Done), the current sprint first, then the backlog; in each, yours, unassigned, then others, by priority and then backlog order. A project without sprints gets one list. Work items in an In Progress status are marked as in progress.
+- **Listing** uses JQL: open work items of the project (status category not Done), the current sprint first, then the backlog; in each, yours, unassigned, then others, by priority (or the order you ask for) and then backlog order. A project without sprints gets one list. Work items in an In Progress status are marked as in progress.
 - **Sprints** are planned by the team in Jira: new work items go to the backlog (if you ask for a sprint, the agent creates it in the backlog and tells you to plan it in Jira), and the agent never moves a work item into or out of a sprint, nor deletes or archives one. Work items in a sprint can be edited, commented on and closed, with your confirmation. `acli` cannot change the priority: the agent uses the Atlassian connector, or tells you to do it in Jira.
 - **Linking:** the agent puts the key in the branch name (`feature/PODCAST-123-csv-export`), commit subjects and the pull request title, so Jira's GitHub or GitLab integration links them.
 - **Closing:** `Closes #42` doesn't apply. When a branch's task is done, the agent proposes moving the work item to Done after the merge (`acli jira workitem transition`), unless your Jira automation or smart commits (`PODCAST-123 #done`) already do it. Status names follow the project's workflow: for a dropped task, name the status (Won't Do, Cancelled) or the agent asks.
