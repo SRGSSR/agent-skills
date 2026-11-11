@@ -1,15 +1,15 @@
 ---
 name: finish
-description: Finishes the work on the current branch. It checks that everything is done and documented (commits, build and tests, handoff, docs, decisions, follow-ups, debt) and stops to explain and ask if not. Otherwise it closes the branch the way the user names, `merge` (git flow feature finish, or a merge into the branch it started from) or `mr` / `pr` (prepares a merge request or pull request). Use this skill whenever the user types `/finish` with or without `merge`, `mr`, `merge-request`, `pr`, `pull-request` or `help`, or asks to finish, wrap up or close the feature or branch, merge it, or open a merge or pull request for it. Part of the work-journal plugin; `/start` begins the work.
+description: Finishes the work on the current branch. It checks that everything is done and documented (commits, build and tests, handoff, docs, decisions, follow-ups, debt) and stops to explain and ask if not. Otherwise it closes the branch the way the user names, `merge` (git flow feature finish, or a merge into the branch it started from) or `mr` / `pr` (prepares a merge request or pull request). Use this skill whenever the user types `/finish` with or without `merge`, `mr`, `merge-request`, `pr`, `pull-request` or `help` and optional instructions after it, or asks to finish, wrap up or close the feature or branch, merge it, or open a merge or pull request for it. Part of the work-journal plugin; `/start` begins the work.
 license: MIT
-argument-hint: "<merge | merge-request | mr | pull-request | pr | help>"
+argument-hint: "<merge | merge-request | mr | pull-request | pr | help> [instructions]"
 metadata:
-  version: "0.3.0"
+  version: "0.4.0"
 ---
 
 # Finish
 
-`/finish <mode>` closes the work on the current branch. The mode is required, because it is the user's choice of how the work gets integrated:
+`/finish <mode> [instructions]` closes the work on the current branch. The mode is required, because it is the user's choice of how the work gets integrated:
 
 | Mode | Does |
 |---|---|
@@ -19,7 +19,9 @@ metadata:
 
 `/finish help` shows this table, the base the branch would go into (the handoff's `Base:`, or "to confirm" without one) and, in one line, what gets checked before (step 1). Read only the handoff; run nothing else.
 
-Without a mode, or with another word, show this table in one line and stop: never pick or recommend a mode. A request in words counts when it names the mode ("finish and merge it", "open a PR"); "finish the feature" alone doesn't, so ask.
+Without a mode, or with another first word, show this table in one line and stop: never pick or recommend a mode. A request in words counts when it names the mode ("finish and merge it", "open a PR"); "finish the feature" alone doesn't, so ask.
+
+Text after the mode is instructions for this run: options of the request (draft, reviewers, labels), a title, what to add to the journal entry, a check problem the user accepts ("tests fail only on CI, known"). Follow them. An accepted problem is still reported, but doesn't stop. They never lift the rules here: no push, no force, and every check still runs.
 
 Never push, force or rewrite history. Formats are in the [work-journal skill](../work-journal/SKILL.md); tracker commands in the [backlog skill](../backlog/SKILL.md). Talk in the user's language.
 

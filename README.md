@@ -3,7 +3,7 @@
 Two [Agent Skills](https://agentskills.io) that make AI coding agents behave the way your project needs right now, and let you stop and resume work at any moment, even with a different agent or model.
 
 - **`project-phase`**: tells the agent which lifecycle phase the project is in (prototype, production, maintenance, ...) and what that means for how it works.
-- **`work-journal`**: keeps a terse journal and a handoff document in the repo, so any agent or human can pick up where the last one stopped. It ships with **`backlog`**: `/backlog` lists the open tasks and what to pick up next, `/backlog new`, `/backlog edit`, `/backlog comment` and `/backlog close` create, edit, comment on and close them, `/backlog filter` lists only those that match a condition, `/backlog help` shows the commands. And with **`start`** and **`finish`**: `/start <task>` opens a branch for a task with its first handoff, `/finish <merge | merge-request | pull-request>` (or `mr`, `pr`) checks that the work is done and documented, then merges it or prepares the merge or pull request; `/finish help` shows the modes.
+- **`work-journal`**: keeps a terse journal and a handoff document in the repo, so any agent or human can pick up where the last one stopped. It ships with **`backlog`**: `/backlog` lists the open tasks and what to pick up next, `/backlog new`, `/backlog edit`, `/backlog comment` and `/backlog close` create, edit, comment on and close them, `/backlog filter` lists only those that match a condition, `/backlog help` shows the commands. And with **`start`** and **`finish`**: `/start <task>` opens a branch for a task with its first handoff, `/finish <merge | merge-request | pull-request> [instructions]` (or `mr`, `pr`) checks that the work is done and documented, then merges it or prepares the merge or pull request; `/finish help` shows the modes.
 
 They work independently and fit together when both are installed.
 
@@ -130,6 +130,7 @@ Each skill also has commands. In Claude Code, typing one shows its subcommands:
 | `/backlog new`, `edit`, `comment`, `close`, `filter` | Creates, edits, comments on, closes or filters tasks |
 | `/start <task or name> [context]` | Opens a branch for the task (git flow if the repo uses it), writes its first handoff, offers to assign the task to you |
 | `/finish merge`, `/finish merge-request` (`mr`), `/finish pull-request` (`pr`) | Checks that the work is done and documented; then merges, or prepares the merge or pull request |
+| `/finish <mode> <instructions>` | The same, following the instructions for this run, e.g. `/finish pr as a draft, reviewer anna` |
 | `/finish help` | Shows the modes, the base the branch would go into and what gets checked |
 | `help` after any of the three | Its commands and current settings |
 

@@ -917,6 +917,12 @@ console.log('null');`,
     const prRe = /gh pr create[^\n]*(--base|-B)\s+develop/;
     check('The final message gives gh pr create with --base develop', () => [prRe.test(msg), prRe.test(msg) ? 'found' : 'missing']);
   },
+  'finish-pr-instructions'() {
+    graders['finish-pr']();
+    const cmd = (finalMessage().match(/gh pr create[^\n]*/g) || []).join(' ');
+    const ok = /--draft|(^|\s)-d\b/.test(cmd) && /(--label|-l)[ =]"?csv\b/.test(cmd);
+    check('The gh pr create command has --draft and --label csv', () => [ok, cmd || 'no gh pr create']);
+  },
   'start-gitflow'() {
     const changed = changedFiles();
     const cur = git('branch', '--show-current').trim();

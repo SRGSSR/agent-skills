@@ -59,6 +59,12 @@ How to verify: `npm test`, then open the list page and click the link.
 PODCAST-42
 ```
 
+Anything after the mode is instructions for this run: options of the request, a title, a problem you accept.
+
+> /finish pr as a draft, reviewer anna, the flaky upload test is known
+
+The agent still runs every check: it reports the flaky test as accepted instead of stopping, and adds `--draft --reviewer anna` to `gh pr create`. Instructions never make it push or force.
+
 The mode is required: `/finish` alone shows the syntax, `/finish help` the modes with the base the branch would go into and what gets checked. Nothing is pushed: for a merge or pull request, the agent gives you `git push -u origin <branch>`, then creates the request after your yes. The cleanup commit is part of the request, so merging it completes the work. `hotfix/` and `release/` branches are left to you, because finishing them is a release.
 
 `ls .ai/handoff/` is the list of work in progress. An agent that starts on a branch without a handoff sees the others, mentions them only if relevant, and doesn't resume them unless you ask.
