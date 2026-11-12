@@ -62,7 +62,7 @@ Or `/work-journal setup`. Setup looks for what the repo already uses and asks on
 | `origin` on GitLab or GitHub, Jira keys in branch names or commit subjects, or a tracker connector | | Its issues are proposed as the task list; writes (create, close, comment) only with your confirmation |
 | Nothing | `docs/design/`, `docs/decisions.md` or none | `docs/backlog/` or none |
 
-If the repo has more than one author in the last year, or a tracker, setup also proposes `.ai/team.md`, filled from git and the tracker: who is who on each system, with nicknames and an empty Roles column for you. See [People](teams.md#people).
+Setup never creates `.ai/team.md`, the map of who is who on each system: it holds personal data, so it is made only when you ask for it. See [People](teams.md#people).
 
 A tracker looks like this in the block:
 
@@ -72,7 +72,7 @@ A tracker looks like this in the block:
 
 ### Changing the choices later
 
-Run `/project-phase setup` or `/work-journal setup` again on a project already set up. The agent shows the current choices, reads the signals again and proposes only what they suggest changing, for example Jira keys that appeared in the commits since setup, people missing from `.ai/team.md`, or a phase that no longer fits. It changes only what you confirm. The journal, handoffs, task files, design decisions, the phase history and the debt list stay as they are; moving existing task files to a tracker is a separate step, one confirmed issue at a time.
+Run `/project-phase setup` or `/work-journal setup` again on a project already set up. The agent shows the current choices, reads the signals again and proposes only what they suggest changing, for example Jira keys that appeared in the commits since setup, or a phase that no longer fits. It changes only what you confirm. The journal, handoffs, task files, design decisions, `.ai/team.md`, the phase history and the debt list stay as they are; moving existing task files to a tracker is a separate step, one confirmed issue at a time.
 
 ## 3. Working in production or maintenance
 
