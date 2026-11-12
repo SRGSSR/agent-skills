@@ -13,7 +13,7 @@ How the skills behave when several people and agents work on the same repo, on d
 | `.ai/handoff/<branch>.md` | State of one branch | Committed; one file per branch |
 | Design decisions (for example `docs/design/`) | Why things are the way they are | Committed, written for people |
 | Tasks (`docs/backlog/` or a tracker) | Open work and open questions | Committed, or in the tracker |
-| `.ai/team.md` | Each person's handle on git, GitLab, GitHub and Jira, roles and nicknames | Committed; ignored by git in a public repo |
+| `.ai/team.md` | Each person's handle on git, GitLab, GitHub and Jira, roles and nicknames | Only if you ask for it; committed or ignored by git, your choice |
 
 `.ai/` is the agents' working state; design decisions and tasks are for people. The agents' private memory is not used for project state, because other agents and people can't read it.
 
@@ -189,25 +189,27 @@ Typical split: code on GitHub, tasks in Jira Cloud. Setup proposes Jira when bra
 
 ### People
 
-The same person can be `monacosi` in GitLab, `simone-monaco` on GitHub and an account ID in Jira, and you call them Simo. `.ai/team.md` maps them, one row per person:
+The same person can be `monacosi` in GitLab, `simone-monaco` on GitHub and an account ID in Jira, and you call them Simo. `.ai/team.md` maps them, one row per person, with the columns aligned so it reads in plain text too:
 
 ```markdown
-| Handle | Git | GitLab | GitHub | Jira | Roles | Aliases |
-|---|---|---|---|---|---|---|
-| monacosi | Simone Monaco | monacosi | simone-monaco | 712020:3f1c... | backend, PO | Simone, Simo, Simon |
+| Handle   | Git              | GitLab   | GitHub        | Jira           | Roles       | Aliases             |
+|----------|------------------|----------|---------------|----------------|-------------|---------------------|
+| monacosi | Simone Monaco    | monacosi | simone-monaco | 712020:3f1c... | backend, PO | Simone, Simo, Simon |
+| rossial  | Alessandro Rossi |          |               | 712020:9a2b... |             | Alessandro          |
 ```
 
 - "Assign #42 to Simo", "Simo's tasks": the agent matches the name against handles and aliases, ignoring case, and uses the handle of the system in use. With two matches it asks.
-- An unknown name: the agent looks the person up in the tracker (project members in GitLab, collaborators on GitHub, an existing assignee or the Atlassian connector in Jira), proposes the row and adds it when you confirm who it is.
-- **Filled at setup:** `/work-journal setup` proposes the table from the git authors of the last 12 months and the tracker's members (GitLab project members, GitHub collaborators, Jira assignees), matched by name. Uncertain matches are marked `?` for you to confirm; bots are left out; the first name becomes an alias; Roles stays empty for you to fill. On a project already set up, `/work-journal setup` proposes only the people missing. A proposal looks like this:
+- An unknown name: the agent looks the person up in the tracker (project members in GitLab, collaborators on GitHub, an existing assignee or the Atlassian connector in Jira). If the file exists, it proposes the row and adds it when you confirm who it is; without the file, it uses what it found for that request only.
+- **Only if you ask for it** ("create the team file"). The file links people's names, nicknames, roles and accounts, which is personal data, so the agent never proposes it on its own, not even at setup. When you ask, it warns you first and runs no search until you say to go on. Then it fills the table from the git authors of the last 12 months and the tracker's members (GitLab project members, GitHub collaborators, Jira assignees), matched by name: uncertain matches are marked `?` for you to confirm, bots are left out, the first name becomes an alias, Roles stays empty for you to fill. It shows the table and asks whether to commit it or keep it ignored by git:
 
   ```markdown
-  | Handle | Git | GitLab | GitHub | Jira | Roles | Aliases |
-  |---|---|---|---|---|---|---|
-  | monacosi | Simone Monaco | | simone-monaco | 712020:3f1c... | | Simone |
-  | rossial | Alessandro Rossi | | arossi? | 712020:9a2b... | | Alessandro |
+  | Handle   | Git              | GitLab | GitHub        | Jira           | Roles | Aliases    |
+  |----------|------------------|--------|---------------|----------------|-------|------------|
+  | monacosi | Simone Monaco    |        | simone-monaco | 712020:3f1c... |       | Simone     |
+  | rossial  | Alessandro Rossi |        | arossi?       | 712020:9a2b... |       | Alessandro |
 
   `arossi?`: GitHub collaborator without a display name; is it Alessandro Rossi? dependabot[bot] left out.
+  Commit it (shared with everyone who has access to the repo) or keep it ignored by git?
   ```
 - **Roles** (free text: `backend`, `frontend`, `QA`, `PO`) let the agent suggest who could take a new task, with how many open tasks each already has. It only suggests: assigning is up to you. For example, after `/backlog new Dark mode toggle for the list page`:
 
@@ -215,7 +217,7 @@ The same person can be `monacosi` in GitLab, `simone-monaco` on GitHub and an ac
   Who could take it (frontend): giulia-bianchi (2 open tasks), monacosi (5 open tasks).
   Assign it to one of them? Otherwise it stays unassigned.
   ```
-- **Committed**, because everyone with access to the repo already sees these names in git and the tracker. In a public repo it is ignored by git instead, so that accounts, nicknames and roles don't go online; if the agent can't tell whether the repo is public, it asks and keeps the file ignored until you answer. Only handles, account IDs, display names, roles and aliases, no emails. Edit it by hand whenever you like.
+- **Committed or ignored, your choice.** Committed, one shared file serves everyone, who already sees these names in git and the tracker. In a public repo the agent recommends keeping it ignored, so that accounts, nicknames and roles don't go online. Only handles, account IDs, display names, roles and aliases, no emails. Edit it by hand whenever you like.
 - Task files use the Handle column in `Assignee:`. The row whose Git column matches your `git config user.name` is you, so a task folder can tell which tasks are yours.
 
 Other trackers work the same way through a connector. With no task list, follow-ups go in the final message and the journal.
