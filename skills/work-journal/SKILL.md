@@ -1,10 +1,10 @@
 ---
 name: work-journal
-description: Keeps a terse work journal and a handoff document per branch in the repo so work can be paused at any moment and resumed later by the same or a different AI agent, model or tool, or by a human, also when several people work on the same project. Use this skill whenever the user is stopping or pausing ("let's stop here", "I'll continue tomorrow", "pick this up later", "switching to another model"), asks for a handoff, a session summary or a devlog, wants to continue previous work ("where were we?", "resume", "continue from yesterday"), or wants to set up resumable or logged AI sessions, or wants to turn it on or off for a project (`/work-journal on`, `off`, "stop keeping the journal here") or types `/work-journal help`. Also use it when starting work in a repo that has `.ai/handoff/`, `.ai/handoff.md` or `.ai/journal/`, when a branch's task is done, when the user asks what to work on next or where design decisions and tasks are kept, and before the context runs out on a long task.
+description: "Keeps a terse work journal and a handoff document per branch in the repo so work can be paused at any moment and resumed later by the same or a different AI agent, model or tool, or by a human, also when several people work on the same project. Use this skill whenever the user is stopping or pausing (\"let's stop here\", \"I'll continue tomorrow\", \"pick this up later\", \"switching to another model\"), asks for a handoff, a session summary or a devlog, wants to continue previous work (\"where were we?\", \"resume\", \"continue from yesterday\"), or wants to set up resumable or logged AI sessions, or wants to turn it on or off for a project (`/work-journal on`, `off`, \"stop keeping the journal here\") or types `/work-journal help`. Also use it when starting work in a repo that has `.ai/handoff/`, `.ai/handoff.md` or `.ai/journal/`, when a branch's task is done, when the user asks what to work on next or where design decisions and tasks are kept, and before the context runs out on a long task."
 license: MIT
 argument-hint: "[setup | on | off | help]"
 metadata:
-  version: "0.14.0"
+  version: "0.14.1"
 ---
 
 # Work Journal

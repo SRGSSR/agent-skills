@@ -1,10 +1,10 @@
 ---
 name: start
-description: Starts the work on a task or feature in a branch of its own, with the git flow feature start when the repo uses git flow, or otherwise a feature branch from the development branch. It records the branch it started from, writes the first handoff and journal entry, and for a task in a tracker offers to assign it to the user and mark it in progress. Use this skill whenever the user types `/start <task or name> [context]`. Also use it when they say they want to start or begin working on a task, issue, work item or feature ("let's start on PODCAST-42", "begin the CSV export"); then propose `/start` with the name instead of creating a branch on your own. Part of the work-journal plugin; `/finish` ends the work.
+description: "Starts the work on a task or feature in a branch of its own, with the git flow feature start when the repo uses git flow, or otherwise a feature branch from the development branch. It records the branch it started from, writes the first handoff and journal entry, and for a task in a tracker offers to assign it to the user and mark it in progress. Use this skill whenever the user types `/start <task or name> [context]`. Also use it when they say they want to start or begin working on a task, issue, work item or feature (\"let's start on PODCAST-42\", \"begin the CSV export\"); then propose `/start` with the name instead of creating a branch on your own. Part of the work-journal plugin; `/finish` ends the work."
 license: MIT
 argument-hint: "<task or name> [context]"
 metadata:
-  version: "0.1.0"
+  version: "0.1.1"
 ---
 
 # Start

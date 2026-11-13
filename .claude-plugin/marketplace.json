@@ -11,7 +11,7 @@
       "name": "project-phase",
       "source": "./",
       "description": "Makes the agent work the way the project's lifecycle phase needs: no over-engineering while prototyping, structural suggestions and tech-debt tracking in production, minimal regression-safe diffs in maintenance.",
-      "version": "0.6.0",
+      "version": "0.6.1",
       "license": "MIT",
       "keywords": ["project-phase", "lifecycle", "prototype", "maintenance", "tech-debt", "over-engineering"],
       "skills": ["./skills/project-phase"]
@@ -20,7 +20,7 @@
       "name": "work-journal",
       "source": "./",
       "description": "Keeps a terse work journal and a per-branch handoff in the repo so any agent, model or human can pause and resume with zero context. Includes /backlog (task files, GitHub or GitLab issues, Jira), /start and /finish for branch work.",
-      "version": "0.16.1",
+      "version": "0.16.2",
       "license": "MIT",
       "keywords": ["handoff", "journal", "devlog", "resume", "session", "continuity", "tasks", "backlog", "issues", "gitlab", "github", "jira", "git-flow", "branches"],
       "skills": ["./skills/work-journal", "./skills/backlog", "./skills/start", "./skills/finish"]
