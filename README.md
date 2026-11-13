@@ -6,8 +6,8 @@
 
 [![Agent Skills](https://img.shields.io/badge/Agent_Skills-compatible-6E56CF)](https://agentskills.io)
 [![Claude Code marketplace](https://img.shields.io/badge/Claude_Code-marketplace-D97757)](#install)
-[![project-phase](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2FSRGSSR%2Fagent-skills%2Fmain%2Fplugins%2Fproject-phase%2F.claude-plugin%2Fplugin.json&query=%24.version&label=project-phase&color=2563eb)](plugins/project-phase/)
-[![work-journal](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2FSRGSSR%2Fagent-skills%2Fmain%2Fplugins%2Fwork-journal%2F.claude-plugin%2Fplugin.json&query=%24.version&label=work-journal&color=059669)](plugins/work-journal/)
+[![project-phase](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2FSRGSSR%2Fagent-skills%2Fmain%2Fplugins%2Fproject-phase%2F.claude-plugin%2Fplugin.json&query=%24.version&label=project-phase&color=af001e)](plugins/project-phase/)
+[![work-journal](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2FSRGSSR%2Fagent-skills%2Fmain%2Fplugins%2Fwork-journal%2F.claude-plugin%2Fplugin.json&query=%24.version&label=work-journal&color=171717)](plugins/work-journal/)
 [![Evals](https://img.shields.io/badge/evals-with_vs_without-16a34a)](#does-it-make-a-difference)
 [![Checks](https://github.com/SRGSSR/agent-skills/actions/workflows/checks.yml/badge.svg)](https://github.com/SRGSSR/agent-skills/actions/workflows/checks.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-lightgrey)](LICENSE)
