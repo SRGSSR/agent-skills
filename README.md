@@ -35,6 +35,8 @@ Neither is wrong in itself; it's wrong **for the phase**. And whatever the phase
 | **Doesn't** | Add a test suite, CI, or a closing list of "next steps you should consider" | Mix a refactor into the fix, or break an API "because it's cleaner" | Rename, reformat, bump dependencies, or change another caller with the same bug: it notes that one in `.ai/debt.md` |
 | **Reports** | One to three lines | What changed, tests, risks, up to 3 structural observations | What changed, why it's safe, what it noticed and left alone |
 
+We built these skills at [SRG SSR](https://www.srgssr.ch), the Swiss public broadcaster, for our own projects, and share them because they turned out to be useful. This repo is developed with both of them: see its [`AGENTS.md`](AGENTS.md) and [`.ai/`](.ai/).
+
 ## What's inside
 
 - 🧭 **[`project-phase`](skills/project-phase/SKILL.md)**: tells the agent which lifecycle phase the project is in (prototype, production, maintenance, ...) and gives it a short behavior contract for it. Runs the checklist when you change phase and keeps a one-line tech-debt register.
