@@ -36,3 +36,5 @@ The skills react to plain requests, in any language. A few that cover most needs
 | `/project-phase help`, `/work-journal help` | The skill's commands and its current settings; in Claude Code, typing the command also shows the subcommands |
 
 An example for each `/backlog` command, and what a listing looks like: [Backlog commands](teams.md#backlog-commands).
+
+Why the skills work the way they do, and what was discarded: [Design notes](design.md).

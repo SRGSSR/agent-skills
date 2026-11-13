@@ -1,10 +1,10 @@
 ---
 name: backlog
-description: Lists, creates, edits, comments on and closes the project's tasks wherever the work-journal block in AGENTS.md says they live, a task folder (`docs/backlog/`, or an existing `docs/tasks/` or `docs/todo/`), GitLab issues (`glab`), GitHub issues (`gh`), Jira (`acli` or the Atlassian connector) or another tracker, and points to what to pick up next. Use this skill whenever the user types `/backlog`, `/backlog new`, `edit`, `comment`, `close`, `filter` or `help`, asks what to work on next, which tasks, issues or work items are open (also only those of a parent, epic, label or sprint), what is assigned to them or to someone else, asks to see the task list or backlog, or asks to open, file, add, edit, assign, comment on, close or drop a task or issue, also naming a person by first name or nickname, or asks to create or update the team file `.ai/team.md` (it holds personal data: warn and wait for a yes before looking anyone up, even in `git log`).
+description: "Lists, creates, edits, comments on and closes the project's tasks wherever the work-journal block in AGENTS.md says they live, a task folder (`docs/backlog/`, or an existing `docs/tasks/` or `docs/todo/`), GitLab issues (`glab`), GitHub issues (`gh`), Jira (`acli` or the Atlassian connector) or another tracker, and points to what to pick up next. Use this skill whenever the user types `/backlog`, `/backlog new`, `edit`, `comment`, `close`, `filter` or `help`, asks what to work on next, which tasks, issues or work items are open (also only those of a parent, epic, label or sprint), what is assigned to them or to someone else, asks to see the task list or backlog, or asks to open, file, add, edit, assign, comment on, close or drop a task or issue, also naming a person by first name or nickname, or asks to create or update the team file `.ai/team.md` (it holds personal data: warn and wait for a yes before looking anyone up, even in `git log`)."
 license: MIT
 argument-hint: "[new | edit | comment | close | filter | help] ..."
 metadata:
-  version: "0.9.1"
+  version: "0.9.2"
 ---
 
 # Backlog

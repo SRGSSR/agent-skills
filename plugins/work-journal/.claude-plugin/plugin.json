@@ -1,0 +1,27 @@
+{
+  "name": "work-journal",
+  "version": "0.16.2",
+  "description": "Keeps a terse work journal and a per-branch handoff in the repo so any agent, model or human can pause and resume with zero context. Includes /backlog (task files, GitHub or GitLab issues, Jira), /start and /finish for branch work.",
+  "author": {
+    "name": "SRG SSR"
+  },
+  "homepage": "https://github.com/SRGSSR/agent-skills",
+  "repository": "https://github.com/SRGSSR/agent-skills",
+  "license": "MIT",
+  "keywords": [
+    "handoff",
+    "journal",
+    "devlog",
+    "resume",
+    "session",
+    "continuity",
+    "tasks",
+    "backlog",
+    "issues",
+    "gitlab",
+    "github",
+    "jira",
+    "git-flow",
+    "branches"
+  ]
+}

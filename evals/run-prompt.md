@@ -38,11 +38,11 @@ Environment notes:
 - (Only if the eval has `global_instructions`.) The user's global agent instructions, loaded in every project, contain: `<global_instructions>`
 
 Installed skills (load a skill by reading its SKILL.md when its description matches the situation, then follow it):
-- project-phase (<repo>/skills/project-phase/SKILL.md): <description from its frontmatter, verbatim>
-- work-journal (<repo>/skills/work-journal/SKILL.md): <description from its frontmatter, verbatim>
-- backlog (<repo>/skills/backlog/SKILL.md): <description from its frontmatter, verbatim>
-- start (<repo>/skills/start/SKILL.md): <description from its frontmatter, verbatim>
-- finish (<repo>/skills/finish/SKILL.md): <description from its frontmatter, verbatim>
+- project-phase (<repo>/plugins/project-phase/skills/project-phase/SKILL.md): <description from its frontmatter, verbatim>
+- work-journal (<repo>/plugins/work-journal/skills/work-journal/SKILL.md): <description from its frontmatter, verbatim>
+- backlog (<repo>/plugins/work-journal/skills/backlog/SKILL.md): <description from its frontmatter, verbatim>
+- start (<repo>/plugins/work-journal/skills/start/SKILL.md): <description from its frontmatter, verbatim>
+- finish (<repo>/plugins/work-journal/skills/finish/SKILL.md): <description from its frontmatter, verbatim>
 
 When finished, write the exact final message you would send to the user into <run-dir>/outputs/final_message.md
 ```

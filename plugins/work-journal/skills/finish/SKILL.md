@@ -1,10 +1,10 @@
 ---
 name: finish
-description: Finishes the work on the current branch. It checks that everything is done and documented (commits, build and tests, handoff, docs, decisions, follow-ups, debt) and stops to explain and ask if not. Otherwise it closes the branch the way the user names, `merge` (git flow feature finish, or a merge into the branch it started from) or `mr` / `pr` (prepares a merge request or pull request). Use this skill whenever the user types `/finish` with or without `merge`, `mr`, `merge-request`, `pr`, `pull-request` or `help` and optional instructions after it, or asks to finish, wrap up or close the feature or branch, merge it, or open a merge or pull request for it. Part of the work-journal plugin; `/start` begins the work.
+description: "Finishes the work on the current branch. It checks that everything is done and documented (commits, build and tests, handoff, docs, decisions, follow-ups, debt) and stops to explain and ask if not. Otherwise it closes the branch the way the user names, `merge` (git flow feature finish, or a merge into the branch it started from) or `mr` / `pr` (prepares a merge request or pull request). Use this skill whenever the user types `/finish` with or without `merge`, `mr`, `merge-request`, `pr`, `pull-request` or `help` and optional instructions after it, or asks to finish, wrap up or close the feature or branch, merge it, or open a merge or pull request for it. Part of the work-journal plugin; `/start` begins the work."
 license: MIT
 argument-hint: "<merge | merge-request | mr | pull-request | pr | help> [instructions]"
 metadata:
-  version: "0.4.0"
+  version: "0.4.1"
 ---
 
 # Finish

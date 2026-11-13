@@ -1,10 +1,10 @@
 ---
 name: project-phase
-description: Sets and applies the project's lifecycle phase (explore, prototype, stabilize, production, maintenance, sunset) so the agent works the way that phase needs: no over-engineering while prototyping, tech-debt tracking in production, minimal regression-safe diffs in maintenance. Use this skill whenever the user wants to set up, check or change the project phase, mode or stage; says things like "we're just prototyping", "it's a quick POC", "this is live now", "maintenance only", "stop over-engineering", "don't touch anything else"; asks whether the project is ready for production; or wants to review tech debt or shortcuts; or wants to turn it on or off for a project (`/project-phase on`, `off`, "disable project-phase here") or types `/project-phase help`. Also use it when a project-phase block exists and it is unclear how the phase applies or the phase seems wrong, and before a code change in a repo with no project-phase block or off marker when the user's global instructions contain `project-phase: ask`.
+description: "Sets and applies the project's lifecycle phase (explore, prototype, stabilize, production, maintenance, sunset) so the agent works the way that phase needs: no over-engineering while prototyping, tech-debt tracking in production, minimal regression-safe diffs in maintenance. Use this skill whenever the user wants to set up, check or change the project phase, mode or stage; says things like \"we're just prototyping\", \"it's a quick POC\", \"this is live now\", \"maintenance only\", \"stop over-engineering\", \"don't touch anything else\"; asks whether the project is ready for production; or wants to review tech debt or shortcuts; or wants to turn it on or off for a project (`/project-phase on`, `off`, \"disable project-phase here\") or types `/project-phase help`. Also use it when a project-phase block exists and it is unclear how the phase applies or the phase seems wrong, and before a code change in a repo with no project-phase block or off marker when the user's global instructions contain `project-phase: ask`."
 license: MIT
 argument-hint: "[setup | on | off | help]"
 metadata:
-  version: "0.6.0"
+  version: "0.6.1"
 ---
 
 # Project Phase
