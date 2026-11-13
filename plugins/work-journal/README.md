@@ -146,4 +146,4 @@ Removing the skill does not change how the agent behaves in projects already set
 
 ## License
 
-MIT. Made by a team at [SRG SSR](https://www.srgssr.ch).
+MIT. Started by people at [SRG SSR](https://www.srgssr.ch).

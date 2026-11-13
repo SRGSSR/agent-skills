@@ -20,8 +20,6 @@ Works with **Claude Code**, **Codex**, **Cursor**, **Gemini CLI**, **GitHub Copi
 
 ---
 
-Made by a team at [SRG SSR](https://www.srgssr.ch), the Swiss public broadcaster: we use these skills in our work and share them because they turned out to be useful. This repo is developed with them: see its [`AGENTS.md`](AGENTS.md) and [`.ai/`](.ai/).
-
 | Plugin | What it does | Skills |
 |---|---|---|
 | 🧭 [**project‑phase**](plugins/project-phase/) | The agent works the way the project's lifecycle phase needs: prototype, production, maintenance, ... | `project-phase` |
@@ -154,10 +152,10 @@ Why the skills work the way they do, and what was discarded: [Design notes](docs
 
 Issues and pull requests are welcome, especially reports of cases where the agent misread a phase. Please include the phase, the request and what the agent did.
 
-Each plugin lives in `plugins/<plugin>/`: its skills under `skills/`, its guides under `docs/`, a README, and `.claude-plugin/plugin.json` with its version; `.claude-plugin/marketplace.json` lists the plugins.
+Each plugin lives in `plugins/<plugin>/`: its skills under `skills/`, its guides under `docs/`, a README, and `.claude-plugin/plugin.json` with its version; `.claude-plugin/marketplace.json` lists the plugins. This repo is developed with its own skills: see its [`AGENTS.md`](AGENTS.md) and [`.ai/`](.ai/).
 
 Behavior changes are checked with evals in [`evals/`](evals/): realistic fixture repos with git history (`evals/fixtures/build.sh`), test cases in `evals.json`, a programmatic grader (`grade.mjs`), and the run layout and prompt in `run-prompt.md`. Each case runs with and without the skills on the same repo. Every push and pull request also runs the [checks](.github/workflows/checks.yml): plugin validation, strict YAML in each `SKILL.md`, description length and links. Before changing how a skill behaves, read the [design notes](docs/design.md): most alternatives have been tried.
 
 ## License
 
-[MIT](LICENSE) © SRG SSR
+[MIT](LICENSE). Started by people at [SRG SSR](https://www.srgssr.ch), the Swiss public broadcaster.
