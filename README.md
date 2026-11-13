@@ -75,22 +75,6 @@ claude plugin install project-phase@srgssr
 claude plugin install work-journal@srgssr
 ```
 
-<details>
-<summary><b>Installed before the rename?</b> (marketplace <code>srgssr-project-status</code>, repo <code>SRGSSR/srgssr-project-status-skill</code>)</summary>
-
-Removing the old marketplace also uninstalls its plugins; then add the new one:
-
-```bash
-claude plugin marketplace remove srgssr-project-status
-claude plugin marketplace add SRGSSR/agent-skills
-claude plugin install project-phase@srgssr
-claude plugin install work-journal@srgssr
-```
-
-Projects already set up need nothing: their `AGENTS.md` blocks and `.ai/` stay as they are.
-
-</details>
-
 ### Any agent (Codex, Cursor, Gemini CLI, GitHub Copilot, OpenCode, ...)
 
 With [`skills`](https://github.com/vercel-labs/skills):
