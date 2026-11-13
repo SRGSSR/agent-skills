@@ -1,14 +1,14 @@
 # Teams and long-lived projects
 
-How the skills behave when several people and agents work on the same repo, on different branches, over months or years.
+How `work-journal` and its commands behave when several people and agents work on the same repo, on different branches, over months or years.
 
 ## What lives where
 
 | Place | Content | Shared how |
 |---|---|---|
-| `AGENTS.md` blocks | Phase contract and journal protocol | Committed; loaded by every agent on every task |
-| `.ai/phase.md` | Phase, overrides, custom rules, history | Committed |
-| `.ai/debt.md` | Open and accepted tech debt | Committed; `merge=union` |
+| `AGENTS.md` block | Journal protocol (and the phase contract, with `project-phase`) | Committed; loaded by every agent on every task |
+| `.ai/phase.md` | With `project-phase`: phase, overrides, custom rules, history | Committed |
+| `.ai/debt.md` | With `project-phase`: open and accepted tech debt | Committed; `merge=union` |
 | `.ai/journal/YYYY-MM-DD.md` | What was done, decided, abandoned | Committed (or ignored, if the team prefers); `merge=union` |
 | `.ai/handoff/<branch>.md` | State of one branch | Committed; one file per branch |
 | Design decisions (for example `docs/design/`) | Why things are the way they are | Committed, written for people |
@@ -234,15 +234,15 @@ With `none`, decisions go in a comment next to the code they concern, in the REA
 
 When nothing is left on the branch, the agent says so and suggests `/finish`, without picking a mode, and waits. `/finish` runs these steps after its checks; the agent runs them without it only if you want the task closed that way (an abandoned branch, a merge you do by hand).
 
-1. **Keep what must last.** Decisions and dead ends from the handoff that will matter after the branch go where people look: a comment next to the code, the design decisions, or a custom rule in `.ai/phase.md` if it is a rule to always follow. "It's in the journal" doesn't count: the journal gets buried.
+1. **Keep what must last.** Decisions and dead ends from the handoff that will matter after the branch go where people look: a comment next to the code, the design decisions, or, with `project-phase`, a custom rule in `.ai/phase.md` if it is a rule to always follow. "It's in the journal" doesn't count: the journal gets buried.
 2. **Close the task, file the rest.** The branch's task file is deleted; follow-ups and open questions become new tasks.
 3. **Delete the handoff**, and write a journal entry naming what was moved and the new tasks.
 
 ## Years later
 
 - **The journal grows, the cost doesn't.** Resuming reads only the newest journal file. Older entries are searched with `grep -rl <keyword> .ai/journal`, not read. The agent never deletes or summarizes old journals; prune them by hand if you want, git keeps them.
-- **The debt list stays short.** Fixed items are deleted, accepted items stay with their reason, because they record a decision.
-- **The phase history** in `.ai/phase.md` shows when and why the phase changed, and which phases were confirmed when the agent asked.
+- **The debt list stays short** (with `project-phase`). Fixed items are deleted, accepted items stay with their reason, because they record a decision.
+- **The phase history** (with `project-phase`) in `.ai/phase.md` shows when and why the phase changed, and which phases were confirmed when the agent asked.
 
 ## Privacy
 

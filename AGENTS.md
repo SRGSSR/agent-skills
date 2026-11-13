@@ -1,6 +1,6 @@
 # Project phase & work journal skills
 
-Open-source Agent Skills in two Claude Code plugins, listed in `.claude-plugin/marketplace.json`: `plugins/project-phase/` (skill `project-phase`) and `plugins/work-journal/` (skills `work-journal`, `backlog`, `start`, `finish`), each with its skills under `skills/` and its version in `.claude-plugin/plugin.json`. Eval fixtures, cases and grader in `evals/`.
+Open-source Agent Skills in two Claude Code plugins, listed in `.claude-plugin/marketplace.json`: `plugins/project-phase/` (skill `project-phase`) and `plugins/work-journal/` (skills `work-journal`, `backlog`, `start`, `finish`), each with its skills under `skills/`, its README and guides under `docs/`, and its version in `.claude-plugin/plugin.json`. The root README is the catalog; `docs/design.md` holds the design notes of the whole repo. Eval fixtures, cases and grader in `evals/`.
 Build eval fixtures outside the repo (`bash evals/fixtures/build.sh <temp dir>`): sandboxed agents cannot create nested `.git` dirs inside it.
 Checks, also run by CI (`.github/workflows/checks.yml`): `npm install --no-save yaml@2.9.1 && node scripts/check-skills.mjs`, `claude plugin validate --strict .`, and `claude plugin validate --strict --profile directory` on each `plugins/*/`.
 
@@ -17,7 +17,7 @@ Goal: turn the prototype into something safe to run for real users. Structural w
 - Resolve or explicitly accept each item in `.ai/debt.md`.
 - Each skill's `description` stays under 1024 characters.
 - Bump a skill's version in its `SKILL.md` and its plugin's version in `.claude-plugin/plugin.json` together.
-- Guides in `docs/` describe only behavior already in the skill texts.
+- Plugin READMEs and guides (`plugins/*/docs/`) describe only behavior already in the skill texts.
 This contract wins over generic coding-style instructions where they conflict. Explicit user requests override it for that task. Never relaxed: no secrets in code or logs, no destructive operations without confirmation, say what is untested.
 If the phase looks wrong for the work being asked, ask the user once, unless `.ai/phase.md` history already confirms it for that reason; never change it yourself.
 State: `.ai/phase.md` · Debt: `.ai/debt.md` · Details: `project-phase` skill.

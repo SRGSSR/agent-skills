@@ -1,6 +1,6 @@
 # Design notes
 
-Why the skills work the way they do, and what was discarded. This repo keeps its design decisions here, one section per topic, and in code comments (its own `work-journal` block names this file). For what the skills do, see the [README](../README.md) and the [guides](README.md).
+Why the skills work the way they do, and what was discarded. This repo keeps its design decisions here, one section per topic, and in code comments (its own `work-journal` block names this file). For what the skills do, see the [README](../README.md) and each plugin's README and guides.
 
 ## On / off
 
@@ -53,7 +53,8 @@ Why the skills work the way they do, and what was discarded. This repo keeps its
 
 ## README and public texts
 
-- Section headings stay without emoji: other pages link to anchors such as `README.md#install` and `#disable-or-uninstall`, and an emoji changes the anchor. Emoji go in tables and lists.
+- Section headings stay without emoji: guides link to anchors such as `README.md#install` and a plugin README's `#disable-or-uninstall`, and an emoji changes the anchor. Emoji go in tables and lists.
 - Public texts (README, posts, list entries) speak as a team at SRG SSR that uses the skills in its own work. SRG SSR appears as author and licensor, never as a place where the skills are widely used: that would claim more than is true.
 - Eval numbers are quoted with their date, the skill versions and the number of cases, and say where the model already did well without the skills: a bare "126/126" reads as more than it measured.
-- The README leads with what changes for the user (one request, three phases), then the evidence, then install. Reference material (tool notes, a handoff example) is folded in `<details>`, and the reasoning lives here.
+- The root README is a catalog with a showcase: what the collection is, install, then per plugin what changes for the user (one request, three phases; a session handed from one tool to another) and a link to its full docs, then the evidence. Each plugin's README holds its full docs (phases or commands, how it works, cost, disabling), so it stands alone in the plugin directory. Reference material is folded in `<details>`, and the reasoning lives here.
+- Guides live with their plugin (`plugins/<plugin>/docs/`), not in a shared `docs/`: the plugins don't need each other, and a later plugin brings its own. Where two plugins work together, each guide says how in a short "With …" section. Discarded: one set of guides covering both plugins (the previous layout, which mixed their steps in every guide).
