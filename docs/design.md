@@ -50,3 +50,10 @@ Why the skills work the way they do, and what was discarded. This repo keeps its
 - A plugin's version lives only in its `.claude-plugin/plugin.json`: `claude plugin validate --strict` wants it there, and a second copy in `marketplace.json` would drift. The marketplace entry keeps name, source and description, which people see while browsing.
 - Skill descriptions are double-quoted in the frontmatter: strict YAML parsers skip a plain value that contains `: ` (`npx skills`, with skills 1.8.1, installed three of the five skills). Claude Code tolerates it, so the failure was invisible there.
 - Repository `SRGSSR/agent-skills`, marketplace `srgssr`: renamed before the public launch, while few people had installed it. The old `srgssr-` prefix repeated the owner, and "agent skills" is what people search for; the repository can also host further skills from SRG SSR. The README tells existing users how to move: removing the old marketplace uninstalls its plugins, then they add the new one.
+
+## README and public texts
+
+- Section headings stay without emoji: other pages link to anchors such as `README.md#install` and `#disable-or-uninstall`, and an emoji changes the anchor. Emoji go in tables and lists.
+- Public texts (README, posts, list entries) speak as a team at SRG SSR that uses the skills in its own work. SRG SSR appears as author and licensor, never as a place where the skills are widely used: that would claim more than is true.
+- Eval numbers are quoted with their date, the skill versions and the number of cases, and say where the model already did well without the skills: a bare "126/126" reads as more than it measured.
+- The README leads with what changes for the user (one request, three phases), then the evidence, then install. Reference material (tool notes, a handoff example, the migration from the old marketplace) is folded in `<details>`, and the reasoning lives here.
