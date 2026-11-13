@@ -6,8 +6,8 @@
 
 [![Agent Skills](https://img.shields.io/badge/Agent_Skills-compatible-6E56CF)](https://agentskills.io)
 [![Claude Code plugin](https://img.shields.io/badge/Claude_Code-plugin-D97757)](#install)
-[![project-phase](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2FSRGSSR%2Fsrgssr-project-status-skill%2Fmain%2F.claude-plugin%2Fmarketplace.json&query=%24.plugins%5B0%5D.version&label=project-phase&color=2563eb)](skills/project-phase/SKILL.md)
-[![work-journal](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2FSRGSSR%2Fsrgssr-project-status-skill%2Fmain%2F.claude-plugin%2Fmarketplace.json&query=%24.plugins%5B1%5D.version&label=work-journal&color=2563eb)](skills/work-journal/SKILL.md)
+[![project-phase](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2FSRGSSR%2Fagent-skills%2Fmain%2Fplugins%2Fproject-phase%2F.claude-plugin%2Fplugin.json&query=%24.version&label=project-phase&color=2563eb)](plugins/project-phase/skills/project-phase/SKILL.md)
+[![work-journal](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2FSRGSSR%2Fagent-skills%2Fmain%2Fplugins%2Fwork-journal%2F.claude-plugin%2Fplugin.json&query=%24.version&label=work-journal&color=2563eb)](plugins/work-journal/skills/work-journal/SKILL.md)
 [![Evals](https://img.shields.io/badge/evals-with_vs_without-16a34a)](#does-it-make-a-difference)
 [![License: MIT](https://img.shields.io/badge/license-MIT-lightgrey)](LICENSE)
 
@@ -39,10 +39,10 @@ We built these skills at [SRG SSR](https://www.srgssr.ch), the Swiss public broa
 
 ## What's inside
 
-- 🧭 **[`project-phase`](skills/project-phase/SKILL.md)**: tells the agent which lifecycle phase the project is in (prototype, production, maintenance, ...) and gives it a short behavior contract for it. Runs the checklist when you change phase and keeps a one-line tech-debt register.
-- 📓 **[`work-journal`](skills/work-journal/SKILL.md)**: keeps a terse journal and a handoff per branch in the repo, so you can stop at any moment and resume later with another agent, model or tool, or hand over to a colleague.
-- 📋 **[`backlog`](skills/backlog/SKILL.md)**: `/backlog` lists the open tasks and suggests what to pick up next; creates, edits, comments on, filters and closes them. Task files, GitHub or GitLab issues, or Jira.
-- 🌿 **[`start`](skills/start/SKILL.md)** and **[`finish`](skills/finish/SKILL.md)**: `/start <task>` opens a branch with its first handoff. `/finish merge`, `mr` or `pr` checks that the work is done and documented, then merges it or prepares the merge or pull request.
+- 🧭 **[`project-phase`](plugins/project-phase/skills/project-phase/SKILL.md)**: tells the agent which lifecycle phase the project is in (prototype, production, maintenance, ...) and gives it a short behavior contract for it. Runs the checklist when you change phase and keeps a one-line tech-debt register.
+- 📓 **[`work-journal`](plugins/work-journal/skills/work-journal/SKILL.md)**: keeps a terse journal and a handoff per branch in the repo, so you can stop at any moment and resume later with another agent, model or tool, or hand over to a colleague.
+- 📋 **[`backlog`](plugins/work-journal/skills/backlog/SKILL.md)**: `/backlog` lists the open tasks and suggests what to pick up next; creates, edits, comments on, filters and closes them. Task files, GitHub or GitLab issues, or Jira.
+- 🌿 **[`start`](plugins/work-journal/skills/start/SKILL.md)** and **[`finish`](plugins/work-journal/skills/finish/SKILL.md)**: `/start <task>` opens a branch with its first handoff. `/finish merge`, `mr` or `pr` checks that the work is done and documented, then merges it or prepares the merge or pull request.
 
 `backlog`, `start` and `finish` ship with the `work-journal` plugin. The two plugins work independently and fit together when both are installed.
 
@@ -70,20 +70,36 @@ The suite has since grown to 44 cases, run as each feature lands.
 ### Claude Code
 
 ```bash
-claude plugin marketplace add SRGSSR/srgssr-project-status-skill
-claude plugin install project-phase@srgssr-project-status
-claude plugin install work-journal@srgssr-project-status
+claude plugin marketplace add SRGSSR/agent-skills
+claude plugin install project-phase@srgssr
+claude plugin install work-journal@srgssr
 ```
+
+<details>
+<summary><b>Installed before the rename?</b> (marketplace <code>srgssr-project-status</code>, repo <code>SRGSSR/srgssr-project-status-skill</code>)</summary>
+
+Removing the old marketplace also uninstalls its plugins; then add the new one:
+
+```bash
+claude plugin marketplace remove srgssr-project-status
+claude plugin marketplace add SRGSSR/agent-skills
+claude plugin install project-phase@srgssr
+claude plugin install work-journal@srgssr
+```
+
+Projects already set up need nothing: their `AGENTS.md` blocks and `.ai/` stay as they are.
+
+</details>
 
 ### Any agent (Codex, Cursor, Gemini CLI, GitHub Copilot, OpenCode, ...)
 
 With [`skills`](https://github.com/vercel-labs/skills):
 
 ```bash
-npx skills add SRGSSR/srgssr-project-status-skill
+npx skills add SRGSSR/agent-skills
 ```
 
-Or copy `skills/project-phase/`, `skills/work-journal/`, `skills/backlog/`, `skills/start/` and `skills/finish/` into your tool's skills folder (`.agents/skills/` is read by most tools; Claude Code uses `.claude/skills/`).
+Or copy the skill folders, `plugins/project-phase/skills/project-phase/` and the four in `plugins/work-journal/skills/`, into your tool's skills folder (`.agents/skills/` is read by most tools; Claude Code uses `.claude/skills/`).
 
 ### Then, in your repo
 
@@ -96,7 +112,7 @@ The agent proposes a phase from what it sees (commits, tags, CI, deploy files), 
 
 - **Claude Code** reads `AGENTS.md` only when there is no `CLAUDE.md`. The skills add `@AGENTS.md` to an existing `CLAUDE.md` during setup.
 - **Gemini CLI** reads `GEMINI.md` by default. Add `AGENTS.md` to `context.fileName` in its settings.
-- **Tools without skill support** still follow the blocks in `AGENTS.md`. You only need the skill for setup and phase changes, and you can do those by hand from the files in `skills/project-phase/references/`.
+- **Tools without skill support** still follow the blocks in `AGENTS.md`. You only need the skill for setup and phase changes, and you can do those by hand from the files in `plugins/project-phase/skills/project-phase/references/`.
 
 </details>
 
@@ -237,7 +253,7 @@ The always-loaded part is the `AGENTS.md` blocks: about 15 lines for the phase a
 Removing a skill does not change how the agent behaves in projects already set up: the blocks in `AGENTS.md` are loaded on every task with or without the skill.
 
 - **Turn a skill off in one project:** `/project-phase off` or `/work-journal off` (or ask in words, for example "turn project-phase off here"). The block in `AGENTS.md` is replaced by a one-line marker such as `<!-- project-phase:off -->`, which also stops the skill from adding the block back on its own. `.ai/` is kept, and `/project-phase on` or `/work-journal on` restores the block. While off, the skill still does what you explicitly ask, once.
-- **Remove the skill:** in Claude Code, `claude plugin disable <name>@srgssr-project-status` (or `uninstall`), or use the `/plugin` menu. With other tools, delete the skill folder. Turn it off in your projects first, or edit `AGENTS.md` by hand as below.
+- **Remove the skill:** in Claude Code, `claude plugin disable <name>@srgssr` (or `uninstall`), or use the `/plugin` menu. With other tools, delete the skill folder. Turn it off in your projects first, or edit `AGENTS.md` by hand as below.
 - **By hand:** delete the block between `<!-- project-phase:start -->` and `<!-- project-phase:end -->` (or `<!-- work-journal:start -->` and `<!-- work-journal:end -->`) in `AGENTS.md`. If the skill is still installed, put the `off` marker in its place, or the skill may add the block back. If setup added `@AGENTS.md` to `CLAUDE.md` only for these blocks, remove that line too. You can keep `.ai/` as a record or delete it.
 - **Less rigor, not none:** for `project-phase`, changing the phase (for example to `prototype`) is usually what you want instead of turning it off.
 

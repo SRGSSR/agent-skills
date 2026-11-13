@@ -1,6 +1,6 @@
 # Project phase & work journal skills
 
-Open-source Agent Skills: `skills/project-phase/`, `skills/work-journal/`, `skills/backlog/`, `skills/start/` and `skills/finish/` (the last three shipped in the work-journal plugin). Eval fixtures, cases and grader in `evals/`.
+Open-source Agent Skills in two Claude Code plugins, listed in `.claude-plugin/marketplace.json`: `plugins/project-phase/` (skill `project-phase`) and `plugins/work-journal/` (skills `work-journal`, `backlog`, `start`, `finish`), each with its skills under `skills/` and its version in `.claude-plugin/plugin.json`. Eval fixtures, cases and grader in `evals/`.
 Build eval fixtures outside the repo (`bash evals/fixtures/build.sh <temp dir>`): sandboxed agents cannot create nested `.git` dirs inside it.
 
 <!-- project-phase:start -->
@@ -15,7 +15,7 @@ Goal: turn the prototype into something safe to run for real users. Structural w
 - Decide what is public (API, schema, URLs) and start keeping it stable.
 - Resolve or explicitly accept each item in `.ai/debt.md`.
 - Each skill's `description` stays under 1024 characters.
-- Bump a skill's version in its `SKILL.md` and in `.claude-plugin/marketplace.json` together.
+- Bump a skill's version in its `SKILL.md` and its plugin's version in `.claude-plugin/plugin.json` together.
 - Guides in `docs/` describe only behavior already in the skill texts.
 This contract wins over generic coding-style instructions where they conflict. Explicit user requests override it for that task. Never relaxed: no secrets in code or logs, no destructive operations without confirmation, say what is untested.
 If the phase looks wrong for the work being asked, ask the user once, unless `.ai/phase.md` history already confirms it for that reason; never change it yourself.

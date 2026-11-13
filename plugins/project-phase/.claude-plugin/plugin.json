@@ -1,0 +1,19 @@
+{
+  "name": "project-phase",
+  "version": "0.6.1",
+  "description": "Makes the agent work the way the project's lifecycle phase needs: no over-engineering while prototyping, structural suggestions and tech-debt tracking in production, minimal regression-safe diffs in maintenance.",
+  "author": {
+    "name": "SRG SSR"
+  },
+  "homepage": "https://github.com/SRGSSR/agent-skills",
+  "repository": "https://github.com/SRGSSR/agent-skills",
+  "license": "MIT",
+  "keywords": [
+    "project-phase",
+    "lifecycle",
+    "prototype",
+    "maintenance",
+    "tech-debt",
+    "over-engineering"
+  ]
+}
