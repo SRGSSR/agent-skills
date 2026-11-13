@@ -6,3 +6,4 @@ workspace-review/
 .claude/
 
 .DS_Store
+node_modules/

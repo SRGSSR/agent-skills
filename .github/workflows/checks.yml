@@ -1,0 +1,32 @@
+name: Checks
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+      # yaml: the parser `npx skills` uses (skills 1.8.1); claude-code: the plugin validator.
+      - run: npm install --no-save --no-package-lock yaml@2.9.1 @anthropic-ai/claude-code@2.1.323
+      - name: Skills, manifests and links
+        run: node scripts/check-skills.mjs
+      - name: Claude Code plugin validation
+        run: |
+          npx claude plugin validate --strict .
+          for plugin in plugins/*/; do
+            npx claude plugin validate --strict --profile directory "$plugin"
+          done
+      - name: Eval grader and cases parse
+        run: |
+          node --check evals/grade.mjs
+          node -e "JSON.parse(require('fs').readFileSync('evals/evals.json', 'utf8'))"

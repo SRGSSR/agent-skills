@@ -9,6 +9,7 @@
 [![project-phase](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2FSRGSSR%2Fagent-skills%2Fmain%2Fplugins%2Fproject-phase%2F.claude-plugin%2Fplugin.json&query=%24.version&label=project-phase&color=2563eb)](plugins/project-phase/skills/project-phase/SKILL.md)
 [![work-journal](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2FSRGSSR%2Fagent-skills%2Fmain%2Fplugins%2Fwork-journal%2F.claude-plugin%2Fplugin.json&query=%24.version&label=work-journal&color=2563eb)](plugins/work-journal/skills/work-journal/SKILL.md)
 [![Evals](https://img.shields.io/badge/evals-with_vs_without-16a34a)](#does-it-make-a-difference)
+[![Checks](https://github.com/SRGSSR/agent-skills/actions/workflows/checks.yml/badge.svg)](https://github.com/SRGSSR/agent-skills/actions/workflows/checks.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-lightgrey)](LICENSE)
 
 Works with **Claude Code**, **Codex**, **Cursor**, **Gemini CLI**, **GitHub Copilot**, **OpenCode** and other tools that read `AGENTS.md`
@@ -256,7 +257,7 @@ Why the skills work the way they do, and what was discarded: [Design notes](docs
 
 Issues and pull requests are welcome, especially reports of cases where the agent misread a phase. Please include the phase, the request and what the agent did.
 
-Behavior changes are checked with evals in [`evals/`](evals/): realistic fixture repos with git history (`evals/fixtures/build.sh`), test cases in `evals.json`, a programmatic grader (`grade.mjs`), and the run layout and prompt in `run-prompt.md`. Each case runs with and without the skills on the same repo. Before changing how a skill behaves, read the [design notes](docs/design.md): most alternatives have been tried.
+Behavior changes are checked with evals in [`evals/`](evals/): realistic fixture repos with git history (`evals/fixtures/build.sh`), test cases in `evals.json`, a programmatic grader (`grade.mjs`), and the run layout and prompt in `run-prompt.md`. Each case runs with and without the skills on the same repo. Every push and pull request also runs the [checks](.github/workflows/checks.yml): plugin validation, strict YAML in each `SKILL.md`, description length and links. Before changing how a skill behaves, read the [design notes](docs/design.md): most alternatives have been tried.
 
 ## License
 
