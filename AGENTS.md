@@ -24,7 +24,7 @@ State: `.ai/phase.md` · Debt: `.ai/debt.md` · Details: `project-phase` skill.
 
 <!-- work-journal:start -->
 ## Work journal and handoff
-- Design decisions: none (code comments, commit messages, README).
+- Design decisions: `docs/design.md`, one section per topic.
 - Tasks: none (follow-ups go in the final message).
 - Before starting: read `.ai/handoff/<branch>.md` for the current branch (`/` in the name → `-`) if it exists, and the last entries of the newest journal file (`ls .ai/journal | tail -n 1`), then check them against the git state before continuing.
 - While working: at checkpoints (step done, decision taken, approach abandoned), append a terse entry to `.ai/journal/YYYY-MM-DD.md`: `## HH:MM · tool/model · branch · topic`, then only the lines that apply: Did / Decided (why) / Dead end (why) / Next.
