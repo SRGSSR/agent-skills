@@ -1,6 +1,6 @@
 # Changing phase
 
-How a project moves from one phase to the next, how the agent behaves when the phase looks wrong, and how to switch the skills off.
+How a project moves from one phase to the next, how the agent behaves when the phase looks wrong, and how to switch it off.
 
 ## Asking for a change
 
@@ -18,7 +18,7 @@ How a project moves from one phase to the next, how the agent behaves when the p
 
    If the journal has a task list, larger items also become tasks that link the debt item.
 4. `.ai/phase.md` gets the new phase and a history line with the date and the reason; the contract block in `AGENTS.md` is replaced with the new phase's block.
-5. With the journal in use, the change is logged there.
+5. With [`work-journal`](../../work-journal/README.md) installed, the change is logged in the journal.
 
 The agent never changes the phase on its own: only you decide. `/project-phase setup` on a project already set up does the same review from the repo signals: it shows the current set, phase, overrides and rules, proposes only what the signals suggest changing, and runs a phase change through these same steps.
 
@@ -34,7 +34,7 @@ The agent never changes the phase on its own: only you decide. `/project-phase s
 | maintenance → production | Review debt and outdated dependencies, check that build, CI and deploy still work, propose the few structural updates worth doing first. |
 | any → sunset | Deprecation notice, timeline and replacement, migration guide and data export, what still gets fixed until shutdown, archive plan (repo, data retention, credentials and infrastructure to revoke). |
 
-Moving back to an earlier phase is legitimate, for example a product returning to prototype for a new direction. Often an [area override](existing-project.md#parts-of-the-repo-in-another-phase) fits better: the new area moves fast while the live parts keep their protection.
+Moving back to an earlier phase is legitimate, for example a product returning to prototype for a new direction. Often an [area override](getting-started.md#parts-of-the-repo-in-another-phase) fits better: the new area moves fast while the live parts keep their protection.
 
 ## Debt review
 
@@ -58,8 +58,8 @@ If you keep the phase, the answer is recorded as a history line, so the agent do
 
 If you don't answer or say "later", nothing is recorded. The agent continues under the recorded phase (or the one the signals suggest, stating it in one line, for example "Assuming production: release tags and CI") and asks at most once per session.
 
-## Turning the skills off
+## Turning it off
 
-`/project-phase off` and `/work-journal off` (or the same in words) replace the block in `AGENTS.md` with an off marker and keep `.ai/`; `/project-phase on` and `/work-journal on` restore it. Details, and how to remove a skill: [Disable or uninstall](../README.md#disable-or-uninstall).
+`/project-phase off` (or the same in words) replaces the block in `AGENTS.md` with an off marker and keeps `.ai/`; `/project-phase on` restores it. Details, and how to remove the plugin: [Disable or uninstall](../README.md#disable-or-uninstall).
 
 Often you want less rigor rather than none: moving to `prototype` usually fits better than turning `project-phase` off.
