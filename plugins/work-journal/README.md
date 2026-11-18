@@ -108,11 +108,11 @@ Talk to your agent normally, in any language:
 | "Set up the work journal." or `/work-journal setup` | Adds the journal block, asks where design decisions and tasks go |
 | "Let's stop here, I'll continue tomorrow." | Writes the branch's handoff |
 | "Where were we?" or `/work-journal` | Reads the handoff, checks it against git, continues |
-| "What should I work on next?" or `/backlog` | Lists the open tasks (folder, GitLab or GitHub issues, Jira): yours, unassigned, others; suggests one |
+| "What should I work on next?" or `/backlog` | Lists the open tasks in a table (folder, GitLab or GitHub issues, Jira): yours, unassigned, others; suggests one |
 | `/backlog new <what>`, `/backlog edit <task> <change>`, `/backlog comment <task> <text>`, `/backlog close <task>` | Creates, edits, comments on or closes a task; issues only after your confirmation |
 | `/backlog filter <condition>`, `/backlog help` | Lists only the tasks that match (parent, epic, label, sprint, person, JQL...); shows the commands |
 | "Who could take PODCAST-57?" | Suggests people whose Roles in `.ai/team.md` match the task, with their open tasks; assigns only if you ask |
-| "Assign #42 to Simo." | Finds Simo's handle for that tracker in `.ai/team.md` (or in the tracker, asking if unclear), shows the change, assigns after your confirmation |
+| "Assign #42 to Simo." | Finds Simo's handle for that tracker in `.ai/team.md` (or in the tracker, asking if unclear), shows the change (with a fuller description if the one there wouldn't tell Simo what to do), assigns after your confirmation |
 | "Create the team file." | Warns that `.ai/team.md` holds personal data and asks whether to go on; then fills it from git and the tracker, shows it, and asks whether to commit it or keep it ignored by git. Never proposed unasked |
 | "Let's start on PODCAST-42." or `/start PODCAST-42` | Opens `feature/PODCAST-42-<slug>` from the development branch (git flow if used), writes the handoff with the task's goal, offers to assign the task to you and mark it in progress |
 | `/finish merge`, `mr` or `pr`, optionally followed by instructions (`/finish pr as a draft`) | Checks commits, build and tests, handoff, docs, decisions and follow-ups; stops and asks if something is missing; otherwise merges or prepares the merge or pull request |
