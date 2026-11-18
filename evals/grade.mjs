@@ -731,6 +731,27 @@ console.log('null');`,
       return [bad.length === 0, bad.join(', ') || 'none'];
     });
   },
+  'backlog-postponed'() {
+    const changed = changedFiles();
+    const lines = finalMessage().split('\n');
+    check('No task files or project files changed (only the journal may get an entry)', () => {
+      const bad = changed.filter((f) => !f.startsWith('.ai/journal/'));
+      return [bad.length === 0, bad.join(', ') || 'only the journal'];
+    });
+    check('archived-items is shown as postponed until 2030-01-15', () => {
+      const l = lines.find((x) => /archiv/i.test(x) && /postponed|on hold|rimandat/i.test(x) && /2030-01-15|15 jan/i.test(x));
+      return [Boolean(l), l || 'not found on one line'];
+    });
+    check('studio-printer is shown as postponed until June 2030 (date from its Notes)', () => {
+      const l = lines.find((x) => /printer/i.test(x) && /postponed|on hold|rimandat/i.test(x) && /june 2030|2030-06|giugno 2030/i.test(x));
+      return [Boolean(l), l || 'not found on one line'];
+    });
+    check('The suggestion is csv-export, not a postponed task', () => {
+      const sugg = lines.filter((x) => /suggest|\/start|to begin|consiglio/i.test(x));
+      const ok = sugg.some((x) => /csv/i.test(x)) && !sugg.some((x) => /archiv|printer/i.test(x));
+      return [ok, sugg.join(' / ') || 'no suggestion line'];
+    });
+  },
   'backlog-list-gitlab'() {
     const changed = changedFiles();
     const msg = finalMessage();
