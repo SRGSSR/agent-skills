@@ -99,7 +99,7 @@ Links: docs/design/2026-10-02-csv-export.md
 
 - **No status field.** In progress means a branch or handoff exists; done means the file is gone. The branch that does the task deletes its file, so merging the branch closes the task.
 - **`Assignee` is optional**, a team handle, never a full name or email. The agent never assigns or reassigns a task unless you ask. In a public repo the handles are public.
-- **"What should I work on next?"** or **`/backlog`**: the `backlog` skill puts the current branch's handoff first, then lists the open tasks (title and assignee, no bodies) grouped as yours, unassigned and others (by priority, or the order you ask for, then by backlog order in Jira and oldest first elsewhere), marks those in progress on another branch, and suggests one.
+- **"What should I work on next?"** or **`/backlog`**: the `backlog` skill puts the current branch's handoff first, then lists the open tasks in a table (title and assignee, no bodies) grouped as yours, unassigned and others (by priority, or the order you ask for, then by backlog order in Jira and oldest first elsewhere), marks those in progress on another branch, and suggests one.
 - **Notes** go at the end of the file, one dated line each, added by `/backlog comment`:
 
   ```markdown
@@ -119,8 +119,8 @@ The same commands work with a task folder, GitLab, GitHub and Jira. In a tracker
 | Command | Example | What happens |
 |---|---|---|
 | `/backlog` | `/backlog` | The current branch's next step, then the open tasks: yours, unassigned, a count of the others'. Ends with one suggestion and the list of commands. |
-| `/backlog new <what>` | `/backlog new Export the item list as PDF. The client wants printable lists; done when the PDF has the CSV columns.` | Drafts title, Why, Done when; asks for what is missing instead of inventing it; checks for duplicates; creates the task file or the issue. No assignee unless you name one; with Roles in `.ai/team.md`, it suggests who could take it. |
-| `/backlog edit <task> <change>` | `/backlog edit PODCAST-42 title "Export as PDF and CSV"` · `/backlog edit #42 assign to Simo` | Shows before → after; changes title, description, labels, type or assignee. |
+| `/backlog new <what>` | `/backlog new Export the item list as PDF. The client wants printable lists; done when the PDF has the CSV columns.` | Drafts title, Why, Done when; asks for what is missing instead of inventing it; checks for duplicates; creates the task file or the issue. No assignee unless you name one; with Roles in `.ai/team.md`, it suggests who could take it. For someone else, the description explains what to do, where, what is known and whom to ask. |
+| `/backlog edit <task> <change>` | `/backlog edit PODCAST-42 title "Export as PDF and CSV"` · `/backlog edit #42 assign to Simo` | Shows before → after; changes title, description, labels, type or assignee. Assigning to someone else whose description is too thin, it also proposes a fuller one. |
 | `/backlog comment <task> <text>` | `/backlog comment #42 the API is ready on staging` | Posts your words as they are (only typos fixed); in a task file, a dated line under `## Notes`. |
 | `/backlog close <task> [reason]` | `/backlog close #42 duplicate of #12` · `/backlog close PODCAST-7 we dropped it` | Warns if the task is in progress or assigned to someone else; posts the reason as a comment, then closes (GitHub "not planned" or duplicate, Jira the status you name). A task file is deleted. |
 | `/backlog filter <condition>` | `/backlog filter label backend` · `/backlog filter parent PODCAST-10` · `/backlog filter Simo` · `/backlog filter jql: sprint in openSprints()` | Lists only the matching tasks, for that listing. |
@@ -134,13 +134,21 @@ A listing looks like this:
 Current branch feature/csv-export: next step is the /items.csv route (handoff).
 
 PODCAST, current sprint:
-- PODCAST-42 Export as PDF · monacosi (you) · High
-- PODCAST-51 Fix date format in feed · unassigned
-- 3 assigned to others (rossial 2, bianchia 1)
+
+| Task       | Title                   | Assignee       | Priority | Status |
+|------------|-------------------------|----------------|----------|--------|
+| PODCAST-42 | Export as PDF           | monacosi (you) | High     |        |
+| PODCAST-51 | Fix date format in feed | unassigned     | Medium   |        |
+
+3 assigned to others (rossial 2, bianchia 1).
 
 PODCAST, backlog:
-- PODCAST-57 Dark mode toggle · unassigned
-- 12 assigned to others
+
+| Task       | Title            | Assignee   | Priority | Status |
+|------------|------------------|------------|----------|--------|
+| PODCAST-57 | Dark mode toggle | unassigned | Low      |        |
+
+12 assigned to others.
 
 Suggestion: PODCAST-42, yours in the current sprint. To begin: /start PODCAST-42
 Commands: new, edit, comment, close, filter, help.

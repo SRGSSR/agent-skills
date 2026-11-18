@@ -4,7 +4,7 @@ description: "Lists, creates, edits, comments on and closes the project's tasks 
 license: MIT
 argument-hint: "[new | edit | comment | close | filter | help] ..."
 metadata:
-  version: "0.9.2"
+  version: "0.10.0"
 ---
 
 # Backlog
@@ -58,7 +58,7 @@ Never ask for a token in the chat or write it in a file. Never invent issues and
 
 1. **Work in progress first.** If the current branch has a handoff (`.ai/handoff/<branch>.md`), its next step comes before any new task. A task with a handoff on another branch is in progress there: mark it (`docs/backlog/csv-export.md` ↔ `.ai/handoff/feature-csv-export.md`; for an issue, a handoff or branch that names its ID; in Jira, also status category In Progress).
 2. **Then the open tasks, grouped:** assigned to the user, unassigned, assigned to others (count per handle only, unless the user asks for someone's tasks). In Jira, the current sprint comes first with these three groups, then the backlog with the same three; within a group, the order the user asked for (priority, due date, ...), else higher priority first; ties go by Rank in Jira, by creation date, oldest first, in GitLab, GitHub and a folder. The user is `@me` in GitLab and GitHub, the account of `acli jira auth status` in Jira, `git config user.name` for a folder (or the row of `.ai/team.md` with that git name).
-3. One line per task: file name or issue ID, title, assignee (its handle in `.ai/team.md` if there), priority if the tracker has one and it is not the default, in-progress mark. No bodies.
+3. **A table per section** (one, or in Jira the current sprint and the backlog), one row per task, yours first, then unassigned: task (file name or issue ID), title, assignee (its handle in `.ai/team.md` if there), priority if the tracker has one (leave out the column if every task has the default), status (in progress, else empty). No bodies. The count of others' tasks goes in one line under the table. Any other list of tasks (matches to choose from, duplicates) is a table with the same columns.
 4. End with one suggestion: the current branch's next step, else the first task assigned to the user (in Jira, in the current sprint first), else the first unassigned one. For a new task, add how to begin it: `/start <ID or file name>`.
 5. Last line: the other commands, `new`, `edit`, `comment`, `close`, `filter`, `help`, in one line.
 
@@ -92,7 +92,7 @@ Sprint planning belongs to the team in Jira, not to the agent:
 
 ## Creating (`/backlog new`)
 
-1. **Draft** from the user's words and the conversation, in the task file shape: a title, `Why:`, `Done when:`, optionally `Links:`. Don't invent a reason or a done condition: if one is missing, ask for it in the same message as the draft, or leave a `?` and say so. No assignee unless the user names one.
+1. **Draft** from the user's words and the conversation, in the task file shape: a title, `Why:`, `Done when:`, optionally `Links:`. Don't invent a reason or a done condition: if one is missing, ask for it in the same message as the draft, or leave a `?` and say so. No assignee unless the user names one; for someone other than the user, see [Tasks for someone else](#tasks-for-someone-else).
 2. **Check for duplicates** in the open tasks (titles only); if one looks the same, say so and ask before creating another.
 3. **Create:**
    - Folder: write `<folder>/<name>.md` in the folder the block names, `<name>` being the branch that will do it without its prefix (`csv-export`). Don't create a branch for it.
@@ -103,10 +103,18 @@ Sprint planning belongs to the team in Jira, not to the agent:
    - A fixed filter in the `Tasks:` line goes on the new task too: a parent with `--parent` (`acli`, `gh`) or `--epic` (`glab`), a label with `--label`.
 4. **Report** the file name, or the issue number or key and URL from the command output.
 
+## Tasks for someone else
+
+A task assigned to someone other than the user (see [What to show](#what-to-show), step 2) is read by a person who was not in this conversation, and must tell them what is being handed to them. This applies when creating it with that assignee, when assigning or reassigning it to them, and when editing a task already assigned to them.
+
+- **The body explains the work**, in plain words, before `Why:`: what to do and where (files, components, pages, URLs), what is already known or decided (constraints, what was tried, what is out of scope), and whom to ask (the user's handle). Then `Why:`, `Done when:` and `Links:` as usual. No shorthand from this session ("as discussed", "the bug above", "option B"): name things.
+- **Take it from the conversation and the code.** What you can't find out, ask the user in the same message as the draft; never invent it.
+- **Assigning an existing task** whose body would leave the assignee guessing: propose the fuller body in the same confirmation, as before → after. The user can decline; then assign only.
+
 ## Editing (`/backlog edit`)
 
 1. **Find the task** as in [Closing](#closing-backlog-close) step 1, and read its current values.
-2. **Show the change** as before → after, with the exact command, and run it only after the user confirms (see [Writes need confirmation](#writes-need-confirmation)). Change only what the user asked for. An assignee comes from [`.ai/team.md`](#people-aiteammd).
+2. **Show the change** as before → after, with the exact command, and run it only after the user confirms (see [Writes need confirmation](#writes-need-confirmation)). Change only what the user asked for, except for the fuller body of [Tasks for someone else](#tasks-for-someone-else), proposed in the same confirmation. An assignee comes from [`.ai/team.md`](#people-aiteammd).
 3. **Edit:**
    - Jira: `acli jira workitem edit --key <KEY-12> --summary "<title>" --yes` (also `--description`, `--labels`, `--remove-labels`, `--type`); assignee: `acli jira workitem assign --key <KEY-12> --assignee <account ID> --yes`, or `--remove-assignee`. `acli` cannot change the priority: use the Atlassian connector if available, otherwise say it is done in Jira. Never the sprint (see [Jira sprints](#jira-sprints)).
    - GitLab: `glab issue update <id>` with `--title`, `--description-file -` (body on stdin), `--label`, `--unlabel`, `--assignee`, `--unassign`, `--milestone`.
