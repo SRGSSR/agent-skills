@@ -98,8 +98,9 @@ Links: docs/design/2026-10-02-csv-export.md
 ```
 
 - **No status field.** In progress means a branch or handoff exists; done means the file is gone. The branch that does the task deletes its file, so merging the branch closes the task.
+- **`Postponed` is optional**: the task waits, with the date it can resume if known (`Postponed: 2027-01-15`). Delete the line to resume it.
 - **`Assignee` is optional**, a team handle, never a full name or email. The agent never assigns or reassigns a task unless you ask. In a public repo the handles are public.
-- **"What should I work on next?"** or **`/backlog`**: the `backlog` skill puts the current branch's handoff first, then lists the open tasks in a table (title and assignee, no bodies) grouped as yours, unassigned and others (by priority, or the order you ask for, then by backlog order in Jira and oldest first elsewhere), marks those in progress on another branch, and suggests one.
+- **"What should I work on next?"** or **`/backlog`**: the `backlog` skill puts the current branch's handoff first, then lists the open tasks in a table (title and assignee, no bodies) grouped as yours, unassigned and others (by priority, or the order you ask for, then by backlog order in Jira and oldest first elsewhere), marks those in progress on another branch, and suggests one. A postponed task (a label, status or milestone like On hold, or a `Postponed:` line) shows the date it can resume, taken from a field for it, the description or the comments, and is not suggested before that date.
 - **Notes** go at the end of the file, one dated line each, added by `/backlog comment`:
 
   ```markdown
@@ -144,9 +145,9 @@ PODCAST, current sprint:
 
 PODCAST, backlog:
 
-| Task       | Title            | Assignee   | Priority | Status |
-|------------|------------------|------------|----------|--------|
-| PODCAST-57 | Dark mode toggle | unassigned | Low      |        |
+| Task       | Title            | Assignee   | Priority | Status                     |
+|------------|------------------|------------|----------|----------------------------|
+| PODCAST-57 | Dark mode toggle | unassigned | Low      | postponed until 2027-01-15 |
 
 12 assigned to others.
 

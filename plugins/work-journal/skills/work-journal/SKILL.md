@@ -4,7 +4,7 @@ description: "Keeps a terse work journal and a handoff document per branch in th
 license: MIT
 argument-hint: "[setup | on | off | help]"
 metadata:
-  version: "0.14.1"
+  version: "0.15.0"
 ---
 
 # Work Journal
@@ -213,6 +213,7 @@ Links: docs/design/2026-10-02-csv-export.md
 ```
 
 - Optional `## Notes` at the end: dated one-line comments (`- 2026-10-05: billing also wants the archived items`), added by `/backlog comment`.
+- Optional `Postponed:` line: the task waits, with the date it can resume if known (`Postponed: 2027-01-15`, `Postponed: after the summer`, or nothing after the colon). `/backlog` shows it and doesn't suggest the task before that date; delete the line to resume it.
 - No status field: in progress means a branch or handoff exists; done means the file is gone. The branch that does the task deletes its file, so merging the branch closes the task.
 - `Assignee` is optional, a team handle (the Handle column of `.ai/team.md` if the project has one, see the [backlog skill](../backlog/SKILL.md#people-aiteammd); otherwise a git or tracker username), never a full name or email. Never assign or reassign a task unless the user asks.
 - Write new task files only for follow-ups and open questions at the end of a branch's task, or when the user asks.
