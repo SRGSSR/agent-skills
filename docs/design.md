@@ -44,6 +44,7 @@ Why the skills work the way they do, and what was discarded. This repo keeps its
 - `/finish` checks the docs only for what the branch changed, not the whole documentation: an audit on every finish would cost too much and stop on old gaps. It asks for an example only where the docs already show examples for similar things, so it follows each project's own style instead of imposing one.
 - Listings are tables (task, title, assignee, priority, status): columns line up and are easier to scan than lines with separators. Others' tasks stay a count under the table.
 - A task assigned to someone else carries a body that explains the work (what, where, what is known, whom to ask): the assignee was not in the conversation, and a terse body hands them a guess. A task for the user stays terse, since they have the context.
+- Postponed tasks show the date they can resume, looked up only for tasks marked postponed (a label, status, milestone or `Postponed:` line), so a listing doesn't read every body. A due date is a deadline, not a resume date, so it is never used for it. A postponed task is not suggested before its date, or ever without one; the agent never removes the mark itself.
 - A listing fetches at most 100 tasks (the CLIs default to 30, which silently cut longer backlogs) and says when there may be more.
 
 ## Layout, names and manifests

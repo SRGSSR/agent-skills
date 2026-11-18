@@ -4,7 +4,7 @@ description: "Lists, creates, edits, comments on and closes the project's tasks 
 license: MIT
 argument-hint: "[new | edit | comment | close | filter | help] ..."
 metadata:
-  version: "0.10.0"
+  version: "0.11.0"
 ---
 
 # Backlog
@@ -29,11 +29,11 @@ Read the `Tasks:` line of the work-journal block in `AGENTS.md`:
 
 | Line names | List with |
 |---|---|
-| A folder (`docs/backlog/`, `docs/tasks/`, `docs/todo/`) | `grep -m1 -H '^# ' docs/backlog/*.md` (titles) and `grep -H '^Assignee:' docs/backlog/*.md`, with the folder the block names. Don't read the files whole. Creation order, oldest first: `git log --diff-filter=A --format= --name-only --reverse -- docs/backlog/` (skip files no longer there; files not yet committed come last). |
+| A folder (`docs/backlog/`, `docs/tasks/`, `docs/todo/`) | `grep -m1 -H '^# ' docs/backlog/*.md` (titles) and `grep -H -e '^Assignee:' -e '^Postponed:' docs/backlog/*.md`, with the folder the block names. Don't read the files whole. Creation order, oldest first: `git log --diff-filter=A --format= --name-only --reverse -- docs/backlog/` (skip files no longer there; files not yet committed come last). |
 | A file (`ROADMAP.md`, `TODO.md`) | Its open items, in its own format |
-| GitLab issues | `glab issue list --order created_at --sort asc -O json -P 100` (open issues, oldest first; read number, title, assignees) |
-| GitHub issues | `gh issue list --search "sort:created-asc" --json number,title,assignees --limit 100` (oldest first) |
-| Jira | Two searches, the current sprint and the rest: `acli jira workitem search --jql "project = <KEY> AND statusCategory != Done AND sprint in openSprints() ORDER BY priority DESC, Rank" --fields "key,summary,assignee,status,priority" --limit 100 --json`, then the same with `AND (sprint is EMPTY OR sprint not in openSprints())`. A project without sprints (Kanban) gives an error or nothing for the first: use only the second, without the sprint condition. If `acli` is missing, the Atlassian connector with the same JQL. |
+| GitLab issues | `glab issue list --order created_at --sort asc -O json -P 100` (open issues, oldest first; read number, title, assignees, labels, milestone) |
+| GitHub issues | `gh issue list --search "sort:created-asc" --json number,title,assignees,labels,milestone --limit 100` (oldest first) |
+| Jira | Two searches, the current sprint and the rest: `acli jira workitem search --jql "project = <KEY> AND statusCategory != Done AND sprint in openSprints() ORDER BY priority DESC, Rank" --fields "key,summary,assignee,status,priority,labels" --limit 100 --json`, then the same with `AND (sprint is EMPTY OR sprint not in openSprints())`. A project without sprints (Kanban) gives an error or nothing for the first: use only the second, without the sprint condition. If `acli` is missing, the Atlassian connector with the same JQL. |
 | Another tracker | Its connector, open items of the named project |
 | `none`, or no block | Say there is no task list; offer to choose one (work-journal setup step 3). Don't search the journal for follow-ups. |
 
@@ -58,11 +58,20 @@ Never ask for a token in the chat or write it in a file. Never invent issues and
 
 1. **Work in progress first.** If the current branch has a handoff (`.ai/handoff/<branch>.md`), its next step comes before any new task. A task with a handoff on another branch is in progress there: mark it (`docs/backlog/csv-export.md` ↔ `.ai/handoff/feature-csv-export.md`; for an issue, a handoff or branch that names its ID; in Jira, also status category In Progress).
 2. **Then the open tasks, grouped:** assigned to the user, unassigned, assigned to others (count per handle only, unless the user asks for someone's tasks). In Jira, the current sprint comes first with these three groups, then the backlog with the same three; within a group, the order the user asked for (priority, due date, ...), else higher priority first; ties go by Rank in Jira, by creation date, oldest first, in GitLab, GitHub and a folder. The user is `@me` in GitLab and GitHub, the account of `acli jira auth status` in Jira, `git config user.name` for a folder (or the row of `.ai/team.md` with that git name).
-3. **A table per section** (one, or in Jira the current sprint and the backlog), one row per task, yours first, then unassigned: task (file name or issue ID), title, assignee (its handle in `.ai/team.md` if there), priority if the tracker has one (leave out the column if every task has the default), status (in progress, else empty). No bodies. The count of others' tasks goes in one line under the table. Any other list of tasks (matches to choose from, duplicates) is a table with the same columns.
-4. End with one suggestion: the current branch's next step, else the first task assigned to the user (in Jira, in the current sprint first), else the first unassigned one. For a new task, add how to begin it: `/start <ID or file name>`.
+3. **A table per section** (one, or in Jira the current sprint and the backlog), one row per task, yours first, then unassigned: task (file name or issue ID), title, assignee (its handle in `.ai/team.md` if there), priority if the tracker has one (leave out the column if every task has the default), status (in progress, [postponed](#postponed-tasks), else empty). No bodies. The count of others' tasks goes in one line under the table. Any other list of tasks (matches to choose from, duplicates) is a table with the same columns.
+4. End with one suggestion: the current branch's next step, else the first task assigned to the user (in Jira, in the current sprint first), else the first unassigned one, skipping postponed tasks whose date has not passed or is not known. For a new task, add how to begin it: `/start <ID or file name>`.
 5. Last line: the other commands, `new`, `edit`, `comment`, `close`, `filter`, `help`, in one line.
 
 Listing only reads, so it needs no confirmation. Never assign or reassign a task while listing.
+
+### Postponed tasks
+
+A task is postponed when something says so: a label, status or milestone meaning it (Postponed, On hold, Deferred, Later, and the same in the team's language), or a `Postponed:` line in a task file. Only for these, look for the date it can resume, and stop at the first found:
+
+1. **A field for it:** the `Postponed:` line; in Jira a date field whose name says so (Postponed until, Resume date, On hold until), from `acli jira workitem view <KEY> --fields '*all' --json`. A due date is a deadline, not a resume date: don't use it.
+2. **The description**, then **the comments**, newest first: a sentence that gives the date ("postponed to March", "on hold until the new API is live"). GitLab `glab issue view <id> --comments`, GitHub `gh issue view <id> --json body,comments`, Jira `acli jira workitem view <KEY> --json` and `acli jira workitem comment list --key <KEY> --order -created --json`; a task file's `## Notes`.
+
+In the status column: `postponed until 2027-01-15`, a date written loosely kept as written (`postponed until after the summer`), `postponed, no date`, or `postponed until 2027-01-15 (passed)` once the date is behind today. A postponed task is not suggested until its date has passed; with no date, or one you can't place in time, never. Changing nothing: the label, status or line stay as they are.
 
 ## Filtering (`/backlog filter`)
 
@@ -119,7 +128,7 @@ A task assigned to someone other than the user (see [What to show](#what-to-show
    - Jira: `acli jira workitem edit --key <KEY-12> --summary "<title>" --yes` (also `--description`, `--labels`, `--remove-labels`, `--type`); assignee: `acli jira workitem assign --key <KEY-12> --assignee <account ID> --yes`, or `--remove-assignee`. `acli` cannot change the priority: use the Atlassian connector if available, otherwise say it is done in Jira. Never the sprint (see [Jira sprints](#jira-sprints)).
    - GitLab: `glab issue update <id>` with `--title`, `--description-file -` (body on stdin), `--label`, `--unlabel`, `--assignee`, `--unassign`, `--milestone`.
    - GitHub: `gh issue edit <id>` with `--title`, `--body-file -`, `--add-label`, `--remove-label`, `--add-assignee`, `--remove-assignee`, `--milestone`.
-   - Folder: edit the file (title, `Why:`, `Done when:`, `Links:`, `Assignee:`); git keeps the old version.
+   - Folder: edit the file (title, `Why:`, `Done when:`, `Links:`, `Assignee:`, `Postponed:`); git keeps the old version.
    - Another tracker: its connector.
 4. **Report** what changed, with the URL or file.
 
