@@ -695,6 +695,41 @@ console.log('null');`,
       return [Boolean(l), l || 'no in-progress mark'];
     });
     check('Nobody was assigned or reassigned', () => [!changed.some((f) => f.startsWith('docs/tasks/')), 'docs/tasks/ unchanged']);
+    check('The open tasks are shown as a Markdown table', () => {
+      const row = msg.split('\n').find((x) => /^\s*\|.*pdf|^\s*\|.*label/i.test(x));
+      const sep = /^\s*\|\s*:?-{3,}/m.test(msg);
+      return [Boolean(row) && sep, row || 'no table row for pdf-labels'];
+    });
+  },
+  'backlog-new-for-someone'() {
+    const changed = changedFiles();
+    const added = changed.filter((f) => f.startsWith('docs/tasks/') && !atBase(f) && exists(f));
+    const text = added.length === 1 ? read(added[0]) : '';
+    const lines = text.split('\n');
+    const why = lines.findIndex((l) => /^Why:/.test(l));
+    const intro = lines.slice(1, why < 0 ? lines.length : why).filter((l) => l.trim() && !/^Assignee:/.test(l)).join(' ');
+    check('Exactly one new task file in docs/tasks/, assigned to mrossi', () => [added.length === 1 && /^Assignee:.*mrossi/m.test(text), added.join(', ') || 'no new task file']);
+    check('The body has an explanation before the Why line', () => [why > 0 && intro.length >= 40, intro.slice(0, 120) || 'nothing before Why']);
+    check('The body says where the work is (export.js, toCsv or feature/csv-export)', () => {
+      const m = text.match(/export\.js|toCsv|feature\/csv-export/);
+      return [Boolean(m), m ? m[0] : 'none named'];
+    });
+    check('The body says that items have no archived flag yet', () => {
+      const l = lines.find((x) => /archiv/i.test(x) && /flag|field|property|attribute|no .*archived/i.test(x));
+      return [Boolean(l), l || 'not found'];
+    });
+    check('The body uses no shorthand from the session (as discussed, see above, option A/B)', () => {
+      const m = text.match(/as discussed|see above|mentioned above|option [AB]\b/i);
+      return [!m, m ? m[0] : 'none'];
+    });
+    check('The existing task files are unchanged', () => {
+      const bad = changed.filter((f) => f.startsWith('docs/tasks/') && atBase(f));
+      return [bad.length === 0, bad.join(', ') || 'unchanged'];
+    });
+    check('No other project files changed (only the journal may get an entry)', () => {
+      const bad = changed.filter((f) => !f.startsWith('.ai/journal/') && !added.includes(f));
+      return [bad.length === 0, bad.join(', ') || 'none'];
+    });
   },
   'backlog-list-gitlab'() {
     const changed = changedFiles();
