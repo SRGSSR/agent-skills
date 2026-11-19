@@ -1,15 +1,17 @@
 ---
 name: start
-description: "Starts the work on a task or feature in a branch of its own, with the git flow feature start when the repo uses git flow, or otherwise a feature branch from the development branch. It records the branch it started from, writes the first handoff and journal entry, and for a task in a tracker offers to assign it to the user and mark it in progress. Use this skill whenever the user types `/start <task or name> [context]`. Also use it when they say they want to start or begin working on a task, issue, work item or feature (\"let's start on PODCAST-42\", \"begin the CSV export\"); then propose `/start` with the name instead of creating a branch on your own. Part of the work-journal plugin; `/finish` ends the work."
+description: "Starts the work on a task or feature in a branch of its own, with the git flow feature start when the repo uses git flow, or otherwise a feature branch from the development branch. It records the branch it started from, writes the first handoff and journal entry, and for a task in a tracker offers to assign it to the user and mark it in progress. Use this skill whenever the user types `/start <task or name> [context]`, or `/start` alone to resume the paused work of the current branch. Also use it when they say they want to start or begin working on a task, issue, work item or feature (\"let's start on PODCAST-42\", \"begin the CSV export\"); then propose `/start` with the name instead of creating a branch on your own. Part of the work-journal plugin; `/pause` suspends the work, `/finish` ends it."
 license: MIT
-argument-hint: "<task or name> [context]"
+argument-hint: "[<task or name> [context]]"
 metadata:
-  version: "0.1.1"
+  version: "0.2.0"
 ---
 
 # Start
 
 `/start <task or name> [context]` opens one branch for one task, with its handoff from the first minute, so the work can be paused and resumed at any point. `<task or name>` is an issue (`#42`), a Jira key (`PODCAST-42`), a task file (`docs/backlog/csv-export.md`), a task title, or just a name; the optional context is a short description of the goal.
+
+**Resuming paused work:** `/start` with the task or name of a branch that already exists resumes it (step 1). `/start` alone resumes the current branch if it has a handoff, as in the work-journal skill, [Resuming](../work-journal/SKILL.md#resuming); on a branch without one, show the syntax and the paused work (`ls .ai/handoff/`), and stop.
 
 Formats of the handoff, journal and tasks are in the [work-journal skill](../work-journal/SKILL.md); task lookups and tracker commands in the [backlog skill](../backlog/SKILL.md). Talk in the user's language.
 
@@ -20,7 +22,7 @@ Formats of the handoff, journal and tasks are in the [work-journal skill](../wor
 1. **Check where you are** (`git status --short`, `git branch --show-current`):
    - Uncommitted changes: list them and ask whether to commit them first, stash them or carry them over.
    - On another work branch with a handoff or commits not yet merged: stop and ask. Don't leave work half done.
-   - A branch for this task already exists, local or remote (its key, number or name in the branch name): switch to it and resume from its handoff, as in the work-journal skill. Don't start over.
+   - A branch for this task already exists, local or remote (its key, number or name in the branch name): switch to it (or stay, if it is the current one) and resume from its handoff, as in the work-journal skill, [Resuming](../work-journal/SKILL.md#resuming): this is how work stopped with `/pause` continues. Don't start over.
 2. **Read the task**, if the name points to one (see the backlog skill, [Where the tasks are](../backlog/SKILL.md#where-the-tasks-are)): its title and done condition become the goal. If nothing matches, the name is just a name.
 3. **Name the branch** `feature/<slug>`: lowercase, hyphens, up to about 40 characters. A Jira key or issue number goes first (`feature/PODCAST-42-csv-export`, `feature/42-csv-export`); a task file gives its file name (`feature/csv-export`), which links the two. If the repo's branches use another prefix (`feat/`), use it.
 4. **Create it from the base:**

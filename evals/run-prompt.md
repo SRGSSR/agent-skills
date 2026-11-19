@@ -42,6 +42,7 @@ Installed skills (load a skill by reading its SKILL.md when its description matc
 - work-journal (<repo>/plugins/work-journal/skills/work-journal/SKILL.md): <description from its frontmatter, verbatim>
 - backlog (<repo>/plugins/work-journal/skills/backlog/SKILL.md): <description from its frontmatter, verbatim>
 - start (<repo>/plugins/work-journal/skills/start/SKILL.md): <description from its frontmatter, verbatim>
+- pause (<repo>/plugins/work-journal/skills/pause/SKILL.md): <description from its frontmatter, verbatim>
 - finish (<repo>/plugins/work-journal/skills/finish/SKILL.md): <description from its frontmatter, verbatim>
 
 When finished, write the exact final message you would send to the user into <run-dir>/outputs/final_message.md
