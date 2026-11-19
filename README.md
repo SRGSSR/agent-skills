@@ -96,7 +96,7 @@ Tue 09:05   you → Codex         "Where were we?"
                 says what it's resuming, starts on the next step
 ```
 
-It ships with `/backlog` (task files, GitHub or GitLab issues, Jira), `/start`, `/pause` and `/finish`, so one branch goes from task to merge across as many sessions, tools and people as it takes:
+It ships with `/backlog` (task files, GitHub or GitLab issues, Jira), `/start`, `/pause` and `/finish`, so one branch goes from task to merge across as many sessions, tools and people as it takes. An optional per-person soft mode swaps most tasks for reminders in the handoff:
 
 ```mermaid
 flowchart LR

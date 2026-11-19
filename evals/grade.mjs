@@ -794,6 +794,57 @@ console.log('null');`,
       return [ok, ok ? 'found' : 'missing'];
     });
   },
+  'soft-reminder'() {
+    const msg = finalMessage();
+    const h = read('.ai/handoff/feature-csv-export.md');
+    check('GET /items.csv returns the items as CSV with semicolons', () => {
+      const http = callHttpHandler(path.join(repo, 'server.js'), ['/items.csv']);
+      const r = http['/items.csv'];
+      const body = r?.body || '';
+      const ok = r?.status === 200 && ['Microphone stand', 'XLR cable 5m', 'Headphones'].every((n) => body.includes(n)) && body.includes(';');
+      return [ok, `status ${r?.status}, semicolons: ${body.includes(';')}`];
+    });
+    check('No new task file was created (docs/tasks or docs/backlog) and the final message proposes no tracker command', () => {
+      const tasks = changedFiles().filter((x) => /^docs\/(tasks|backlog)\//.test(x) && !atBase(x));
+      const cmd = /\b(gh|glab) issue (create|new)\b|\bacli jira workitem create\b/i.test(msg);
+      return [tasks.length === 0 && !cmd, `new task files: ${tasks.join(', ') || 'none'}; tracker command: ${cmd}`];
+    });
+    check("The reminder about billing is either noted under ## Reminders in the branch's handoff with a handle and a date, or offered in the final message as a question", () => {
+      const rem = (h.split(/^## Reminders\s*$/m)[1] || '').split(/^## /m)[0];
+      const line = rem.split('\n').find((x) => /billing/i.test(x));
+      const noted = Boolean(line) && /@[\w.-]+/.test(line) && /\d{4}-\d{2}-\d{2}/.test(line);
+      const offered = msg.split(/(?<=[?.!])\s+|\n/).some((x) => x.includes('?') && /billing/i.test(x) && /note|remind|write down|handoff/i.test(x));
+      return [noted || offered, noted ? `noted: ${line.trim()}` : offered ? 'offered in the final message' : 'neither noted nor offered'];
+    });
+    check('The handoff is still there and keeps its earlier content (dead ends, decisions)', () => {
+      const ok = /sep=,/.test(h) && /## Decisions/.test(h);
+      return [ok, h ? (ok ? 'kept' : 'earlier content lost') : 'handoff missing'];
+    });
+  },
+  'soft-finish-reminders'() {
+    const msg = finalMessage();
+    const h = read('.ai/handoff/feature-csv-export.md');
+    check('Not merged: still on feature/csv-export, no merge commit on main', () => {
+      const cur = git('branch', '--show-current').trim();
+      const merges = git('log', 'main', '--merges', '--oneline').trim();
+      return [cur === 'feature/csv-export' && !merges, `branch ${cur}; merges on main: ${merges || 'none'}`];
+    });
+    check('The handoff and docs/tasks/csv-export.md are still there, and both reminder lines are still in the handoff', () => {
+      const a = /billing/i.test(h), b = /itemsToCsv/.test(h);
+      return [exists('docs/tasks/csv-export.md') && a && b, `task file ${exists('docs/tasks/csv-export.md') ? 'there' : 'gone'}; handoff ${h ? 'there' : 'gone'}; billing line ${a}; rename line ${b}`];
+    });
+    check('The final message mentions both reminders (billing, the rename) and proposes done, drop or task for each', () => {
+      const lines = msg.split('\n');
+      const prop = (re) => lines.some((x) => re.test(x) && /\b(done|drop|dropped|task)\b/i.test(x));
+      const a = prop(/billing/i), b = prop(/itemsToCsv|rename/i);
+      return [a && b, `billing line with proposal: ${a}; rename line with proposal: ${b}`];
+    });
+    check('The final message asks the user how to settle them', () => [msg.includes('?'), msg.includes('?') ? 'has a question' : 'no question']);
+    check('No new task file was created', () => {
+      const t = changedFiles().filter((x) => /^docs\/(tasks|backlog)\//.test(x) && !atBase(x));
+      return [t.length === 0, t.join(', ') || 'none'];
+    });
+  },
   'backlog-list-gitlab'() {
     const changed = changedFiles();
     const msg = finalMessage();

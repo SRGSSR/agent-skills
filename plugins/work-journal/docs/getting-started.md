@@ -110,6 +110,34 @@ Start each piece of work with `/start <task or name>`, which opens its branch an
 2. The branch's task file is deleted (merging the branch closes the task); follow-ups and open questions become new tasks.
 3. The handoff is deleted, and a journal entry says what was done and moved.
 
+## Soft mode
+
+If trackers and task lists are not your thing, turn on soft mode:
+
+> /work-journal soft on
+
+The agent adds the line `work-journal: soft` to your global instructions (`~/.claude/CLAUDE.md` for Claude Code, `~/.codex/AGENTS.md` for Codex). Each tool has its own file, so it is on in the tool where you ran the command; run it again in the others. It is yours, not the project's: it applies in every repo with the work-journal block, and colleagues are not affected. `/work-journal soft off` removes the line.
+
+With it on, something to remember becomes a reminder in the handoff, not a task:
+
+```markdown
+You:    Rename formatRow to formatCsvRow, and we must remember to tell billing about the new separator.
+Agent:  Renamed in src/export.js. Shall I note that billing still needs to hear about the new separator?
+You:    Yes.
+Agent:  Noted in the handoff.
+```
+
+The handoff then has, and is committed with the next commit:
+
+```markdown
+## Reminders
+- @jdoe · 2026-11-19: tell billing that the separator changed.
+```
+
+Next time you resume, one line says "Still noted: tell billing about the separator." The same line comes up when the work touches what the reminder is about, and before `/finish`. At `/finish` the agent lists what is left, with what it would do with each (done, dropped or a task), and waits for your answers. A task is proposed instead of a reminder only when the thing is for someone else or can't be done before the branch finishes.
+
+On a branch with no handoff, and after `/finish`, the agent also names the tasks assigned to you and offers the first with `/start`, which then splits it into small steps, offered one at a time.
+
 ## Upgrading from an older version
 
 Nothing to do by hand. When the agent resumes work in a repo with an older `work-journal` block, it replaces the block (keeping your configuration lines) and says so in one line; `/work-journal setup` does the same on request. A block from 0.3 or earlier has no configuration lines: the agent asks where design decisions and tasks go. An old single `.ai/handoff.md` becomes the handoff of its branch the next time the handoff is written.

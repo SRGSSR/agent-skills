@@ -235,6 +235,16 @@ The same person can be `monacosi` in GitLab, `simone-monaco` on GitHub and an ac
 
 Other trackers work the same way through a connector. With no task list, follow-ups go in the final message and the journal.
 
+## Soft mode on a shared project
+
+[Soft mode](../README.md#soft-mode) belongs to the person, not the project: it is on for whoever has `work-journal: soft` in their global instructions, and nobody else notices. On a shared branch:
+
+- **Reminders live in the committed handoff**, under `## Reminders`, one line each with the handle of whoever noted it and the date (`- @anna · 2026-11-19: tell billing that the separator changed.`). The handle is the one used for `Assignee:`.
+- **Each person is reminded only of their own.** Other people's lines are theirs.
+- **A colleague not in soft mode keeps them.** Whoever rewrites the handoff, in soft mode or not, keeps every Reminders line as it is, also other people's, so `/pause` or a handover doesn't lose them.
+- **`/finish` closes them all, whoever finishes.** Every reminder left is listed with a proposal (done, dropped or a task) and answered one by one before the handoff is deleted.
+- **For someone else, a task.** A reminder in the handoff doesn't reach a colleague, so what is for another person is proposed as a task.
+
 ## Design decisions
 
 Written when a branch's task is done, or earlier when you ask to record a decision: what a successor needs to know about why. Constraints, decisions not evident from the code, alternatives discarded and the reason. Not task logs, test counts or branch state: git has those.

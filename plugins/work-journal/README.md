@@ -85,7 +85,7 @@ Users can export the item list as CSV from the list page. Done when the button d
 
 | Skill | Commands | Does |
 |---|---|---|
-| [`work-journal`](skills/work-journal/SKILL.md) | `/work-journal`, `setup`, `on`, `off`, `help` | Journal entries at checkpoints, per-branch handoff, resume |
+| [`work-journal`](skills/work-journal/SKILL.md) | `/work-journal`, `setup`, `on`, `off`, `soft on`, `soft off`, `help` | Journal entries at checkpoints, per-branch handoff, resume |
 | [`backlog`](skills/backlog/SKILL.md) | `/backlog`, `new`, `edit`, `comment`, `close`, `filter`, `help` | Open tasks in task files, GitHub or GitLab issues, or Jira; what to pick up next |
 | [`start`](skills/start/SKILL.md) | `/start <task or name> [context]`, `/start` | Opens a branch for a task (git flow if the repo uses it) with its first handoff, offers to assign the task to you; resumes the branch if it already exists |
 | [`pause`](skills/pause/SKILL.md) | `/pause [instructions]`, `help` | Stops the work without closing it: checks that everything is in the handoff, asks about what is unclear, commits handoff and journal |
@@ -120,9 +120,23 @@ Talk to your agent normally, in any language:
 | "Let's start on PODCAST-42." or `/start PODCAST-42` | Opens `feature/PODCAST-42-<slug>` from the development branch (git flow if used), writes the handoff with the task's goal, offers to assign the task to you and mark it in progress |
 | `/finish merge`, `mr` or `pr`, optionally followed by instructions (`/finish pr as a draft`) | Checks commits, build and tests, handoff, docs, decisions and follow-ups; stops and asks if something is missing; otherwise merges or prepares the merge or pull request |
 | `/work-journal setup` on a project already set up | Shows the current choices, proposes only what the repo signals suggest changing (task place, filter), changes what you confirm |
+| `/work-journal soft on`, `/work-journal soft off` | Adds or removes the line `work-journal: soft` in your global instructions: soft mode for you, in every project. See [Soft mode](#soft-mode) |
 | `/work-journal off`, `/work-journal on` | Replaces the block with an off marker and keeps `.ai/`, or restores the block |
 
 An example for each `/backlog` command, and what a listing looks like: [Backlog commands](docs/teams.md#backlog-commands).
+
+## Soft mode
+
+For people who work with care but don't like task trackers: fewer tasks filed, small reminders kept in the branch's handoff instead, and a hand with the tasks assigned to you. It is a setting of the person, not of the project: in the same repo one colleague can have it on and another not.
+
+It is on when your global instructions (`~/.claude/CLAUDE.md` for Claude Code, `~/.codex/AGENTS.md` for Codex, the equivalent elsewhere) contain the line `work-journal: soft`. `/work-journal soft on` adds it, `/work-journal soft off` removes it, `/work-journal soft` says whether it is on. Each tool has its own file, so it is on in the tool where you ran the command. While it is on, the agent:
+
+- **Files fewer tasks.** It proposes a task only when the thing is for someone else, or can't be done before the branch finishes; otherwise it offers in one line to note a reminder. Not on the development or default branch, where no handoff ever closes.
+- **Keeps reminders in the handoff.** After your yes, a line goes under `## Reminders` in the branch's handoff, with your handle and the date, and is committed with the next commit.
+- **Reminds you gently.** Of your own reminders, when you resume, when the work touches what a reminder is about, and before `/finish`. One line each, never a count of what is late. "Not now" is a good answer.
+- **Helps with your assigned tasks.** On a branch with no handoff at the start of a session, and after `/finish`, it names the tasks assigned to you and offers one with `/start`, which splits it into small steps offered one at a time.
+
+At `/finish`, in any mode, every reminder left is closed one by one before the handoff goes: done, dropped or a task. Dropping is a fine answer. Example: [Getting started](docs/getting-started.md#soft-mode).
 
 ## Guides
 
