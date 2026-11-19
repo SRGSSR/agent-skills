@@ -680,6 +680,33 @@
         "studio-printer is shown as postponed until June 2030 (date from its Notes)",
         "The suggestion is csv-export, not a postponed task"
       ]
+    },
+    {
+      "id": 47,
+      "name": "pause-help",
+      "fixture": "evals/fixtures/task-done",
+      "prompt": "/pause help",
+      "expected_output": "The agent says in a few lines what /pause checks, what it writes and commits, and how to resume (/start or \"where were we?\"), then stops. Nothing changes.",
+      "expectations": [
+        "The final message says how to resume (/start)",
+        "Nothing changed: same branch, same commit, no changed files"
+      ]
+    },
+    {
+      "id": 48,
+      "name": "pause-instructions",
+      "fixture": "evals/fixtures/task-done",
+      "prompt": "/pause until billing answers, next week, whether archived items go in the export. Today I also tried a tab separator: Excel de-CH opens it, but LibreOffice asks for the separator every time, so we dropped it.",
+      "expected_output": "The work on feature/csv-export is paused, not closed: the handoff is rewritten and still there, with a Paused: line naming billing's answer, the tab separator among the dead ends with its reason, and the existing status, next steps, decisions and dead ends kept. A journal entry for the pause is added. The task file stays, no source file changes, the branch is the same, nothing is stashed or pushed. The instructions already say why the work stops, so the agent doesn't ask about it. The final message says how to resume.",
+      "expectations": [
+        "The handoff is still there and has a Paused: line that names billing",
+        "The handoff records the tab separator as dropped, with LibreOffice as the reason",
+        "The handoff keeps the earlier dead ends and the next step in server.js",
+        "A journal entry for the pause was added",
+        "Still on feature/csv-export, the task file docs/tasks/csv-export.md is still there, nothing stashed",
+        "No source files changed (only .ai/ may change)",
+        "The final message says how to resume (/start or where were we)"
+      ]
     }
   ]
 }

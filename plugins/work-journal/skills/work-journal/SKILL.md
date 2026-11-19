@@ -4,7 +4,7 @@ description: "Keeps a terse work journal and a handoff document per branch in th
 license: MIT
 argument-hint: "[setup | on | off | help]"
 metadata:
-  version: "0.15.0"
+  version: "0.16.0"
 ---
 
 # Work Journal
@@ -35,7 +35,7 @@ Commands:
 - `/work-journal on`, `/work-journal off`: turn it on or off for this project. See [On / off](#on--off).
 - `/work-journal help`: this list, with where design decisions and tasks go (or off, or not set up) from the block in `AGENTS.md`, and the `/backlog` commands. Read only the block; run nothing else.
 
-In the same plugin, `/start <task or name>` opens a branch for a task with its first handoff, and `/finish <merge | mr | pr>` checks that the work is done and documented, then merges it or prepares the merge or pull request (see the [start](../start/SKILL.md) and [finish](../finish/SKILL.md) skills).
+In the same plugin, `/start <task or name>` opens a branch for a task with its first handoff, or resumes it if the branch exists; `/pause` stops the work without closing it, after checking that everything a successor needs is in the handoff and asking about what is unclear; and `/finish <merge | mr | pr>` checks that the work is done and documented, then merges it or prepares the merge or pull request (see the [start](../start/SKILL.md), [pause](../pause/SKILL.md) and [finish](../finish/SKILL.md) skills).
 
 Everything else works in words: "let's stop here", "where were we?", "write a handoff".
 
@@ -127,7 +127,7 @@ Include only the lines that apply. Aim for 2 to 6 lines. Facts, decisions and re
 
 Write or rewrite `.ai/handoff/<branch>.md` when:
 
-- the user pauses or ends the session;
+- the user pauses or ends the session (`/pause` is the checked version: it also looks for what is missing and asks);
 - you are about to hand over to another agent, model or person;
 - a task ends with follow-ups still open;
 - the context is getting long (the tool warns about compaction, or the conversation has been going for a long time);

@@ -21,11 +21,15 @@ How `work-journal` and its commands behave when several people and agents work o
 
 Each branch has its own handoff (`feature/csv-export` → `.ai/handoff/feature-csv-export.md`), so people on different branches never overwrite each other's state. When the branch's task is done, its handoff is deleted.
 
-### Starting and finishing a branch
+### Starting, pausing and finishing a branch
 
 > /start PODCAST-42 export the item list as CSV
 
-The agent checks that nothing is left uncommitted or half done, reads the task, and opens `feature/PODCAST-42-csv-export`: with `git flow feature start` if the repo uses git flow, otherwise from the development branch. It writes the handoff with the task's goal and `Base: develop` (where the branch started), adds a journal entry, commits both on the new branch, and offers to assign the task to you and move it to In Progress (Jira), after your yes. If a branch for the task already exists, it resumes it instead. Asked in words ("let's start on PODCAST-42"), it proposes `/start` and waits.
+The agent checks that nothing is left uncommitted or half done, reads the task, and opens `feature/PODCAST-42-csv-export`: with `git flow feature start` if the repo uses git flow, otherwise from the development branch. It writes the handoff with the task's goal and `Base: develop` (where the branch started), adds a journal entry, commits both on the new branch, and offers to assign the task to you and move it to In Progress (Jira), after your yes. If a branch for the task already exists, it resumes it from its handoff instead; `/start` alone resumes the current branch. Asked in words ("let's start on PODCAST-42"), it proposes `/start` and waits.
+
+> /pause Anna takes over on Monday
+
+The agent checks that everything Anna needs is written down (status, next steps, decisions with their reasons, dead ends, problems, what waits on whom, open questions, uncommitted changes), asks you about what it can't tell, then rewrites the handoff with `Paused: 2026-11-19 · Anna takes over on Monday`, adds a journal entry and commits both on the branch. The branch and its task stay open and assigned. Nothing is pushed: if the branch has commits that are not on the remote, the agent gives you `git push -u origin <branch>`, since Anna only gets what is pushed. See [Pausing and resuming](getting-started.md#pausing-and-resuming).
 
 > /finish merge
 

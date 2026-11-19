@@ -752,6 +752,48 @@ console.log('null');`,
       return [ok, sugg.join(' / ') || 'no suggestion line'];
     });
   },
+  'pause-help'() {
+    const msg = finalMessage();
+    check('The final message says how to resume (/start)', () => [/\/start\b/.test(msg), /\/start\b/.test(msg) ? 'found' : 'missing']);
+    check('Nothing changed: same branch, same commit, no changed files', () => {
+      const head = git('rev-parse', 'HEAD').trim();
+      const ch = changedFiles();
+      return [head === base && ch.length === 0, `HEAD ${head === base ? 'same' : 'moved'}; changed: ${ch.join(', ') || 'none'}`];
+    });
+  },
+  'pause-instructions'() {
+    const h = read('.ai/handoff/feature-csv-export.md');
+    const msg = finalMessage();
+    check('The handoff is still there and has a Paused: line that names billing', () => {
+      const l = h.split('\n').find((x) => /^Paused:/.test(x));
+      return [Boolean(l) && /billing/i.test(l), l || (h ? 'no Paused: line' : 'handoff missing')];
+    });
+    check('The handoff records the tab separator as dropped, with LibreOffice as the reason', () => {
+      const l = h.split('\n').find((x) => /\btab\b|\\t/i.test(x) && /libreoffice/i.test(x));
+      return [Boolean(l), l || 'no line with tab and LibreOffice'];
+    });
+    check('The handoff keeps the earlier dead ends and the next step in server.js', () => {
+      const ok = /sep=,/.test(h) && /server\.js/.test(h) && /items\.csv/.test(h);
+      return [ok, `sep=, ${/sep=,/.test(h) ? 'kept' : 'lost'}; server.js ${/server\.js/.test(h) ? 'kept' : 'lost'}`];
+    });
+    check('A journal entry for the pause was added', () => {
+      const heads = newJournalHeads().filter((x) => /pause/i.test(x));
+      return [heads.length > 0, heads.join(' / ') || 'no new journal heading with "pause"'];
+    });
+    check('Still on feature/csv-export, the task file docs/tasks/csv-export.md is still there, nothing stashed', () => {
+      const cur = git('branch', '--show-current').trim();
+      const stash = git('stash', 'list').trim();
+      return [cur === 'feature/csv-export' && exists('docs/tasks/csv-export.md') && !stash, `branch ${cur}; task file ${exists('docs/tasks/csv-export.md') ? 'there' : 'gone'}; stash ${stash ? 'used' : 'empty'}`];
+    });
+    check('No source files changed (only .ai/ may change)', () => {
+      const bad = changedFiles().filter((f) => !f.startsWith('.ai/'));
+      return [bad.length === 0, bad.join(', ') || 'none'];
+    });
+    check('The final message says how to resume (/start or where were we)', () => {
+      const ok = /\/start\b|where were we|dove eravamo/i.test(msg);
+      return [ok, ok ? 'found' : 'missing'];
+    });
+  },
   'backlog-list-gitlab'() {
     const changed = changedFiles();
     const msg = finalMessage();

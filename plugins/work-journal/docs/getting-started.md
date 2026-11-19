@@ -83,11 +83,28 @@ Decisions, dead ends and open questions get their own sections when there are an
 
 The agent reads the handoff and the last journal entries, checks them against git (new commits, merges, uncommitted files), says in one or two lines what it is resuming, and continues. If something changed the plan, or the handoff has open questions for you, it asks first.
 
+For a pause that is checked first, type `/pause`:
+
+> /pause until billing answers about archived items
+
+The agent compares the conversation, the repo and the handoff, and looks for what a reader who was not there would miss: a decision taken in the chat and its reason, an approach that was dropped, a failing test, something waiting on someone, uncommitted files, a stash or a server left running. It asks only about what it can't settle on its own, in one message, for example:
+
+```markdown
+Before pausing, two things:
+1. `server.js` has uncommitted changes (the `/items.csv` route, half written). Commit them
+   on the branch as `wip: items.csv route`, or leave them in the working tree?
+2. You chose `;` over tab as separator: because of Excel de-CH, or another reason?
+```
+
+Then it rewrites the handoff (with a `Paused:` line saying why and until when, if you said so), adds a journal entry, commits both on the branch, and tells you how to resume. Nothing is pushed or stashed, and the branch and its task stay open. Text after `/pause` is instructions for this run; `/pause help` shows what gets checked.
+
+To resume, `/start` on that branch (or `/start <task>` from another one) does the same as "Where were we?".
+
 Write the handoff before you need it: on long tasks the agent also rewrites it at milestones and when the context is getting long, so a crash or an exhausted quota still leaves a usable state.
 
 ## When a piece of work is done
 
-Start each piece of work with `/start <task or name>`, which opens its branch and handoff, and end it with `/finish merge` (or `merge-request`, `pull-request`; `/finish help` lists them), which checks that it is done and documented before merging. When nothing is left for the agent on a branch, it says so and suggests `/finish` instead of leaving a stale handoff. `/finish` (or the agent, if you close the task without it) then closes the loop:
+Start each piece of work with `/start <task or name>`, which opens its branch and handoff, stop it in between with `/pause`, and end it with `/finish merge` (or `merge-request`, `pull-request`; `/finish help` lists them), which checks that it is done and documented before merging. When nothing is left for the agent on a branch, it says so and suggests `/finish` instead of leaving a stale handoff. `/finish` (or the agent, if you close the task without it) then closes the loop:
 
 1. Decisions and dead ends that matter beyond the branch go to code comments or the design decisions.
 2. The branch's task file is deleted (merging the branch closes the task); follow-ups and open questions become new tasks.

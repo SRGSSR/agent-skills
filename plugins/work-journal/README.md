@@ -2,7 +2,7 @@
 
 # work-journal
 
-Keeps a terse work journal and a handoff per branch in the repo, so any agent, model or human can pause and resume the work with zero context. Ships with `/backlog`, `/start` and `/finish`. Part of [SRG SSR Agent Skills](https://github.com/SRGSSR/agent-skills).
+Keeps a terse work journal and a handoff per branch in the repo, so any agent, model or human can pause and resume the work with zero context. Ships with `/backlog`, `/start`, `/pause` and `/finish`. Part of [SRG SSR Agent Skills](https://github.com/SRGSSR/agent-skills).
 
 ## Install
 
@@ -14,7 +14,7 @@ claude plugin install work-journal@srgssr
 Other agents (Codex, Cursor, Gemini CLI, GitHub Copilot, OpenCode, ...):
 
 ```bash
-npx skills add SRGSSR/agent-skills --skill work-journal backlog start finish
+npx skills add SRGSSR/agent-skills --skill work-journal backlog start pause finish
 ```
 
 Then work as usual. The journal sets itself up the first time it's needed, or ask for it: *"Set up the work journal."*
@@ -87,15 +87,16 @@ Users can export the item list as CSV from the list page. Done when the button d
 |---|---|---|
 | [`work-journal`](skills/work-journal/SKILL.md) | `/work-journal`, `setup`, `on`, `off`, `help` | Journal entries at checkpoints, per-branch handoff, resume |
 | [`backlog`](skills/backlog/SKILL.md) | `/backlog`, `new`, `edit`, `comment`, `close`, `filter`, `help` | Open tasks in task files, GitHub or GitLab issues, or Jira; what to pick up next |
-| [`start`](skills/start/SKILL.md) | `/start <task or name> [context]` | Opens a branch for a task (git flow if the repo uses it) with its first handoff, offers to assign the task to you |
+| [`start`](skills/start/SKILL.md) | `/start <task or name> [context]`, `/start` | Opens a branch for a task (git flow if the repo uses it) with its first handoff, offers to assign the task to you; resumes the branch if it already exists |
+| [`pause`](skills/pause/SKILL.md) | `/pause [instructions]`, `help` | Stops the work without closing it: checks that everything is in the handoff, asks about what is unclear, commits handoff and journal |
 | [`finish`](skills/finish/SKILL.md) | `/finish merge`, `merge-request` (`mr`), `pull-request` (`pr`), `help` | Checks that the work is done and documented, then merges or prepares the merge or pull request |
 
 ```mermaid
 flowchart LR
     A(["/backlog"]) -->|pick a task| B(["/start"])
     B -->|"branch + first handoff"| C["Work<br/>journal entries at checkpoints"]
-    C -->|"pause, quota, other tool"| D[("Handoff<br/>.ai/handoff/branch.md")]
-    D -->|"“Where were we?”<br/>any agent or model"| C
+    C -->|"/pause, quota, other tool"| D[("Handoff<br/>.ai/handoff/branch.md")]
+    D -->|"/start or “Where were we?”<br/>any agent or model"| C
     C -->|task done| E(["/finish merge · mr · pr"])
 ```
 
@@ -107,6 +108,8 @@ Talk to your agent normally, in any language:
 |---|---|
 | "Set up the work journal." or `/work-journal setup` | Adds the journal block, asks where design decisions and tasks go |
 | "Let's stop here, I'll continue tomorrow." | Writes the branch's handoff |
+| `/pause`, optionally followed by instructions (`/pause until billing answers, commit everything as wip`) | Checks that status, next steps, decisions, dead ends, problems, open questions and uncommitted changes are written down; asks about what is unclear; rewrites the handoff, adds a journal entry and commits them. The branch and its task stay open |
+| `/start` on a paused branch, or `/start <task>` from anywhere | Resumes from the handoff instead of starting over |
 | "Where were we?" or `/work-journal` | Reads the handoff, checks it against git, continues |
 | "What should I work on next?" or `/backlog` | Lists the open tasks in a table (folder, GitLab or GitHub issues, Jira): yours, unassigned, others; suggests one |
 | `/backlog new <what>`, `/backlog edit <task> <change>`, `/backlog comment <task> <text>`, `/backlog close <task>` | Creates, edits, comments on or closes a task; issues only after your confirmation |

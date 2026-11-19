@@ -23,7 +23,7 @@ Works with **Claude Code**, **Codex**, **Cursor**, **Gemini CLI**, **GitHub Copi
 | Plugin | What it does | Skills |
 |---|---|---|
 | 🧭 [**project‑phase**](plugins/project-phase/) | The agent works the way the project's lifecycle phase needs: prototype, production, maintenance, ... | `project-phase` |
-| 📓 [**work‑journal**](plugins/work-journal/) | A journal and a handoff per branch, so anyone can pause and resume with zero context; tasks and branch workflow | `work-journal`, `backlog`, `start`, `finish` |
+| 📓 [**work‑journal**](plugins/work-journal/) | A journal and a handoff per branch, so anyone can pause and resume with zero context; tasks and branch workflow | `work-journal`, `backlog`, `start`, `pause`, `finish` |
 
 ## Install
 
@@ -96,14 +96,14 @@ Tue 09:05   you → Codex         "Where were we?"
                 says what it's resuming, starts on the next step
 ```
 
-It ships with `/backlog` (task files, GitHub or GitLab issues, Jira), `/start` and `/finish`, so one branch goes from task to merge across as many sessions, tools and people as it takes:
+It ships with `/backlog` (task files, GitHub or GitLab issues, Jira), `/start`, `/pause` and `/finish`, so one branch goes from task to merge across as many sessions, tools and people as it takes:
 
 ```mermaid
 flowchart LR
     A(["/backlog"]) -->|pick a task| B(["/start"])
     B -->|"branch + first handoff"| C["Work<br/>journal entries at checkpoints"]
-    C -->|"pause, quota, other tool"| D[("Handoff<br/>.ai/handoff/branch.md")]
-    D -->|"“Where were we?”<br/>any agent or model"| C
+    C -->|"/pause, quota, other tool"| D[("Handoff<br/>.ai/handoff/branch.md")]
+    D -->|"/start or “Where were we?”<br/>any agent or model"| C
     C -->|task done| E(["/finish merge · mr · pr"])
 ```
 
@@ -130,7 +130,7 @@ On 5 of those 15 cases the model already got everything right on its own; they s
 - **A repo with no phase recorded** (with `project-phase: ask` in the global instructions): with the skill, the agent asked, stated the phase it assumed from tags, CI and deploy files, and recorded nothing until answered.
 - **"Create the team file":** with the skill, the agent warned that the file holds personal data and looked no one up before you agreed; without, it created the file right away.
 
-The suite has since grown to 44 cases, run as each feature lands.
+The suite has since grown to 48 cases, run as each feature lands.
 
 ## Guides
 
