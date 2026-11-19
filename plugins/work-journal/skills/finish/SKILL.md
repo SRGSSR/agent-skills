@@ -4,7 +4,7 @@ description: "Finishes the work on the current branch. It checks that everything
 license: MIT
 argument-hint: "<merge | merge-request | mr | pull-request | pr | help> [instructions]"
 metadata:
-  version: "0.4.2"
+  version: "0.5.0"
 ---
 
 # Finish
@@ -34,6 +34,7 @@ Run every check, then report all problems at once. If there is any, stop: one li
 - **Working tree:** uncommitted changes are listed; ask whether they belong to the work.
 - **Build and tests:** the commands in the project's instructions (`AGENTS.md`, `CLAUDE.md`, README, package scripts). A failure stops; no commands found, say so.
 - **Handoff:** no open status items or next steps, no open questions for the user.
+- **Reminders:** none left under the handoff's `## Reminders`. List each one left with what you would do with it: done, dropped or a task. The user answers one by one; dropping is a fine answer.
 - **Docs**, for what the branch changed (`git diff --stat <base>...HEAD`), not an audit of all docs:
   - everything new a user can see (command, option, config, file format, behavior) is described where users look for it: README, the guide on that topic, help texts;
   - where the docs show examples for similar things (a command line, a config block, an output), the new one has one too; if the project's docs use no examples, none is required;
@@ -41,7 +42,9 @@ Run every check, then report all problems at once. If there is any, stop: one li
   - rules the project sets for its docs (in `AGENTS.md` or `CLAUDE.md`) hold.
 
   Name each gap with the file where it belongs.
-- **What must last:** decisions and dead ends moved where people look, follow-ups and open questions filed as tasks, deliberate shortcuts in `.ai/debt.md` if project-phase is in use (work-journal, [When the branch's task is done](../work-journal/SKILL.md#when-the-branchs-task-is-done)).
+- **What must last:** decisions and dead ends moved where people look, follow-ups and open questions filed as tasks, deliberate shortcuts in `.ai/debt.md` if project-phase is in use (work-journal, [When the branch's task is done](../work-journal/SKILL.md#when-the-branchs-task-is-done)). In [soft mode](../work-journal/SKILL.md#soft-mode) follow-ups and open questions are not filed on their own: they are closed one by one like reminders.
+
+In soft mode the report keeps its tone: what is missing is offered as a short list of last things to settle, not as failures. After the final report of step 3, name the tasks assigned to the user and offer the next one, as that section says.
 
 ## 2. Close the work on the branch
 

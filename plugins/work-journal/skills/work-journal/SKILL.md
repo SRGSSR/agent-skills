@@ -1,10 +1,10 @@
 ---
 name: work-journal
-description: "Keeps a terse work journal and a handoff document per branch in the repo so work can be paused at any moment and resumed later by the same or a different AI agent, model or tool, or by a human, also when several people work on the same project. Use this skill whenever the user is stopping or pausing (\"let's stop here\", \"I'll continue tomorrow\", \"pick this up later\", \"switching to another model\"), asks for a handoff, a session summary or a devlog, wants to continue previous work (\"where were we?\", \"resume\", \"continue from yesterday\"), or wants to set up resumable or logged AI sessions, or wants to turn it on or off for a project (`/work-journal on`, `off`, \"stop keeping the journal here\") or types `/work-journal help`. Also use it when starting work in a repo that has `.ai/handoff/`, `.ai/handoff.md` or `.ai/journal/`, when a branch's task is done, when the user asks what to work on next or where design decisions and tasks are kept, and before the context runs out on a long task."
+description: "Keeps a terse work journal and a handoff document per branch in the repo so work can be paused at any moment and resumed later by the same or a different AI agent, model or tool, or by a human, also when several people work on the same project. Use this skill whenever the user is stopping or pausing (\"let's stop here\", \"I'll continue tomorrow\"), asks for a handoff, a session summary or a devlog, wants to continue previous work (\"where were we?\", \"resume\"), wants to set up resumable or logged AI sessions, to turn it on or off for a project (`/work-journal on`, `off`) or soft mode on or off for themselves (`/work-journal soft on`, `soft off`), or types `/work-journal help`. Also use it when starting work in a repo that has `.ai/handoff/`, `.ai/handoff.md` or `.ai/journal/`, when the user's global instructions contain `work-journal: soft`, when a branch's task is done, when the user asks what to work on next or where design decisions and tasks are kept, and before the context runs out on a long task."
 license: MIT
-argument-hint: "[setup | on | off | help]"
+argument-hint: "[setup | on | off | soft [on | off] | help]"
 metadata:
-  version: "0.16.0"
+  version: "0.17.0"
 ---
 
 # Work Journal
@@ -33,7 +33,8 @@ Commands:
 - `/work-journal`: where things stand, as in [Resuming](#resuming).
 - `/work-journal setup`: set it up, or review where design decisions and tasks go in a project already set up. See [Setup](#setup).
 - `/work-journal on`, `/work-journal off`: turn it on or off for this project. See [On / off](#on--off).
-- `/work-journal help`: this list, with where design decisions and tasks go (or off, or not set up) from the block in `AGENTS.md`, and the `/backlog` commands. Read only the block; run nothing else.
+- `/work-journal soft on`, `/work-journal soft off`: turn soft mode on or off for you, in every project. See [Soft mode](#soft-mode).
+- `/work-journal help`: this list, with where design decisions and tasks go (or off, or not set up) from the block in `AGENTS.md`, whether soft mode is on for the user, and the `/backlog` commands. Read only the block; run nothing else.
 
 In the same plugin, `/start <task or name>` opens a branch for a task with its first handoff, or resumes it if the branch exists; `/pause` stops the work without closing it, after checking that everything a successor needs is in the handoff and asking about what is unclear; and `/finish <merge | mr | pr>` checks that the work is done and documented, then merges it or prepares the merge or pull request (see the [start](../start/SKILL.md), [pause](../pause/SKILL.md) and [finish](../finish/SKILL.md) skills).
 
@@ -90,6 +91,41 @@ The user can turn the protocol off for one project, with `/work-journal off`, or
 
 **To turn it on:** if the block is already there, say so. Otherwise replace the marker (or, without a marker, add the block) with the block above and run the rest of setup: configuration lines, `CLAUDE.md` import, `.gitattributes`, and the one-line note about committing `.ai/` only if `.ai/` does not exist yet. Report in one line.
 
+## Soft mode
+
+Some people work with care and precision but don't like task trackers. Soft mode is for them: fewer tasks filed, small reminders kept in the branch's handoff instead, a gentle word about those reminders at the right moment, and a hand with the tasks assigned to them. It is a setting of the person, not of the project: in the same repo one person can have it on and another not.
+
+**On** means the person's global instructions, the file their tool loads in every project (`~/.claude/CLAUDE.md` for Claude Code, `~/.codex/AGENTS.md` for Codex, the equivalent elsewhere), contain the line `work-journal: soft`. It then applies in every repo that has the work-journal block, and not where the protocol is off. Never write the line in a repo's `AGENTS.md` or `CLAUDE.md`: those speak for everyone.
+
+- `/work-journal soft on`: add the line to that file (create it if missing). If you can't write there, give the person the line to add by hand. Report in one line, saying that each tool has its own file, so it is on in this tool only.
+- `/work-journal soft off`: remove the line, the same way. Reminders already in handoffs stay, and are closed when their branch finishes.
+- `/work-journal soft`: say whether it is on.
+
+While it is on:
+
+**Tone.** Whatever soft mode makes you say is one line, an offer or a question and never an instruction, with no reproach and no count of what is late or undone. "Not now" is a good answer: take it, and don't raise the same thing again in this session.
+
+**Reminders instead of tasks.** When something comes up that should not be forgotten (the person says "we must remember to…" or "later we should…", or you notice a follow-up while working), offer in one line to note it: "Shall I note that billing still needs to hear about the new separator?" Write it only after a yes; if the person asked for the note themselves, just write it. It goes in the `## Reminders` section of the branch's handoff (see [Writing the handoff](#writing-the-handoff); write the handoff if the branch has none), and in the next commit of the session.
+
+Propose a task instead only in two cases. Say which one applies; the person decides:
+
+- it is for someone else: a line in this handoff would not reach them (see the backlog skill, [Tasks for someone else](../backlog/SKILL.md#tasks-for-someone-else));
+- it can't be done before this branch finishes: a reminder ends with its handoff.
+
+On the development or default branch there are no reminders: nothing ever closes that handoff. Offer a task there, or `/start` to open a branch for it.
+
+**Reminding.** Only the reminders that carry this person's handle; other people's are theirs. Three moments:
+
+- when resuming: after saying what you are resuming, one short line per reminder ("Still noted: tell billing about the separator.");
+- when the work touches what a reminder is about: one line, then go on ("While we're in `export.js`: you wanted to rename `formatRow`. Now?");
+- before `/finish`, which closes them all (see [When the branch's task is done](#when-the-branchs-task-is-done)).
+
+When one is done, delete its line and say so in a few words.
+
+**Assigned tasks.** When a session starts on a branch with no handoff, and after a `/finish`, read the open tasks assigned to the person, whoever created them: the backlog skill's [listing](../backlog/SKILL.md#what-to-show), only the group assigned to the user, without postponed tasks. If there are any, name them in a line or two and offer the first with `/start`: "Two things are waiting for you: #42 CSV export and #57 login error. Shall we start with #42?" If the person asked for something else, do that first and put the line at the end of your reply. With none assigned, no task list, or a tracker that is not logged in, say nothing: don't start a login for this.
+
+Once a task is started, `/start` splits it into small steps in the handoff's Next steps, each one doable in a sitting and with a visible result. Offer them one at a time: after each, one line on what is done and the next one as a question.
+
 ## Resuming
 
 At the start of a session in a repo that has a handoff or journal, unless work-journal is off there:
@@ -100,6 +136,7 @@ At the start of a session in a repo that has a handoff or journal, unless work-j
 3. **Reconcile.** If the state disagrees with the handoff (including after a merge), update the handoff to match. If that changes the plan, or the handoff lists open questions for the user, raise it before acting. Otherwise state in one or two lines what you are resuming and the next step, then do it.
 4. **Respect the history.** Don't redo completed steps. Don't retry a recorded dead end unless something has changed, and say what changed.
 5. **Log** a journal entry: `Resumed from handoff of <date> (<tool/model>)`, plus any discrepancy you found. Note each merge since the last entry in one line, in either direction, even when there was no handoff to resume: `Merged feature/x into develop (a1b2c3d)`, or `Merged develop into feature/x (c3d4e5f): client moved to src/api/, step 3 updated` (or `no impact on the plan`). Never make a commit just for this line: it goes in with the next commit of the session.
+6. **Soft mode**, if it is on for this person: their reminders from the handoff, or with no handoff the tasks assigned to them. See [Soft mode](#soft-mode).
 
 ## Journaling
 
@@ -163,6 +200,9 @@ Users can export the item list as CSV from the list page. Done when the button d
 ## Open questions
 - For the user: should archived items be included?
 
+## Reminders   <!-- only if someone noted one, see Soft mode -->
+- @jdoe · 2026-10-02: tell billing that the separator changed.
+
 ## How to verify
 - `npm test`: all green except `export.test.js > separator` (expected until step 1 is done).
 
@@ -173,6 +213,8 @@ Users can export the item list as CSV from the list page. Done when the button d
 
 `Base:` is the branch this one started from, written by `/start` (or, without it, the branch it was created from if you know it). Keep it when rewriting: `/finish merge` merges there.
 
+`## Reminders` holds what people asked to have noted in [soft mode](#soft-mode), one line each: who noted it, the date, the text. The handle is the one used for `Assignee:` (the person's Handle in `.ai/team.md`, otherwise their tracker username, otherwise `git config user.name` in lowercase with hyphens), never a full name or email. Whoever rewrites the handoff, in soft mode or not, keeps every line as it is, also other people's; only the person who noted a reminder, or `/finish`, removes it.
+
 Before finishing, check: could a different model, in a different tool, continue from this file plus the repo, without the conversation? If not, add what is missing.
 
 ### When the branch's task is done
@@ -181,6 +223,8 @@ When nothing is left for an agent to do on the branch (what remains, if anything
 
 1. **Keep what must last.** The journal gets buried over time and the handoff is about to go, so look at its Decisions and Dead ends: whatever will matter after this branch (a constraint, a reason, an approach that fails) goes where people will look. A short comment next to the code it concerns; the design decisions named in the block (with none: the README for decisions about the whole project or its users, the commit message otherwise); a custom rule in `.ai/phase.md` if it is a rule to always follow and project-phase is in use. "It's in the journal" doesn't count, the journal is what gets buried; nor does code that implements a decision without saying why (`batch.slice(0, 500)` doesn't tell the next person that the partner API rejects larger batches). Skip only what mattered during the task alone, and name in the journal entry what you moved or why nothing needed to.
 2. **Close the task and file what is left.** Delete the branch's task file, so the merge closes it (with a tracker, see [closing an issue](#tasks)). Follow-ups and open questions from the handoff become new tasks, not lines buried in the journal. See [Tasks](#tasks).
+   - **Reminders** left in the handoff, whoever noted them and whatever your mode, are closed one by one, because the handoff is about to go: list them in one message with what you would do with each, and wait for the answers. Done (do it now, or it already is), dropped (it goes in the journal entry, nowhere else), or a task. Dropping is a fine answer.
+   - **In [soft mode](#soft-mode)** follow-ups and open questions are closed the same way instead of becoming tasks on their own. Recommend a task only for what is for someone else or really has to happen later.
 3. **Delete** `.ai/handoff/<branch>.md`, and write a journal entry with what was completed, what you moved where, and the new tasks.
 
 ## Design decisions and tasks
@@ -216,7 +260,7 @@ Links: docs/design/2026-10-02-csv-export.md
 - Optional `Postponed:` line: the task waits, with the date it can resume if known (`Postponed: 2027-01-15`, `Postponed: after the summer`, or nothing after the colon). `/backlog` shows it and doesn't suggest the task before that date; delete the line to resume it.
 - No status field: in progress means a branch or handoff exists; done means the file is gone. The branch that does the task deletes its file, so merging the branch closes the task.
 - `Assignee` is optional, a team handle (the Handle column of `.ai/team.md` if the project has one, see the [backlog skill](../backlog/SKILL.md#people-aiteammd); otherwise a git or tracker username), never a full name or email. Never assign or reassign a task unless the user asks.
-- Write new task files only for follow-ups and open questions at the end of a branch's task, or when the user asks.
+- Write new task files only for follow-ups and open questions at the end of a branch's task, or when the user asks. In [soft mode](#soft-mode) even fewer: a reminder in the handoff comes first.
 
 **A tracker** (GitLab or GitHub issues, Jira, ...): reach it through its CLI (`glab` for GitLab, `gh` for GitHub, `acli` for Jira Cloud) or a connector (for Jira, the Atlassian connector if `acli` is missing).
 
@@ -240,7 +284,7 @@ The journal grows forever, and that is fine: resuming reads only the newest file
 
 ## Privacy and safety
 
-These files are usually committed and readable by everyone with repo access. Never write secrets, tokens, passwords, connection strings, customer data or personal data. Refer to them by name ("the staging API key in the team vault"). If the repo is public, write as if the journal were public, because it is. The one exception is the optional `Assignee:` team handle in task files; in a public repo, say once that handles there are public. `.ai/team.md` maps people to their names, nicknames, roles and handles on each system: it exists only if the user asked for it, after a warning that it holds personal data, and the user chose whether it is committed or ignored by git.
+These files are usually committed and readable by everyone with repo access. Never write secrets, tokens, passwords, connection strings, customer data or personal data. Refer to them by name ("the staging API key in the team vault"). If the repo is public, write as if the journal were public, because it is. The one exception is the team handle: the optional `Assignee:` in task files and the author of a line under `## Reminders` in a handoff; in a public repo, say once that handles there are public. `.ai/team.md` maps people to their names, nicknames, roles and handles on each system: it exists only if the user asked for it, after a warning that it holds personal data, and the user chose whether it is committed or ignored by git.
 
 ## With the project-phase skill
 

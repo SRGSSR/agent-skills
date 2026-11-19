@@ -4,7 +4,7 @@ description: "Lists, creates, edits, comments on and closes the project's tasks 
 license: MIT
 argument-hint: "[new | edit | comment | close | filter | help] ..."
 metadata:
-  version: "0.11.0"
+  version: "0.12.0"
 ---
 
 # Backlog
@@ -100,6 +100,8 @@ Sprint planning belongs to the team in Jira, not to the agent:
 - Never move a work item into a sprint, to another sprint or back to the backlog, and never delete or archive one (`acli jira workitem delete`, `archive`). If the user asks, say it is done in Jira.
 
 ## Creating (`/backlog new`)
+
+In the work-journal skill's [soft mode](../work-journal/SKILL.md#soft-mode), a task for the user themselves that fits in the work of the current branch gets one question first: a reminder in the handoff instead? Create the task if they prefer it, and always when it is for someone else, can't be done before the branch finishes, or the branch is the development or default one.
 
 1. **Draft** from the user's words and the conversation, in the task file shape: a title, `Why:`, `Done when:`, optionally `Links:`. Don't invent a reason or a done condition: if one is missing, ask for it in the same message as the draft, or leave a `?` and say so. No assignee unless the user names one; for someone other than the user, see [Tasks for someone else](#tasks-for-someone-else).
 2. **Check for duplicates** in the open tasks (titles only); if one looks the same, say so and ask before creating another.

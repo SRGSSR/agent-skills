@@ -48,6 +48,16 @@ Why the skills work the way they do, and what was discarded. This repo keeps its
 - Postponed tasks show the date they can resume, looked up only for tasks marked postponed (a label, status, milestone or `Postponed:` line), so a listing doesn't read every body. A due date is a deadline, not a resume date, so it is never used for it. A postponed task is not suggested before its date, or ever without one; the agent never removes the mark itself.
 - A listing fetches at most 100 tasks (the CLIs default to 30, which silently cut longer backlogs) and says when there may be more.
 
+## Soft mode
+
+- For people who work with care but avoid task trackers: fewer tasks, reminders in the handoff, gentle prompts. Only text in the existing skills, no new skill or file: the handoff is already read at every resume and committed.
+- Per person, not per project: the line `work-journal: soft` in the person's global instructions, like `project-phase: ask`. The `AGENTS.md` block does not change (no block upgrade in existing repos, and a project file can't hold a personal setting); the skill's description names the line, which is what loads the skill. Each tool has its own global file, so it is on per tool.
+- Reminders go in the committed handoff, not in a personal file outside git: they travel with the branch and reach whoever takes it over. Each line carries the handle of who noted it, so the agent reminds only that person; anyone rewriting the handoff keeps all of them, in soft mode or not.
+- "Can't be done soon" means "not before this branch finishes": a reminder ends with its handoff, so that is the one threshold an agent can decide without guessing. The agent says which case applies and the person decides.
+- No reminders on the development or default branch: no `/finish` ever closes that handoff, so they would pile up. There the agent offers a task or `/start`. Discarded: cleaning up old ones at resume, moving them into the next feature's handoff.
+- At `/finish` every reminder is closed one by one (done, dropped, task), in soft mode or not: nothing is lost with the deleted handoff, and nothing becomes a task without the person wanting it.
+- Assigned tasks are all those assigned to the person, not only those created by others: telling them apart costs a query per tracker, and task files have no author. They are read at every session start on a branch without a handoff, and after `/finish`; a tracker that is not logged in is skipped silently, since a login prompt nobody asked for is the opposite of gentle.
+
 ## Layout, names and manifests
 
 - One folder per plugin (`plugins/<plugin>/skills/<skill>/`) instead of one `skills/` at the root shared by both plugins: the Anthropic plugin directory takes one plugin folder per submission and refused the shared root, and each installed plugin now carries only its own folder. `npx skills add` finds skills nested this way. Links between skills stay inside the work-journal plugin, so the split broke none. Discarded: one plugin with all five skills (forces both on everyone and changes the install ids), symbolic links from a root `skills/` (the directory doesn't count linked skill folders, and they break on some Windows checkouts).
