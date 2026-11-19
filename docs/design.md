@@ -58,6 +58,8 @@ Why the skills work the way they do, and what was discarded. This repo keeps its
 - At `/finish` every reminder is closed one by one (done, dropped, task), in soft mode or not: nothing is lost with the deleted handoff, and nothing becomes a task without the person wanting it.
 - Assigned tasks are all those assigned to the person, not only those created by others: telling them apart costs a query per tracker, and task files have no author. They are read at every session start on a branch without a handoff, and after `/finish`; a tracker that is not logged in is skipped silently, since a login prompt nobody asked for is the opposite of gentle.
 
+- `soft once` holds only in the conversation and writes nothing: a way to try the mode, or to use it on one task, without touching the global file. A long session that gets compacted may lose it; accepted, since a marker file would need cleaning up after sessions that end without notice.
+
 ## Layout, names and manifests
 
 - One folder per plugin (`plugins/<plugin>/skills/<skill>/`) instead of one `skills/` at the root shared by both plugins: the Anthropic plugin directory takes one plugin folder per submission and refused the shared root, and each installed plugin now carries only its own folder. `npx skills add` finds skills nested this way. Links between skills stay inside the work-journal plugin, so the split broke none. Discarded: one plugin with all five skills (forces both on everyone and changes the install ids), symbolic links from a root `skills/` (the directory doesn't count linked skill folders, and they break on some Windows checkouts).

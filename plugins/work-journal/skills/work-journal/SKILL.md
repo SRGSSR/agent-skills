@@ -1,8 +1,8 @@
 ---
 name: work-journal
-description: "Keeps a terse work journal and a handoff document per branch in the repo so work can be paused at any moment and resumed later by the same or a different AI agent, model or tool, or by a human, also when several people work on the same project. Use this skill whenever the user is stopping or pausing (\"let's stop here\", \"I'll continue tomorrow\"), asks for a handoff, a session summary or a devlog, wants to continue previous work (\"where were we?\", \"resume\"), wants to set up resumable or logged AI sessions, to turn it on or off for a project (`/work-journal on`, `off`) or soft mode on or off for themselves (`/work-journal soft on`, `soft off`), or types `/work-journal help`. Also use it when starting work in a repo that has `.ai/handoff/`, `.ai/handoff.md` or `.ai/journal/`, when the user's global instructions contain `work-journal: soft`, when a branch's task is done, when the user asks what to work on next or where design decisions and tasks are kept, and before the context runs out on a long task."
+description: "Keeps a terse work journal and a handoff document per branch in the repo so work can be paused at any moment and resumed later by the same or a different AI agent, model or tool, or by a human, also when several people work on the same project. Use this skill whenever the user is stopping or pausing (\"let's stop here\", \"I'll continue tomorrow\"), asks for a handoff, a session summary or a devlog, wants to continue previous work (\"where were we?\", \"resume\"), wants to set up resumable or logged AI sessions, to turn it on or off for a project (`/work-journal on`, `off`) or soft mode on or off for themselves (`/work-journal soft on`, `off`, `once`), or types `/work-journal help`. Also use it when starting work in a repo that has `.ai/handoff/`, `.ai/handoff.md` or `.ai/journal/`, when the user's global instructions contain `work-journal: soft`, when a branch's task is done, when the user asks what to work on next or where design decisions and tasks are kept, and before the context runs out on a long task."
 license: MIT
-argument-hint: "[setup | on | off | soft [on | off] | help]"
+argument-hint: "[setup | on | off | soft [on | off | once] | help]"
 metadata:
   version: "0.17.0"
 ---
@@ -33,7 +33,7 @@ Commands:
 - `/work-journal`: where things stand, as in [Resuming](#resuming).
 - `/work-journal setup`: set it up, or review where design decisions and tasks go in a project already set up. See [Setup](#setup).
 - `/work-journal on`, `/work-journal off`: turn it on or off for this project. See [On / off](#on--off).
-- `/work-journal soft on`, `/work-journal soft off`: turn soft mode on or off for you, in every project. See [Soft mode](#soft-mode).
+- `/work-journal soft on`, `/work-journal soft off`: turn soft mode on or off for you, in every project; `/work-journal soft once`: on for this session only. See [Soft mode](#soft-mode).
 - `/work-journal help`: this list, with where design decisions and tasks go (or off, or not set up) from the block in `AGENTS.md`, whether soft mode is on for the user, and the `/backlog` commands. Read only the block; run nothing else.
 
 In the same plugin, `/start <task or name>` opens a branch for a task with its first handoff, or resumes it if the branch exists; `/pause` stops the work without closing it, after checking that everything a successor needs is in the handoff and asking about what is unclear; and `/finish <merge | mr | pr>` checks that the work is done and documented, then merges it or prepares the merge or pull request (see the [start](../start/SKILL.md), [pause](../pause/SKILL.md) and [finish](../finish/SKILL.md) skills).
@@ -99,7 +99,8 @@ Some people work with care and precision but don't like task trackers. Soft mode
 
 - `/work-journal soft on`: add the line to that file (create it if missing). If you can't write there, give the person the line to add by hand. Report in one line, saying that each tool has its own file, so it is on in this tool only.
 - `/work-journal soft off`: remove the line, the same way. Reminders already in handoffs stay, and are closed when their branch finishes.
-- `/work-journal soft`: say whether it is on.
+- `/work-journal soft once`: on for this session only, in this repo. Write nothing: the conversation holds it, and it ends with the session, or earlier with `/work-journal soft off`, which then leaves the file alone. Reminders noted meanwhile stay in the handoff like any other. Report in one line, with `soft on` as the way to keep it.
+- `/work-journal soft`: say whether it is on, and whether for good or for this session.
 
 While it is on:
 

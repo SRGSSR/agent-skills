@@ -116,7 +116,7 @@ If trackers and task lists are not your thing, turn on soft mode:
 
 > /work-journal soft on
 
-The agent adds the line `work-journal: soft` to your global instructions (`~/.claude/CLAUDE.md` for Claude Code, `~/.codex/AGENTS.md` for Codex). Each tool has its own file, so it is on in the tool where you ran the command; run it again in the others. It is yours, not the project's: it applies in every repo with the work-journal block, and colleagues are not affected. `/work-journal soft off` removes the line.
+The agent adds the line `work-journal: soft` to your global instructions (`~/.claude/CLAUDE.md` for Claude Code, `~/.codex/AGENTS.md` for Codex). Each tool has its own file, so it is on in the tool where you ran the command; run it again in the others. It is yours, not the project's: it applies in every repo with the work-journal block, and colleagues are not affected. `/work-journal soft off` removes the line. To try it without changing anything, `/work-journal soft once` turns it on for the current session only.
 
 With it on, something to remember becomes a reminder in the handoff, not a task:
 
