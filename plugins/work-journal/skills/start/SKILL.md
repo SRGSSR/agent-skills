@@ -4,7 +4,7 @@ description: "Starts the work on a task or feature in a branch of its own, with 
 license: MIT
 argument-hint: "[<task or name> [context]]"
 metadata:
-  version: "0.2.0"
+  version: "0.3.0"
 ---
 
 # Start
@@ -28,7 +28,7 @@ Formats of the handoff, journal and tasks are in the [work-journal skill](../wor
 4. **Create it from the base:**
    - git flow (`git config --get gitflow.branch.develop` prints a branch): `git flow feature start <slug>`. The base is that development branch.
    - Otherwise: the base is the current branch if it is the development branch (`develop`, or the default branch if there is no `develop`); from anywhere else, ask. Then `git switch -c feature/<slug>`.
-5. **Write the handoff** `.ai/handoff/<branch>.md` in the work-journal format, with `Base: <base>` in the header (`/finish` merges there). Goal and done condition from the task or the context; if neither gives one, write `?` and ask in the report, never invent it. Status empty; Next steps: the first concrete step; Pointers: the task.
+5. **Write the handoff** `.ai/handoff/<branch>.md` in the work-journal format, with `Base: <base>` in the header (`/finish` merges there). Goal and done condition from the task or the context; if neither gives one, write `?` and ask in the report, never invent it. Status empty; Next steps: the first concrete step; Pointers: the task. In [soft mode](../work-journal/SKILL.md#soft-mode), Next steps holds the whole task split into small steps, each doable in a sitting and with a visible result.
 6. **Journal entry:** `## HH:MM · tool/model · <branch> · start`, then `Did:` the branch, its base and the task.
 7. **Commit** the handoff and the entry on the new branch (`start: <task or name>`), so the goal and the base travel with the branch.
 8. **Tracker task:** propose, in one confirmation, assigning it to the user and, in Jira, moving it to In Progress. Run only after the user's yes.
@@ -36,4 +36,4 @@ Formats of the handoff, journal and tasks are in the [work-journal skill](../wor
    - GitLab: `glab issue update <id> --assignee <the user's handle>`. GitHub: `gh issue edit <id> --add-assignee @me`. They have no native in-progress status: the branch is the mark.
    - Already assigned to someone else: say so, and reassign only if the user says so.
    - A task file: add `Assignee:` only if the user asks.
-9. **Report** in two or three lines: branch and base, goal, first step, and the tracker commands waiting for confirmation.
+9. **Report** in two or three lines: branch and base, goal, first step, and the tracker commands waiting for confirmation. In soft mode, offer the first step as a question, then the following ones one at a time.

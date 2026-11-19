@@ -4,7 +4,7 @@ description: "Pauses the work on the current branch without closing it. It check
 license: MIT
 argument-hint: "[help | instructions]"
 metadata:
-  version: "0.1.0"
+  version: "0.1.1"
 ---
 
 # Pause
@@ -48,7 +48,7 @@ With nothing to ask, don't ask: go on.
 
 ## 3. Write
 
-1. **Handoff:** rewrite `.ai/handoff/<branch>.md` in the work-journal format with everything from step 1, keeping `Base:`. Problems go under Status or Next steps where they bite, pending items and questions under Open questions. If the user said why the work stops or when it resumes, add a header line `Paused: <date> · <reason> · <resume when or by whom>` (the next rewrite drops it). Then run the format's own test: could a different model, in a different tool, continue from this file plus the repo, without the conversation?
+1. **Handoff:** rewrite `.ai/handoff/<branch>.md` in the work-journal format with everything from step 1, keeping `Base:` and every line under `## Reminders`. Problems go under Status or Next steps where they bite, pending items and questions under Open questions. If the user said why the work stops or when it resumes, add a header line `Paused: <date> · <reason> · <resume when or by whom>` (the next rewrite drops it). Then run the format's own test: could a different model, in a different tool, continue from this file plus the repo, without the conversation?
 2. **What can't wait in a handoff:** a decision that already binds other branches or people goes to the design decisions now, as the work-journal skill describes, with a pointer in the handoff.
 3. **Journal entry:** `## HH:MM · tool/model · <branch> · pause`, with what the session did, decided and dropped that isn't in an entry yet, and `Next:` the first step.
 4. **Commit** the handoff and the entry (`pause: <task or branch>`), together with the work-in-progress changes if the user chose so. On the development or default branch, commit only with the user's yes. A `wip:` commit is named in the handoff, so the next session knows the code in it is unfinished.
