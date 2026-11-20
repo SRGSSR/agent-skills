@@ -1192,6 +1192,37 @@ console.log('null');`,
     });
   },
 };
+graders['request-help'] = () => {
+  const msg = finalMessage();
+  check('The final message names the subcommands edit, comment and test', () => {
+    const miss = ['edit', 'comment', 'test'].filter((c) => !new RegExp('request ' + c + '\\b').test(msg));
+    return [miss.length === 0, miss.length ? 'missing: ' + miss.join(', ') : 'all found'];
+  });
+  const host = /GitHub/i.test(msg) && /\bgh\b/.test(msg);
+  check('The final message names GitHub and gh', () => [host, host ? 'found' : 'missing']);
+  check('Nothing changed: same branch, same commit, no changed files', () => {
+    const cur = git('branch', '--show-current').trim();
+    const head = git('rev-parse', 'HEAD').trim();
+    const changed = changedFiles();
+    return [cur === 'feature/csv-helper' && head === base && changed.length === 0, `branch ${cur}, head ${head === base ? 'same' : 'moved'}, changed: ${changed.join(', ') || 'none'}`];
+  });
+};
+graders['request-list-gitlab'] = () => {
+  const changed = changedFiles();
+  const msg = finalMessage();
+  check('The final message says the requests could not be read and gives the glab login command', () => {
+    const l = msg.split('\n').find((x) => /glab auth login/.test(x));
+    return [Boolean(l), l || 'no `glab auth login`'];
+  });
+  check('No requests were invented (no !12 or #12 in the final message)', () => {
+    const m = msg.match(/(^|[\s(])[!#]\d+\b/m);
+    return [!m, m ? m[0].trim() : 'none'];
+  });
+  check('No project files changed (only the journal may get an entry)', () => {
+    const bad = changed.filter((f) => !f.startsWith('.ai/journal/'));
+    return [bad.length === 0, bad.join(', ') || 'only the journal'];
+  });
+};
 graders['setup-production-repo-fr'] = graders['setup-production-repo'];
 graders['resume-from-handoff-de'] = graders['resume-from-handoff'];
 

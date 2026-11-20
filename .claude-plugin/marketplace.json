@@ -4,7 +4,7 @@
     "name": "SRG SSR"
   },
   "metadata": {
-    "description": "Phase-aware AI coding (prototype, production, maintenance, ...) and resumable work: journal, per-branch handoff, backlog, /start, /pause and /finish."
+    "description": "Phase-aware AI coding (prototype, production, maintenance, ...) and resumable work: journal, per-branch handoff, backlog, requests, /start, /pause and /finish."
   },
   "plugins": [
     {
@@ -15,7 +15,7 @@
     {
       "name": "work-journal",
       "source": "./plugins/work-journal",
-      "description": "Keeps a terse work journal and a per-branch handoff in the repo so any agent, model or human can pause and resume with zero context. Includes /backlog (task files, GitHub or GitLab issues, Jira), /start, /pause and /finish for branch work."
+      "description": "Keeps a terse work journal and a per-branch handoff in the repo so any agent, model or human can pause and resume with zero context. Includes /backlog (task files, GitHub or GitLab issues, Jira), /request (merge and pull requests), /start, /pause and /finish for branch work."
     }
   ]
 }

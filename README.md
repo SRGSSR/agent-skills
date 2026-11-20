@@ -23,7 +23,7 @@ Works with **Claude Code**, **Codex**, **Cursor**, **Gemini CLI**, **GitHub Copi
 | Plugin | What it does | Skills |
 |---|---|---|
 | 🧭 [**project‑phase**](plugins/project-phase/) | The agent works the way the project's lifecycle phase needs: prototype, production, maintenance, ... | `project-phase` |
-| 📓 [**work‑journal**](plugins/work-journal/) | A journal and a handoff per branch, so anyone can pause and resume with zero context; tasks and branch workflow | `work-journal`, `backlog`, `start`, `pause`, `finish` |
+| 📓 [**work‑journal**](plugins/work-journal/) | A journal and a handoff per branch, so anyone can pause and resume with zero context; tasks and branch workflow | `work-journal`, `backlog`, `request`, `start`, `pause`, `finish` |
 
 ## Install
 
@@ -96,7 +96,7 @@ Tue 09:05   you → Codex         "Where were we?"
                 says what it's resuming, starts on the next step
 ```
 
-It ships with `/backlog` (task files, GitHub or GitLab issues, Jira), `/start`, `/pause` and `/finish`, so one branch goes from task to merge across as many sessions, tools and people as it takes. An optional per-person soft mode swaps most tasks for reminders in the handoff:
+It ships with `/backlog` (task files, GitHub or GitLab issues, Jira), `/start`, `/pause`, `/finish` and `/request` (merge and pull requests: what waits for your review, and the tests a request asks for), so one branch goes from task to merge across as many sessions, tools and people as it takes. An optional per-person soft mode swaps most tasks for reminders in the handoff:
 
 ```mermaid
 flowchart LR
@@ -137,7 +137,7 @@ The suite has since grown to 48 cases, run as each feature lands.
 | Plugin | Guides |
 |---|---|
 | project-phase | [Getting started](plugins/project-phase/docs/getting-started.md) · [Changing phase](plugins/project-phase/docs/phase-changes.md) |
-| work-journal | [Getting started](plugins/work-journal/docs/getting-started.md) · [Teams and long-lived projects](plugins/work-journal/docs/teams.md) · [Backlog commands](plugins/work-journal/docs/teams.md#backlog-commands) |
+| work-journal | [Getting started](plugins/work-journal/docs/getting-started.md) · [Teams and long-lived projects](plugins/work-journal/docs/teams.md) · [Backlog commands](plugins/work-journal/docs/teams.md#backlog-commands) · [Request commands](plugins/work-journal/docs/teams.md#request-commands) |
 
 Why the skills work the way they do, and what was discarded: [Design notes](docs/design.md).
 

@@ -193,6 +193,67 @@ When every row is yours ("what is assigned to me?"), the Assignee column is left
 
 Trackers return at most 100 tasks per listing; if there are more, the agent says so and suggests a filter.
 
+### Request commands
+
+`/request` does for merge requests (GitLab) and pull requests (GitHub) what `/backlog` does for tasks. Creating one stays with `/finish mr` or `pr`, which checks the work first; merging, closing and approving are done on the host.
+
+| Command | Example | What happens |
+|---|---|---|
+| `/request` | `/request` · `/request Anna` | The open requests: those waiting for your review first, then yours, then a count of the others'. Ends with one suggestion and the list of commands. With a name, only that person's. |
+| `/request <id>` | `/request 12` · `/request feature/csv-export` | Title, people, state, the issues it closes, the description and the open review comments. If you are a reviewer, it asks whether to start the review; if it is yours and the review asks for changes, it offers to resume the branch. |
+| `/request edit <id> <change>` | `/request edit 12 add Simo as reviewer` · `/request edit 12 ready` · `/request edit 12 rewrite the description` | Shows before → after and the command; changes title, description, reviewers, assignee, labels, draft or ready. A rewritten description gets the three parts of `/finish`. |
+| `/request comment <id> <text>` | `/request comment 12 the staging data is refreshed` | Posts your words as they are (only typos fixed), after your yes. |
+| `/request test <id>` | `/request test 12` | Runs the request's `How to test` steps and edge cases in a worktree of its own, and reports each as passed, failed or not run. |
+| `/request help` | `/request help` | The commands, the host and the CLI in use. |
+
+Requests in words work the same: "what is waiting for my review?", "show me !12", "mark !12 as ready", "test Anna's request".
+
+A listing looks like this:
+
+```markdown
+To review:
+
+| Request | Title                   | Author   | State          |
+|---------|-------------------------|----------|----------------|
+| !12     | PODCAST-42 CSV export   | rossial  |                |
+| !15     | Fix date format in feed | bianchia | checks running |
+
+Yours:
+
+| Request | Title                         | Reviewers | State             |
+|---------|-------------------------------|-----------|-------------------|
+| !14     | PODCAST-48 Feed cache headers | rossial   | changes requested |
+| !16     | Dark mode toggle              | none      | draft             |
+
+3 others (bianchia 2, rossial 1).
+
+Suggestion: !12, the oldest waiting for your review: /request 12
+Commands: <id>, edit, comment, test, help.
+```
+
+`/request test` reads the `How to test` part that `/finish` writes, compares it with the specifications of the linked issues, and runs it on a copy of the branch, so your own branch and uncommitted work stay as they are:
+
+```markdown
+!12 PODCAST-42 CSV export, tested at 4f2a9c1.
+
+| Step                                    | Result  | What happened                                    |
+|-----------------------------------------|---------|--------------------------------------------------|
+| 1. `npm test`                           | passed  | 6 tests pass                                     |
+| 2. Download from the list page          | passed  | GET /items.csv: 200, one row per item            |
+| 3. Open the file in Excel (de-CH)       | not run | needs a person: no Excel here                    |
+| Edge: an item with `;` in its name      | passed  | the value is quoted, one cell                    |
+| Edge: no items                          | failed  | expected the header row only, got an empty file  |
+| Added: PODCAST-42 asks for a `.csv` name | passed  | Content-Disposition names `items.csv`            |
+
+Not covered by the description: the file name asked for in PODCAST-42 (step added).
+4 passed, 1 failed, 1 not run. Post this as a comment on !12?
+```
+
+- **What it can run:** commands, HTTP calls, the output of a CLI, the content of files; steps in a user interface only if the agent has a browser tool. What needs a person is reported as not run, never guessed.
+- **What it never does:** fix the code, commit, push, approve or merge. It uses test data and `.env.example` only: a step that needs real credentials, production data or a real effect (an email, a payment) is not run.
+- **Requests from a fork:** testing runs that code on your machine, so the agent asks first.
+- The report is posted on the request only after your yes.
+
 ### GitLab and GitHub issues
 
 If `origin` is on GitLab or GitHub, setup proposes its issues as the task list, for example:

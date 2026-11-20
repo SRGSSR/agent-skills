@@ -1,6 +1,6 @@
 # Project phase & work journal skills
 
-Open-source Agent Skills in two Claude Code plugins, listed in `.claude-plugin/marketplace.json`: `plugins/project-phase/` (skill `project-phase`) and `plugins/work-journal/` (skills `work-journal`, `backlog`, `start`, `pause`, `finish`), each with its skills under `skills/`, its README and guides under `docs/`, and its version in `.claude-plugin/plugin.json`. The root README is the catalog; `docs/design.md` holds the design notes of the whole repo. Eval fixtures, cases and grader in `evals/`.
+Open-source Agent Skills in two Claude Code plugins, listed in `.claude-plugin/marketplace.json`: `plugins/project-phase/` (skill `project-phase`) and `plugins/work-journal/` (skills `work-journal`, `backlog`, `request`, `start`, `pause`, `finish`), each with its skills under `skills/`, its README and guides under `docs/`, and its version in `.claude-plugin/plugin.json`. The root README is the catalog; `docs/design.md` holds the design notes of the whole repo. Eval fixtures, cases and grader in `evals/`.
 Build eval fixtures outside the repo (`bash evals/fixtures/build.sh <temp dir>`): sandboxed agents cannot create nested `.git` dirs inside it.
 Checks, also run by CI (`.github/workflows/checks.yml`): `npm install --no-save yaml@2.9.1 && node scripts/check-skills.mjs`, `claude plugin validate --strict .`, and `claude plugin validate --strict --profile directory` on each `plugins/*/`.
 
