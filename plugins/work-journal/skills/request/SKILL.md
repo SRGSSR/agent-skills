@@ -23,7 +23,7 @@ A request is a GitLab merge request or a GitHub pull request. Commands:
 
 The same requests in words ("what is waiting for my review?", "show me !12", "add Simo as reviewer to #42", "mark !12 as ready", "test Anna's request", "review !12", "approve it", "send it back: the archived items are still exported") work the same way. An `<id>` is a number (`12`, `!12`, `#12`), a URL or a branch name; "this one" or no ID after a subcommand is the request of the current branch (`gh pr view`, `glab mr view` without an ID). After `/request`, a word that is neither a subcommand nor an ID is a person: only their requests, as author or reviewer.
 
-Creating a request is `/finish mr` or `pr` ([finish skill](../finish/SKILL.md)), which checks the work first. This skill never merges or closes a request and never pushes: say that it is done on the host. It approves or asks for changes only when the user gives that command, never as the outcome of a review it ran.
+Creating a request is `/finish mr` or `pr` ([finish skill](../finish/SKILL.md)), which checks the work first. This skill never merges or closes a request and never pushes: say that it is done on the host. It approves or asks for changes only when the user gives that command, never as the outcome of a review it ran: a review can recommend asking for changes, but doesn't do it.
 
 Talk in the user's language.
 
@@ -113,7 +113,7 @@ Runs what the request's description asks a tester to do, and says what happened.
 
 ## Reviewing (`/request review`)
 
-The whole path of a reviewer in one command. It prepares the review; the verdict stays with the person.
+The whole path of a reviewer in one command. It prepares the review; the verdict stays with the person, and the agent recommends one only when it is to ask for changes.
 
 1. **Show the request** as in [Showing](#showing-request-id), steps 1 and 2. If the user wrote it, say that a review by its author is not the check by someone else, and go on only if they want it.
 2. **Test it** as in [Testing](#testing-request-test), steps 1 to 7.
@@ -126,7 +126,9 @@ The whole path of a reviewer in one command. It prepares the review; the verdict
    - leftovers: secrets, debug output, commented-out code.
 
    One line per finding: file and line, what it is, why it matters. This is not a line-by-line hunt for bugs, which is the job of a code review tool. Having nothing to report is a fine result: never invent a finding to have one.
-4. **Report**, in this order: the test table and its count; the findings, those that should block the merge first, then those to consider; what is left for the reviewer to do by hand (the steps not run). No verdict of your own: end with the two commands the reviewer has, `/request approve <id>` and `/request changes <id> <reason>`, without recommending either.
+4. **Report**, in this order: the test table and its count; the findings, those that should block the merge first, then those to consider; what is left for the reviewer to do by hand (the steps not run). Then the conclusion, one of two:
+   - a step failed, or a finding should block the merge: recommend `/request changes <id>`, and give the reasons as the text for the author ([Requesting changes](#requesting-changes-request-changes), step 2), ready to send;
+   - nothing blocks: say that you found nothing that blocks, then what is still missing before `/request approve <id>` (each step not run, and a read of the code). Never recommend approving: you did not read the code for bugs, and a step you could not run is not a step that passed.
 5. **Suggest a code review tool** for the code itself, if the agent has one (in Claude Code, `/code-review`): this review ran the plan and compared the change with what was asked, that one reads the code for bugs. Only suggest it; don't run it unasked.
 6. **Offer to post the review** as one comment on the request ([Commenting](#commenting-request-comment), with its confirmation): the test table and the findings, without the suggestions meant for the user.
 

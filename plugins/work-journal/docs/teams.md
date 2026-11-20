@@ -268,11 +268,18 @@ To consider:
 - `routes/items.js`: the `/items.csv` route has no automated test.
 
 Left for you: step 3 (open the file in Excel).
+I recommend asking for changes: /request changes 12, with the "no items" edge case and
+the archived items as the reason.
 For the code itself, a code review tool can go further: in Claude Code, /code-review.
 Post the review as a comment on !12?
 ```
 
-It is not a line-by-line hunt for bugs, and it gives no verdict: whether the request is approved is your decision, given with `/request approve` or `/request changes`. The agent never chooses between them.
+It is not a line-by-line hunt for bugs. The verdict is yours, given with `/request approve` or `/request changes`, and the agent's advice goes one way only. When a step failed or a finding should block the merge, it recommends asking for changes, with the reasons ready to send. When nothing blocks, it says so and lists what is still missing before an approval (the steps it could not run, a read of the code), but never recommends approving:
+
+```markdown
+I found nothing that blocks. Before approving, what is left: step 3 (open the file in
+Excel), and a read of the code.
+```
 
 Before approving, the agent asks about what it could not test, and a plain "yes" is not an answer to that:
 

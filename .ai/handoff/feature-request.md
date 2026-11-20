@@ -10,7 +10,7 @@ A `request` skill in the work-journal plugin: `/request` handles GitLab merge re
 - [x] `request` 0.1.0: `/request`, `/request <id>`, `edit`, `comment`, `test`, `help` (`plugins/work-journal/skills/request/SKILL.md`), plugin 0.22.0
 - [x] READMEs, `teams.md` "Request commands", `docs/design.md`, `AGENTS.md`, manifests, `evals/run-prompt.md`
 - [x] Evals 51 request-help and 52 request-list-gitlab, with graders
-- [x] `/request review <id>`: show, test, read the diff against the issues, report, suggest a code review tool, offer to post; no verdict
+- [x] `/request review <id>`: show, test, read the diff against the issues, report, suggest a code review tool, offer to post; recommends `changes` when something blocks, never `approve`
 - [x] `/request approve <id>` (asks about the steps not run first, approves the tested commit) and `/request changes <id> <reason>`
 
 ## Next steps
