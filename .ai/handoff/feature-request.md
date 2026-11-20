@@ -11,9 +11,11 @@ A `request` skill in the work-journal plugin: `/request` handles GitLab merge re
 - [x] READMEs, `teams.md` "Request commands", `docs/design.md`, `AGENTS.md`, manifests, `evals/run-prompt.md`
 - [x] Evals 51 request-help and 52 request-list-gitlab, with graders
 - [x] `/request review <id>`: show, test, read the diff against the issues, report, suggest a code review tool, offer to post; no verdict
+- [x] `/request approve <id>` (asks about the steps not run first, approves the tested commit) and `/request changes <id> <reason>`
 
 ## Next steps
-1. Wait for the user's answer on `approve` and `reject` (see Open questions), then write them or finish.
+1. The user confirms or changes the name `changes` (they had said `reject` and asked for a suggestion).
+2. Discuss `/request merge` with the user, or `/finish`.
 
 ## Decisions
 - Requests waiting for the user's review are listed first; `show` is implicit (user). Reasons for the command set in `docs/design.md`, "Trackers and /backlog".
@@ -22,7 +24,7 @@ A `request` skill in the work-journal plugin: `/request` handles GitLab merge re
 None.
 
 ## Open questions
-- `/request approve` and `reject`: the user asked whether a reviewer should have them. Proposed: yes, as the verdict after `review`, each with a confirmation. GitHub: `gh pr review --approve`, `--request-changes -b`. GitLab: `glab mr approve` (`--sha`), `glab mr revoke`; `glab` 1.123.0 has no "request changes", so `reject` there would be a comment. Waiting for the user.
+- The second verdict command is named `changes`, with "reject" understood in words: the user asked for a suggestion and has not confirmed it yet.
 - `/request merge`: the user wants to discuss it; not designed.
 
 ## How to verify

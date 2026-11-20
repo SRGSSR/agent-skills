@@ -205,9 +205,11 @@ Trackers return at most 100 tasks per listing; if there are more, the agent says
 | `/request comment <id> <text>` | `/request comment 12 the staging data is refreshed` | Posts your words as they are (only typos fixed), after your yes. |
 | `/request test <id>` | `/request test 12` | Runs the request's `How to test` steps and edge cases in a worktree of its own, and reports each as passed, failed or not run. |
 | `/request review <id>` | `/request review 12` | The reviewer's whole path: shows the request, runs its tests, reads the diff against the issues, reports, and suggests a code review tool for the code itself. |
+| `/request approve <id>` | `/request approve 12` · `/request approve 12, I opened the file in Excel, fine` | Your yes as a reviewer. It first asks about every step it could not run, then shows the commit and the command, and approves after your yes. |
+| `/request changes <id> <reason>` | `/request changes 12 archived items are still exported` | Your no as a reviewer: asks the author for changes, with the reason written for them. The request stays open. |
 | `/request help` | `/request help` | The commands, the host and the CLI in use. |
 
-Requests in words work the same: "what is waiting for my review?", "show me !12", "mark !12 as ready", "test Anna's request", "review !12".
+Requests in words work the same: "what is waiting for my review?", "show me !12", "mark !12 as ready", "test Anna's request", "review !12", "approve it", "reject !12: archived items are still exported".
 
 A listing looks like this:
 
@@ -229,7 +231,7 @@ Yours:
 3 others (bianchia 2, rossial 1).
 
 Suggestion: !12, the oldest waiting for your review: /request 12
-Commands: <id>, edit, comment, test, review, help.
+Commands: <id>, edit, comment, test, review, approve, changes, help.
 ```
 
 `/request test` reads the `How to test` part that `/finish` writes, compares it with the specifications of the linked issues, and runs it on a copy of the branch, so your own branch and uncommitted work stay as they are:
@@ -270,7 +272,27 @@ For the code itself, a code review tool can go further: in Claude Code, /code-re
 Post the review as a comment on !12?
 ```
 
-It is not a line-by-line hunt for bugs, and it gives no verdict: whether the request is approved is your decision.
+It is not a line-by-line hunt for bugs, and it gives no verdict: whether the request is approved is your decision, given with `/request approve` or `/request changes`. The agent never chooses between them.
+
+Before approving, the agent asks about what it could not test, and a plain "yes" is not an answer to that:
+
+```markdown
+> /request approve 12
+
+Before approving !12 (4f2a9c1), one step was not run by me:
+- Step 3, open the file in Excel (de-CH): one value per cell, readable umlauts.
+Did you or someone else run it? With what result?
+
+> yes, I opened it in Excel, all fine
+
+I will approve !12 at 4f2a9c1: steps 1, 2 and the edge cases tested by me, step 3 by you.
+  glab mr approve 12 --sha 4f2a9c1
+Go ahead?
+```
+
+It also says what else stands in the way (a draft, failed checks, conflicts, findings that should block the merge, commits newer than those tested), and approves the exact commit that was tested. If you approve without a step, the confirmation names it as not tested.
+
+`/request changes` needs a reason; without one, the agent proposes the blocking findings and the failed steps of its review. "Reject" in words means the same: the request stays open for its author, and closing it for good is done on the host. On GitHub this sets "changes requested"; `glab` has no command for it, so on GitLab the reason is posted as a comment (and an approval you gave is revoked), and the agent says that the Request changes button on the host marks it formally.
 
 ### GitLab and GitHub issues
 
