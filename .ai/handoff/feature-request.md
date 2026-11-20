@@ -10,10 +10,10 @@ A `request` skill in the work-journal plugin: `/request` handles GitLab merge re
 - [x] `request` 0.1.0: `/request`, `/request <id>`, `edit`, `comment`, `test`, `help` (`plugins/work-journal/skills/request/SKILL.md`), plugin 0.22.0
 - [x] READMEs, `teams.md` "Request commands", `docs/design.md`, `AGENTS.md`, manifests, `evals/run-prompt.md`
 - [x] Evals 51 request-help and 52 request-list-gitlab, with graders
-- [ ] `/request review <id>`: the review of a request; it runs the tests and ends by suggesting a code review tool too (the user's words). Scope to agree with the user before writing it.
+- [x] `/request review <id>`: show, test, read the diff against the issues, report, suggest a code review tool, offer to post; no verdict
 
 ## Next steps
-1. Agree with the user what `review` does beyond `test`, then write it. `/request <id>` now offers a reviewer `/request test`: point that offer to `review`.
+1. Wait for the user's answer on `approve` and `reject` (see Open questions), then write them or finish.
 
 ## Decisions
 - Requests waiting for the user's review are listed first; `show` is implicit (user). Reasons for the command set in `docs/design.md`, "Trackers and /backlog".
@@ -22,6 +22,7 @@ A `request` skill in the work-journal plugin: `/request` handles GitLab merge re
 None.
 
 ## Open questions
+- `/request approve` and `reject`: the user asked whether a reviewer should have them. Proposed: yes, as the verdict after `review`, each with a confirmation. GitHub: `gh pr review --approve`, `--request-changes -b`. GitLab: `glab mr approve` (`--sha`), `glab mr revoke`; `glab` 1.123.0 has no "request changes", so `reject` there would be a comment. Waiting for the user.
 - `/request merge`: the user wants to discuss it; not designed.
 
 ## How to verify

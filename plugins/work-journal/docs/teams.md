@@ -204,9 +204,10 @@ Trackers return at most 100 tasks per listing; if there are more, the agent says
 | `/request edit <id> <change>` | `/request edit 12 add Simo as reviewer` · `/request edit 12 ready` · `/request edit 12 rewrite the description` | Shows before → after and the command; changes title, description, reviewers, assignee, labels, draft or ready. A rewritten description gets the three parts of `/finish`. |
 | `/request comment <id> <text>` | `/request comment 12 the staging data is refreshed` | Posts your words as they are (only typos fixed), after your yes. |
 | `/request test <id>` | `/request test 12` | Runs the request's `How to test` steps and edge cases in a worktree of its own, and reports each as passed, failed or not run. |
+| `/request review <id>` | `/request review 12` | The reviewer's whole path: shows the request, runs its tests, reads the diff against the issues, reports, and suggests a code review tool for the code itself. |
 | `/request help` | `/request help` | The commands, the host and the CLI in use. |
 
-Requests in words work the same: "what is waiting for my review?", "show me !12", "mark !12 as ready", "test Anna's request".
+Requests in words work the same: "what is waiting for my review?", "show me !12", "mark !12 as ready", "test Anna's request", "review !12".
 
 A listing looks like this:
 
@@ -228,7 +229,7 @@ Yours:
 3 others (bianchia 2, rossial 1).
 
 Suggestion: !12, the oldest waiting for your review: /request 12
-Commands: <id>, edit, comment, test, help.
+Commands: <id>, edit, comment, test, review, help.
 ```
 
 `/request test` reads the `How to test` part that `/finish` writes, compares it with the specifications of the linked issues, and runs it on a copy of the branch, so your own branch and uncommitted work stay as they are:
@@ -253,6 +254,23 @@ Not covered by the description: the file name asked for in PODCAST-42 (step adde
 - **What it never does:** fix the code, commit, push, approve or merge. It uses test data and `.env.example` only: a step that needs real credentials, production data or a real effect (an email, a payment) is not run.
 - **Requests from a fork:** testing runs that code on your machine, so the agent asks first.
 - The report is posted on the request only after your yes.
+
+`/request review` adds to the tests a read of the diff, for what running the steps cannot show. After the test table it lists what it found:
+
+```markdown
+Should block the merge:
+- `export.js:41`: PODCAST-42 asks for the archived items to be left out; `toCsv` exports them all.
+
+To consider:
+- `views/list.html:18`: the new "Download CSV" link is not in docs/usage.md.
+- `routes/items.js`: the `/items.csv` route has no automated test.
+
+Left for you: step 3 (open the file in Excel).
+For the code itself, a code review tool can go further: in Claude Code, /code-review.
+Post the review as a comment on !12?
+```
+
+It is not a line-by-line hunt for bugs, and it gives no verdict: whether the request is approved is your decision.
 
 ### GitLab and GitHub issues
 

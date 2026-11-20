@@ -1194,8 +1194,8 @@ console.log('null');`,
 };
 graders['request-help'] = () => {
   const msg = finalMessage();
-  check('The final message names the subcommands edit, comment and test', () => {
-    const miss = ['edit', 'comment', 'test'].filter((c) => !new RegExp('request ' + c + '\\b').test(msg));
+  check('The final message names the subcommands edit, comment, test and review', () => {
+    const miss = ['edit', 'comment', 'test', 'review'].filter((c) => !new RegExp('request ' + c + '\\b').test(msg));
     return [miss.length === 0, miss.length ? 'missing: ' + miss.join(', ') : 'all found'];
   });
   const host = /GitHub/i.test(msg) && /\bgh\b/.test(msg);
