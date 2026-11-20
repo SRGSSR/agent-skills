@@ -193,6 +193,142 @@ When every row is yours ("what is assigned to me?"), the Assignee column is left
 
 Trackers return at most 100 tasks per listing; if there are more, the agent says so and suggests a filter.
 
+### Request commands
+
+`/request` does for merge requests (GitLab) and pull requests (GitHub) what `/backlog` does for tasks. Creating one stays with `/finish mr` or `pr`, which checks the work first; closing one is done on the host.
+
+| Command | Example | What happens |
+|---|---|---|
+| `/request` | `/request` · `/request Anna` | The open requests: the approved ones assigned to you first, then those waiting for your review, then the rest of yours and a count of the others'. Ends with one suggestion and the list of commands. With a name, only that person's. |
+| `/request <id>` | `/request 12` · `/request feature/csv-export` | Title, people, state, the issues it closes, the description and the open review comments. If you are a reviewer, it asks whether to start the review; if it is yours and the review asks for changes, it offers to resume the branch. |
+| `/request edit <id> <change>` | `/request edit 12 add Simo as reviewer` · `/request edit 12 ready` · `/request edit 12 rewrite the description` | Shows before → after and the command; changes title, description, reviewers, assignee, labels, draft or ready. A rewritten description gets the three parts of `/finish`. |
+| `/request comment <id> <text>` | `/request comment 12 the staging data is refreshed` | Posts your words as they are (only typos fixed), after your yes. |
+| `/request test <id>` | `/request test 12` | Runs the request's `How to test` steps and edge cases in a worktree of its own, and reports each as passed, failed or not run. |
+| `/request review <id>` | `/request review 12` | The reviewer's whole path: shows the request, runs its tests, reads the diff against the issues, reports, and suggests a code review tool for the code itself. |
+| `/request approve <id>` | `/request approve 12` · `/request approve 12, I opened the file in Excel, fine` | Your yes as a reviewer. It first asks about every step it could not run, then shows the commit and the command, and approves after your yes. |
+| `/request changes <id> <reason>` | `/request changes 12 archived items are still exported` | Your no as a reviewer: asks the author for changes, with the reason written for them. The request stays open. |
+| `/request merge <id>` | `/request merge 12` · `/request merge 12 squash` | Merges an approved request on the host, after its checks and your yes; then offers to switch to the base, update it and delete the local branch. |
+| `/request help` | `/request help` | The commands, the host and the CLI in use. |
+
+Requests in words work the same: "what is waiting for my review?", "show me !12", "mark !12 as ready", "test Anna's request", "review !12", "approve it", "reject !12: archived items are still exported".
+
+A listing looks like this:
+
+```markdown
+To merge:
+
+| Request | Title                 | Approved by | State |
+|---------|-----------------------|-------------|-------|
+| !9      | PODCAST-40 Feed title | bianchia    |       |
+
+To review:
+
+| Request | Title                   | Author   | State          |
+|---------|-------------------------|----------|----------------|
+| !12     | PODCAST-42 CSV export   | rossial  |                |
+| !15     | Fix date format in feed | bianchia | checks running |
+
+Yours:
+
+| Request | Title                         | Reviewers | State             |
+|---------|-------------------------------|-----------|-------------------|
+| !14     | PODCAST-48 Feed cache headers | rossial   | changes requested |
+| !16     | Dark mode toggle              | none      | draft             |
+
+3 others (bianchia 2, rossial 1).
+
+Suggestion: !9 is approved and assigned to you: /request merge 9
+Commands: <id>, edit, comment, test, review, approve, changes, merge, help.
+```
+
+`/request test` reads the `How to test` part that `/finish` writes, compares it with the specifications of the linked issues, and runs it on a copy of the branch, so your own branch and uncommitted work stay as they are:
+
+```markdown
+!12 PODCAST-42 CSV export, tested at 4f2a9c1.
+
+| Step                                    | Result  | What happened                                    |
+|-----------------------------------------|---------|--------------------------------------------------|
+| 1. `npm test`                           | passed  | 6 tests pass                                     |
+| 2. Download from the list page          | passed  | GET /items.csv: 200, one row per item            |
+| 3. Open the file in Excel (de-CH)       | not run | needs a person: no Excel here                    |
+| Edge: an item with `;` in its name      | passed  | the value is quoted, one cell                    |
+| Edge: no items                          | failed  | expected the header row only, got an empty file  |
+| Added: PODCAST-42 asks for a `.csv` name | passed  | Content-Disposition names `items.csv`            |
+
+Not covered by the description: the file name asked for in PODCAST-42 (step added).
+4 passed, 1 failed, 1 not run. Post this as a comment on !12?
+```
+
+- **What it can run:** commands, HTTP calls, the output of a CLI, the content of files; steps in a user interface only if the agent has a browser tool. What needs a person is reported as not run, never guessed.
+- **What it never does:** fix the code, commit, push, approve or merge. It uses test data and `.env.example` only: a step that needs real credentials, production data or a real effect (an email, a payment) is not run.
+- **Requests from a fork:** testing runs that code on your machine, so the agent asks first.
+- The report is posted on the request only after your yes.
+
+`/request review` adds to the tests a read of the diff, for what running the steps cannot show. After the test table it lists what it found:
+
+```markdown
+Should block the merge:
+- `export.js:41`: PODCAST-42 asks for the archived items to be left out; `toCsv` exports them all.
+
+To consider:
+- `views/list.html:18`: the new "Download CSV" link is not in docs/usage.md.
+- `routes/items.js`: the `/items.csv` route has no automated test.
+
+Left for you: step 3 (open the file in Excel).
+I recommend asking for changes: /request changes 12, with the "no items" edge case and
+the archived items as the reason.
+For the code itself, a code review tool can go further: in Claude Code, /code-review.
+Post the review as a comment on !12?
+```
+
+It is not a line-by-line hunt for bugs. The verdict is yours, given with `/request approve` or `/request changes`, and the agent's advice goes one way only. When a step failed or a finding should block the merge, it recommends asking for changes, with the reasons ready to send. When nothing blocks, it says so and lists what is still missing before an approval (the steps it could not run, a read of the code), but never recommends approving:
+
+```markdown
+I found nothing that blocks. Before approving, what is left: step 3 (open the file in
+Excel), and a read of the code.
+```
+
+Before approving, the agent asks about what it could not test, and a plain "yes" is not an answer to that:
+
+```markdown
+> /request approve 12
+
+Before approving !12 (4f2a9c1), one step was not run by me:
+- Step 3, open the file in Excel (de-CH): one value per cell, readable umlauts.
+Did you or someone else run it? With what result?
+
+> yes, I opened it in Excel, all fine
+
+I will approve !12 at 4f2a9c1: steps 1, 2 and the edge cases tested by me, step 3 by you.
+  glab mr approve 12 --sha 4f2a9c1
+Go ahead?
+```
+
+It also says what else stands in the way (a draft, failed checks, conflicts, findings that should block the merge, commits newer than those tested), and approves the exact commit that was tested. If you approve without a step, the confirmation names it as not tested.
+
+`/request changes` needs a reason; without one, the agent proposes the blocking findings and the failed steps of its review. "Reject" in words means the same: the request stays open for its author, and closing it for good is done on the host. On GitHub this sets "changes requested"; `glab` has no command for it, so on GitLab the reason is posted as a comment (and an approval you gave is revoked), and the agent says that the Request changes button on the host marks it formally.
+
+`/request merge` is for whoever carries the request: its assignee, or its author when nobody is assigned. The hosts decide who may merge by permissions, not by that field, so the agent doesn't refuse anyone else, but asks first, as a question of its own. That includes a reviewer who has just approved it:
+
+```markdown
+> /request merge 12
+
+!12 is assigned to rossial, and you reviewed it. Merging it is theirs: do you want to
+merge it all the same?
+
+> yes, Alessandro is away until Monday
+
+!12 PODCAST-42 CSV export, develop ← feature/PODCAST-42-csv-export at 4f2a9c1,
+approved by you. Checks passed, no conflicts, no open comments.
+  glab mr merge 12 --sha 4f2a9c1 --auto-merge=false --yes
+Go ahead?
+```
+
+- **Checked first:** approved by someone other than the author, no changes requested, not a draft, checks passed, no conflicts, no open review comments, no commits after the approval. With any problem the agent stops and lists them all.
+- **Never forced:** what the host refuses (a protected branch, a required check) stays refused. A base that is `main` or a release branch gets one more question.
+- **How:** the project's way; say `squash` or `rebase` to choose. The source branch is deleted only if you ask or the host is set to.
+- **Afterwards** the agent offers to switch to the base, update it and delete the local branch; it never pushes.
+
 ### GitLab and GitHub issues
 
 If `origin` is on GitLab or GitHub, setup proposes its issues as the task list, for example:
