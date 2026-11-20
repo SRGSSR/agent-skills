@@ -4,7 +4,7 @@ description: "Lists, creates, edits, comments on and closes the project's tasks 
 license: MIT
 argument-hint: "[new | edit | comment | close | filter | help] ..."
 metadata:
-  version: "0.12.0"
+  version: "0.12.1"
 ---
 
 # Backlog
@@ -58,7 +58,7 @@ Never ask for a token in the chat or write it in a file. Never invent issues and
 
 1. **Work in progress first.** If the current branch has a handoff (`.ai/handoff/<branch>.md`), its next step comes before any new task. A task with a handoff on another branch is in progress there: mark it (`docs/backlog/csv-export.md` ↔ `.ai/handoff/feature-csv-export.md`; for an issue, a handoff or branch that names its ID; in Jira, also status category In Progress).
 2. **Then the open tasks, grouped:** assigned to the user, unassigned, assigned to others (count per handle only, unless the user asks for someone's tasks). In Jira, the current sprint comes first with these three groups, then the backlog with the same three; within a group, the order the user asked for (priority, due date, ...), else higher priority first; ties go by Rank in Jira, by creation date, oldest first, in GitLab, GitHub and a folder. The user is `@me` in GitLab and GitHub, the account of `acli jira auth status` in Jira, `git config user.name` for a folder (or the row of `.ai/team.md` with that git name).
-3. **A table per section** (one, or in Jira the current sprint and the backlog), one row per task, yours first, then unassigned: task (file name or issue ID), title, assignee (its handle in `.ai/team.md` if there), priority if the tracker has one (leave out the column if every task has the default), status (in progress, [postponed](#postponed-tasks), else empty). No bodies. The count of others' tasks goes in one line under the table. Any other list of tasks (matches to choose from, duplicates) is a table with the same columns.
+3. **A table per section** (one, or in Jira the current sprint and the backlog), one row per task, yours first, then unassigned: task (file name or issue ID), title, assignee (its handle in `.ai/team.md` if there; leave out the column when every row is assigned to the user, as in "what is assigned to me?": it would repeat their own name), priority if the tracker has one (leave out the column if every task has the default), status (in progress, [postponed](#postponed-tasks), else empty). No bodies. The count of others' tasks goes in one line under the table. Any other list of tasks (matches to choose from, duplicates) is a table with the same columns.
 4. End with one suggestion: the current branch's next step, else the first task assigned to the user (in Jira, in the current sprint first), else the first unassigned one, skipping postponed tasks whose date has not passed or is not known. For a new task, add how to begin it: `/start <ID or file name>`.
 5. Last line: the other commands, `new`, `edit`, `comment`, `close`, `filter`, `help`, in one line.
 

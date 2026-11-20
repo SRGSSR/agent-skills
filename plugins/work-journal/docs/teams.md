@@ -182,6 +182,15 @@ Suggestion: PODCAST-42, yours in the current sprint. To begin: /start PODCAST-42
 Commands: new, edit, comment, close, filter, help.
 ```
 
+When every row is yours ("what is assigned to me?"), the Assignee column is left out, since it would only repeat your name:
+
+```markdown
+| Task       | Title              | Priority | Status      |
+|------------|--------------------|----------|-------------|
+| PODCAST-42 | Export as PDF      | High     |             |
+| PODCAST-48 | Feed cache headers | Medium   | in progress |
+```
+
 Trackers return at most 100 tasks per listing; if there are more, the agent says so and suggests a filter.
 
 ### GitLab and GitHub issues
