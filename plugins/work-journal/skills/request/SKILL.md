@@ -1,8 +1,8 @@
 ---
 name: request
-description: "Lists, shows, edits, comments on, tests and reviews the merge requests (GitLab, `glab`) or pull requests (GitHub, `gh`) of the project, and records the reviewer's verdict. The listing puts first the requests waiting for the user's review, then their own, with the state of each. Testing one runs the steps of its `How to test` part in a separate worktree and reports each as passed, failed or not run; reviewing one adds a read of the diff against the linked issues. Use this skill whenever the user types `/request`, `/request <id>`, `/request edit`, `comment`, `test`, `review`, `approve`, `changes` or `help`, asks which merge or pull requests are open, what is waiting for their review, how a request is going or what the review said, asks to see, test, review, approve or reject one or to request changes on it, or asks to change its title, description, reviewers, assignee or labels, mark it draft or ready, or comment on it. Not for creating one (`/finish mr` or `pr` does) or merging one."
+description: "Lists, shows, edits, comments on, tests and reviews the merge requests (GitLab, `glab`) or pull requests (GitHub, `gh`) of the project, records the reviewer's verdict and merges them. The listing puts first the approved requests assigned to the user, then those waiting for their review, with the state of each. Testing one runs the steps of its `How to test` part in a separate worktree and reports each as passed, failed or not run; reviewing one adds a read of the diff against the linked issues. Use this skill whenever the user types `/request`, `/request <id>`, `/request edit`, `comment`, `test`, `review`, `approve`, `changes`, `merge` or `help`, asks which merge or pull requests are open, what is waiting for their review, or what the review said, asks to see, test, review, approve, reject or merge one or to request changes on it, or asks to change its title, description, reviewers, assignee or labels, mark it draft or ready, or comment on it. Not for creating one (`/finish mr` or `pr` does)."
 license: MIT
-argument-hint: "[<id> | edit | comment | test | review | approve | changes | help] ..."
+argument-hint: "[<id> | edit | comment | test | review | approve | changes | merge | help] ..."
 metadata:
   version: "0.1.0"
 ---
@@ -11,7 +11,7 @@ metadata:
 
 A request is a GitLab merge request or a GitHub pull request. Commands:
 
-- `/request`: the open requests, those waiting for the user's review first. See [What to show](#what-to-show).
+- `/request`: the open requests: those the user can merge, those waiting for their review, then the rest. See [What to show](#what-to-show).
 - `/request <id>`: one request, with its state and open review comments. See [Showing](#showing-request-id).
 - `/request edit <id> <change>`: change its title, description, reviewers, assignee, labels, or draft state. See [Editing](#editing-request-edit).
 - `/request comment <id> <text>`: add a comment. See [Commenting](#commenting-request-comment).
@@ -19,11 +19,12 @@ A request is a GitLab merge request or a GitHub pull request. Commands:
 - `/request review <id>`: the reviewer's whole path: show, test, read the diff, report. See [Reviewing](#reviewing-request-review).
 - `/request approve <id>`: the reviewer's yes. See [Approving](#approving-request-approve).
 - `/request changes <id> <reason>`: the reviewer's no: asks the author for changes. See [Requesting changes](#requesting-changes-request-changes).
+- `/request merge <id>`: merge an approved request on the host. See [Merging](#merging-request-merge).
 - `/request help`: this list of commands, with the host of `origin` and the CLI in use. Read only `git remote get-url origin`; run nothing else.
 
 The same requests in words ("what is waiting for my review?", "show me !12", "add Simo as reviewer to #42", "mark !12 as ready", "test Anna's request", "review !12", "approve it", "send it back: the archived items are still exported") work the same way. An `<id>` is a number (`12`, `!12`, `#12`), a URL or a branch name; "this one" or no ID after a subcommand is the request of the current branch (`gh pr view`, `glab mr view` without an ID). After `/request`, a word that is neither a subcommand nor an ID is a person: only their requests, as author or reviewer.
 
-Creating a request is `/finish mr` or `pr` ([finish skill](../finish/SKILL.md)), which checks the work first. This skill never merges or closes a request and never pushes: say that it is done on the host. It approves or asks for changes only when the user gives that command, never as the outcome of a review it ran: a review can recommend asking for changes, but doesn't do it.
+Creating a request is `/finish mr` or `pr` ([finish skill](../finish/SKILL.md)), which checks the work first. This skill never closes a request and never pushes: say that closing is done on the host. It approves, asks for changes or merges only when the user gives that command, never as the outcome of a review it ran: a review can recommend asking for changes, but doesn't do it.
 
 Talk in the user's language.
 
@@ -40,16 +41,18 @@ A listing fetches at most 100: if it returns exactly that many, say there may be
 
 ## What to show
 
-1. **To review, first:** the open requests where the user is a requested reviewer, oldest first. Leave the section out when there are none.
-2. **Yours:** those the user wrote or is assigned to, the current branch's one first and marked as such.
-3. **A table per section**, one row per request, no descriptions:
-   - To review: request (`!12` on GitLab, `#12` on GitHub), title, author, state.
+1. **To merge, first:** the open requests assigned to the user that are approved, oldest first. Approved is GitHub's `reviewDecision` `APPROVED`; GitLab's listing doesn't say, so for each request assigned to the user read `approved` from `glab api "projects/:id/merge_requests/<iid>/approvals"`.
+2. **To review:** those where the user is a requested reviewer, oldest first.
+3. **Yours:** the other ones the user wrote or is assigned to, the current branch's one first and marked as such.
+4. **A table per section**, one row per request, no descriptions; leave out a section with no rows:
+   - To merge: request (`!12` on GitLab, `#12` on GitHub), title, approved by, state.
+   - To review: request, title, author, state.
    - Yours: request, title, reviewers (`none` if nobody was asked), state.
    - Names are the handles of [`.ai/team.md`](../backlog/SKILL.md#people-aiteammd) if the project has it.
-4. **State**, only what the listing gives, in a few words: `draft`, `checks failed` or `checks running`, `conflicts`, `approved`, `changes requested`; empty when it just waits for a review. GitLab's listing has no pipeline result: it shows in `/request <id>`.
-5. **The others** in one line under the tables, as a count per author, unless the user asked for someone's requests.
-6. End with one suggestion: the oldest request to review, with `/request <id>`; else one of the user's that needs them (changes requested, failed checks, conflicts); else none.
-7. Last line: the other commands, `<id>`, `edit`, `comment`, `test`, `review`, `approve`, `changes`, `help`, in one line.
+5. **State**, only what the listing gives, in a few words: `draft`, `checks failed` or `checks running`, `conflicts`, `approved`, `changes requested`; empty when it just waits for a review. GitLab's listing has no pipeline result: it shows in `/request <id>`.
+6. **The others** in one line under the tables, as a count per author, unless the user asked for someone's requests.
+7. End with one suggestion: the oldest request to merge with nothing in its state, with `/request merge <id>`; else the oldest to review, with `/request <id>`; else one of the user's that needs them (changes requested, failed checks, conflicts); else none.
+8. Last line: the other commands, `<id>`, `edit`, `comment`, `test`, `review`, `approve`, `changes`, `merge`, `help`, in one line.
 
 Listing only reads, so it needs no confirmation.
 
@@ -68,7 +71,7 @@ Showing only reads. Never check out the branch to show a request.
 
 ## Writes need confirmation
 
-Editing, commenting on, approving or asking for changes on a request writes outside the repo, where others are notified. Even when the user typed the command, show what will happen (the change as before → after, the comment text, or the verdict with the commit it is given on) with the exact command, and run it only after the user confirms. In a non-interactive run, put both in the final message and run nothing. If the user is not the author of the request, say so in the same message: a description or a title is the author's.
+Editing, commenting on, approving, asking for changes on or merging a request writes outside the repo, where others are notified. Even when the user typed the command, show what will happen (the change as before → after, the comment text, or the verdict with the commit it is given on) with the exact command, and run it only after the user confirms. In a non-interactive run, put both in the final message and run nothing. If the user is not the author of the request, say so in the same message: a description or a title is the author's.
 
 ## Editing (`/request edit`)
 
@@ -146,7 +149,7 @@ An approval tells the team that a person checked the request. The agent records 
 4. **Confirm:** the request, the commit approved, what was tested by the agent and what by the user, and the exact command. Run it after the user's yes:
    - GitHub: `gh pr review <id> --approve`. Read `headRefOid` again just before: if it moved, stop and say so.
    - GitLab: `glab mr approve <id> --sha <head commit>`, which fails if new commits arrived.
-5. **Report** the approval, and that merging is still to be done on the host.
+5. **Report** the approval. Merging is a separate command, for whoever the request is assigned to: don't offer to run it.
 
 A review not yet posted can go with it: offer the comment of [Reviewing](#reviewing-request-review), step 6.
 
@@ -160,3 +163,24 @@ The reviewer's no. The request stays open and its author is asked to change it: 
    - GitHub: `gh pr review <id> --request-changes --body-file -`, with the text on stdin.
    - GitLab: `glab` has no command for it. Post the text as a comment ([Commenting](#commenting-request-comment)); if the user had approved the request, add `glab mr revoke <id>` in the same confirmation. Say that the request is not marked "changes requested" this way, and that the Request changes button on the host does that.
 4. **Report** the URL, and that the request stays open for its author.
+
+## Merging (`/request merge`)
+
+Merges the request on the host, into a branch others share: it can't be undone here. Only on the user's command, in this order:
+
+1. **Read the request** as in [Showing](#showing-request-id), step 1, with its head commit and who approved it (GitHub `latestReviews`; GitLab `glab api "projects/:id/merge_requests/<iid>/approvals"`).
+2. **Whose merge it is:** the assignee's, or the author's when nobody is assigned. If the user is neither, say whose it is and ask whether they merge it all the same. This is a question of its own, also for a reviewer who has just approved the request: approving it didn't make it theirs. Wait for the answer; it doesn't count as the confirmation of step 5.
+3. **Check, and report all problems at once.** With any, stop and ask; nothing here is forced:
+   - approved by someone other than its author, and no changes requested;
+   - not a draft; checks passed, none failed or still running; no conflicts with the base;
+   - no open review comments;
+   - the head commit is the one that was approved, where the host says (commits pushed after the approval: say so);
+   - the base is not the default branch (`main`, `master`) or a release branch: if it is, ask once more, as in the finish skill.
+
+   A problem the user accepts in their own words (no approval, in a project that asks for none) is named in the confirmation. What the host refuses stays refused: never `--admin`, never a way around a protected branch or a required check.
+4. **How:** the way the user names (merge commit, squash, rebase). Otherwise GitLab uses the project's setting; GitHub needs a flag: `--merge` if the repository allows it (`gh repo view --json mergeCommitAllowed,squashMergeAllowed,rebaseMergeAllowed`), else the only way allowed, else ask. The source branch is deleted only if the user asks (`--delete-branch`, `--remove-source-branch`) or the host is set to do it.
+5. **Confirm:** the request, base ← branch, the commit, who approved it, the way, the problems accepted, and the exact command. Run it after the user's yes:
+   - GitHub: `gh pr merge <id> --merge --match-head-commit <head commit>` (or `--squash`, `--rebase`).
+   - GitLab: `glab mr merge <id> --sha <head commit> --auto-merge=false --yes` (add `--squash` or `--rebase` if asked). Leave out `--auto-merge=false` only if the user asks to merge when the pipeline passes.
+6. **Report** the merged request and its URL. A Jira work item moves to Done by Jira automation or by hand, as in the finish skill.
+7. **Offer the local cleanup**, if the branch exists here, and run it after a yes: `git switch <base>`, `git pull --ff-only`, `git branch -d <branch>`. Never `-D`, never the remote branch, never a push. A handoff of that branch still in the base means the request was not made by `/finish`: say so.

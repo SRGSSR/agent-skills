@@ -195,11 +195,11 @@ Trackers return at most 100 tasks per listing; if there are more, the agent says
 
 ### Request commands
 
-`/request` does for merge requests (GitLab) and pull requests (GitHub) what `/backlog` does for tasks. Creating one stays with `/finish mr` or `pr`, which checks the work first; merging, closing and approving are done on the host.
+`/request` does for merge requests (GitLab) and pull requests (GitHub) what `/backlog` does for tasks. Creating one stays with `/finish mr` or `pr`, which checks the work first; closing one is done on the host.
 
 | Command | Example | What happens |
 |---|---|---|
-| `/request` | `/request` · `/request Anna` | The open requests: those waiting for your review first, then yours, then a count of the others'. Ends with one suggestion and the list of commands. With a name, only that person's. |
+| `/request` | `/request` · `/request Anna` | The open requests: the approved ones assigned to you first, then those waiting for your review, then the rest of yours and a count of the others'. Ends with one suggestion and the list of commands. With a name, only that person's. |
 | `/request <id>` | `/request 12` · `/request feature/csv-export` | Title, people, state, the issues it closes, the description and the open review comments. If you are a reviewer, it asks whether to start the review; if it is yours and the review asks for changes, it offers to resume the branch. |
 | `/request edit <id> <change>` | `/request edit 12 add Simo as reviewer` · `/request edit 12 ready` · `/request edit 12 rewrite the description` | Shows before → after and the command; changes title, description, reviewers, assignee, labels, draft or ready. A rewritten description gets the three parts of `/finish`. |
 | `/request comment <id> <text>` | `/request comment 12 the staging data is refreshed` | Posts your words as they are (only typos fixed), after your yes. |
@@ -207,6 +207,7 @@ Trackers return at most 100 tasks per listing; if there are more, the agent says
 | `/request review <id>` | `/request review 12` | The reviewer's whole path: shows the request, runs its tests, reads the diff against the issues, reports, and suggests a code review tool for the code itself. |
 | `/request approve <id>` | `/request approve 12` · `/request approve 12, I opened the file in Excel, fine` | Your yes as a reviewer. It first asks about every step it could not run, then shows the commit and the command, and approves after your yes. |
 | `/request changes <id> <reason>` | `/request changes 12 archived items are still exported` | Your no as a reviewer: asks the author for changes, with the reason written for them. The request stays open. |
+| `/request merge <id>` | `/request merge 12` · `/request merge 12 squash` | Merges an approved request on the host, after its checks and your yes; then offers to switch to the base, update it and delete the local branch. |
 | `/request help` | `/request help` | The commands, the host and the CLI in use. |
 
 Requests in words work the same: "what is waiting for my review?", "show me !12", "mark !12 as ready", "test Anna's request", "review !12", "approve it", "reject !12: archived items are still exported".
@@ -214,6 +215,12 @@ Requests in words work the same: "what is waiting for my review?", "show me !12"
 A listing looks like this:
 
 ```markdown
+To merge:
+
+| Request | Title                 | Approved by | State |
+|---------|-----------------------|-------------|-------|
+| !9      | PODCAST-40 Feed title | bianchia    |       |
+
 To review:
 
 | Request | Title                   | Author   | State          |
@@ -230,8 +237,8 @@ Yours:
 
 3 others (bianchia 2, rossial 1).
 
-Suggestion: !12, the oldest waiting for your review: /request 12
-Commands: <id>, edit, comment, test, review, approve, changes, help.
+Suggestion: !9 is approved and assigned to you: /request merge 9
+Commands: <id>, edit, comment, test, review, approve, changes, merge, help.
 ```
 
 `/request test` reads the `How to test` part that `/finish` writes, compares it with the specifications of the linked issues, and runs it on a copy of the branch, so your own branch and uncommitted work stay as they are:
@@ -300,6 +307,27 @@ Go ahead?
 It also says what else stands in the way (a draft, failed checks, conflicts, findings that should block the merge, commits newer than those tested), and approves the exact commit that was tested. If you approve without a step, the confirmation names it as not tested.
 
 `/request changes` needs a reason; without one, the agent proposes the blocking findings and the failed steps of its review. "Reject" in words means the same: the request stays open for its author, and closing it for good is done on the host. On GitHub this sets "changes requested"; `glab` has no command for it, so on GitLab the reason is posted as a comment (and an approval you gave is revoked), and the agent says that the Request changes button on the host marks it formally.
+
+`/request merge` is for whoever carries the request: its assignee, or its author when nobody is assigned. The hosts decide who may merge by permissions, not by that field, so the agent doesn't refuse anyone else, but asks first, as a question of its own. That includes a reviewer who has just approved it:
+
+```markdown
+> /request merge 12
+
+!12 is assigned to rossial, and you reviewed it. Merging it is theirs: do you want to
+merge it all the same?
+
+> yes, Alessandro is away until Monday
+
+!12 PODCAST-42 CSV export, develop ← feature/PODCAST-42-csv-export at 4f2a9c1,
+approved by you. Checks passed, no conflicts, no open comments.
+  glab mr merge 12 --sha 4f2a9c1 --auto-merge=false --yes
+Go ahead?
+```
+
+- **Checked first:** approved by someone other than the author, no changes requested, not a draft, checks passed, no conflicts, no open review comments, no commits after the approval. With any problem the agent stops and lists them all.
+- **Never forced:** what the host refuses (a protected branch, a required check) stays refused. A base that is `main` or a release branch gets one more question.
+- **How:** the project's way; say `squash` or `rebase` to choose. The source branch is deleted only if you ask or the host is set to.
+- **Afterwards** the agent offers to switch to the base, update it and delete the local branch; it never pushes.
 
 ### GitLab and GitHub issues
 

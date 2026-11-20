@@ -12,9 +12,11 @@ A `request` skill in the work-journal plugin: `/request` handles GitLab merge re
 - [x] Evals 51 request-help and 52 request-list-gitlab, with graders
 - [x] `/request review <id>`: show, test, read the diff against the issues, report, suggest a code review tool, offer to post; recommends `changes` when something blocks, never `approve`
 - [x] `/request approve <id>` (asks about the steps not run first, approves the tested commit) and `/request changes <id> <reason>`
+- [x] `/request merge <id>`: checks, a separate question when the merge is someone else's, confirmation, local cleanup offered
+- [x] Listing order: to merge (approved and assigned to the user), to review, the rest
 
 ## Next steps
-1. Agree `/request merge` with the user (proposal made: for whoever carries the request, with checks before and a confirmation), or `/finish`.
+None: ready to finish, unless the user wants more commands.
 
 ## Decisions
 - The reviewer's no is `/request changes`, not `reject` (user, confirmed): reasons in `docs/design.md`.
@@ -24,7 +26,7 @@ A `request` skill in the work-journal plugin: `/request` handles GitLab merge re
 None.
 
 ## Open questions
-- `/request merge`: the user wants to discuss it; not designed.
+None.
 
 ## How to verify
 - `npm install --no-save yaml@2.9.1 && node scripts/check-skills.mjs`
