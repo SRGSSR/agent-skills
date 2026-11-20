@@ -14,17 +14,16 @@ A `request` skill in the work-journal plugin: `/request` handles GitLab merge re
 - [x] `/request approve <id>` (asks about the steps not run first, approves the tested commit) and `/request changes <id> <reason>`
 
 ## Next steps
-1. The user confirms or changes the name `changes` (they had said `reject` and asked for a suggestion).
-2. Discuss `/request merge` with the user, or `/finish`.
+1. Agree `/request merge` with the user (proposal made: for whoever carries the request, with checks before and a confirmation), or `/finish`.
 
 ## Decisions
+- The reviewer's no is `/request changes`, not `reject` (user, confirmed): reasons in `docs/design.md`.
 - Requests waiting for the user's review are listed first; `show` is implicit (user). Reasons for the command set in `docs/design.md`, "Trackers and /backlog".
 
 ## Dead ends
 None.
 
 ## Open questions
-- The second verdict command is named `changes`, with "reject" understood in words: the user asked for a suggestion and has not confirmed it yet.
 - `/request merge`: the user wants to discuss it; not designed.
 
 ## How to verify
