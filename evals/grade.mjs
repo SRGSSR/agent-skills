@@ -1069,8 +1069,8 @@ console.log('null');`,
     check('The request body has the Changes and How to test parts', () => [parts, parts ? 'found' : 'missing']);
     const edge = /edge cases?/i.test(msg) && /csv-helper/.test(msg);
     check('How to test names the task (csv-helper) and edge cases', () => [edge, edge ? 'found' : 'missing']);
-    const asg = /assign/i.test(msg) && /\?/.test(msg);
-    check('The final message asks whether to assign the request', () => [asg, asg ? 'found' : 'missing']);
+    const asg = /assign/i.test(msg) && /review/i.test(msg) && /\?/.test(msg);
+    check('The final message asks who reviews the request and whom to assign it to', () => [asg, asg ? 'found' : 'missing']);
   },
   'finish-pr-instructions'() {
     graders['finish-pr']();

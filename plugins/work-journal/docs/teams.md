@@ -38,7 +38,7 @@ The agent checks everything first: no stray uncommitted changes, build and tests
 | Mode | What happens |
 |---|---|
 | `/finish merge` | git flow: `git flow feature finish`. Otherwise a merge into the `Base:` branch and the local branch deleted; if the base is `main`, it asks once first. A tracker task is closed after your yes, since a local merge doesn't trigger `Closes #42`. |
-| `/finish mr`, `/finish merge-request` | A GitLab merge request into the base, with a title, a detailed description (introduction, changes, how to test) and `Closes #42` (or the Jira key); it asks whether to assign it |
+| `/finish mr`, `/finish merge-request` | A GitLab merge request into the base, with a title, a detailed description (introduction, changes, how to test) and `Closes #42` (or the Jira key); it asks who reviews it and whom to assign it to |
 | `/finish pr`, `/finish pull-request` | The same as a GitHub pull request |
 
 If a check fails, nothing is committed or merged, for example:
@@ -84,13 +84,13 @@ Edge cases:
 PODCAST-42
 ```
 
-A small change gets shorter parts, but all three. If you don't say who the request is for, the agent asks once, together with the confirmation: you, someone else or nobody.
+A small change gets shorter parts, but all three. The agent also asks, once and together with the confirmation, what you didn't say: who reviews the request (the one who checks and approves it) and whom to assign it to (the one who carries it to the merge: you, someone else or nobody). "Nobody" is a fine answer to both.
 
 Anything after the mode is instructions for this run: options of the request, a title, a problem you accept.
 
 > /finish pr as a draft, assign it to me, reviewer anna, the flaky upload test is known
 
-The agent still runs every check: it reports the flaky test as accepted instead of stopping, and adds `--draft --assignee @me --reviewer anna` to `gh pr create`, without asking about the assignee. Instructions never make it push or force.
+The agent still runs every check: it reports the flaky test as accepted instead of stopping, and adds `--draft --assignee @me --reviewer anna` to `gh pr create`, without asking about either. Instructions never make it push or force.
 
 The mode is required: `/finish` alone shows the syntax, `/finish help` the modes with the base the branch would go into and what gets checked. Nothing is pushed: for a merge or pull request, the agent gives you `git push -u origin <branch>`, then creates the request after your yes. The cleanup commit is part of the request, so merging it completes the work. `hotfix/` and `release/` branches are left to you, because finishing them is a release.
 
