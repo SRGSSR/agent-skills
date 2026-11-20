@@ -1065,6 +1065,12 @@ console.log('null');`,
     check('The final message gives the push command for feature/csv-helper', () => [pushRe.test(msg), pushRe.test(msg) ? 'found' : 'missing']);
     const prRe = /gh pr create[^\n]*(--base|-B)\s+develop/;
     check('The final message gives gh pr create with --base develop', () => [prRe.test(msg), prRe.test(msg) ? 'found' : 'missing']);
+    const parts = /^#+\s*Changes/im.test(msg) && /^#+\s*How to test/im.test(msg);
+    check('The request body has the Changes and How to test parts', () => [parts, parts ? 'found' : 'missing']);
+    const edge = /edge cases?/i.test(msg) && /csv-helper/.test(msg);
+    check('How to test names the task (csv-helper) and edge cases', () => [edge, edge ? 'found' : 'missing']);
+    const asg = /assign/i.test(msg) && /review/i.test(msg) && /\?/.test(msg);
+    check('The final message asks who reviews the request and whom to assign it to', () => [asg, asg ? 'found' : 'missing']);
   },
   'finish-pr-instructions'() {
     graders['finish-pr']();

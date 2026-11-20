@@ -38,7 +38,7 @@ The agent checks everything first: no stray uncommitted changes, build and tests
 | Mode | What happens |
 |---|---|
 | `/finish merge` | git flow: `git flow feature finish`. Otherwise a merge into the `Base:` branch and the local branch deleted; if the base is `main`, it asks once first. A tracker task is closed after your yes, since a local merge doesn't trigger `Closes #42`. |
-| `/finish mr`, `/finish merge-request` | A GitLab merge request into the base, with title, description and `Closes #42` (or the Jira key) |
+| `/finish mr`, `/finish merge-request` | A GitLab merge request into the base, with a title, a detailed description (introduction, changes, how to test) and `Closes #42` (or the Jira key); it asks who reviews it and whom to assign it to |
 | `/finish pr`, `/finish pull-request` | The same as a GitHub pull request |
 
 If a check fails, nothing is committed or merged, for example:
@@ -50,24 +50,47 @@ If a check fails, nothing is committed or merged, for example:
 Everything else is ready: tests 2/2, handoff closed, decisions in docs/csv-export.md.
 ```
 
-For `/finish pr` the agent prepares the title and body from the task and the handoff:
+For `/finish pr` the agent prepares the title and the description from the task, the handoff, the commits and the journal. The description is written for a reviewer who was not there: a short introduction, the changes in detail, then everything needed to test (the specifications with a link to their issue, the steps with the expected result, the edge cases, and what nobody tried):
 
 ```markdown
 PODCAST-42 CSV export
 
-Users download the item list as CSV, and it opens in Excel (de-CH).
-- `toCsv(items)` in export.js: `;` separator and UTF-8 BOM
-- "Download CSV" link on the list page
-How to verify: `npm test`, then open the list page and click the link.
+Users can download the item list as CSV from the list page. The file opens
+in Excel (de-CH) with no import step, which is what the client asked for.
+
+## Changes
+- `toCsv(items)` in `export.js`: `;` separator and UTF-8 BOM, values with `;`, quotes or
+  line breaks are quoted.
+- "Download CSV" link on the list page (`views/list.html`), served by `GET /items.csv`.
+- Decided: `;` rather than `,`, because Excel de-CH splits on `;` (docs/csv-export.md).
+- Left out: choosing the columns. The file has the columns of the list page.
+
+## How to test
+Specifications (PODCAST-42):
+- The list page has a link that downloads all items as CSV.
+- The file opens in Excel (de-CH) with one value per cell and correct umlauts.
+
+Steps:
+1. `npm test`: 6 tests pass (separator, BOM, quoting).
+2. `npm start`, open http://localhost:3000 and click "Download CSV": `items.csv` is
+   downloaded, one row per item.
+3. Open the file in Excel (de-CH): one value per cell, "Mikrofonständer" is readable.
+
+Edge cases:
+- An item with `;` or `"` in its name: one cell, the quotes are shown.
+- No items: the file has the header row only.
+- Not tried: more than 10,000 items; Excel on macOS.
 
 PODCAST-42
 ```
 
+A small change gets shorter parts, but all three. The agent also asks, once and together with the confirmation, what you didn't say: who reviews the request (the one who checks and approves it) and whom to assign it to (the one who carries it to the merge: you, someone else or nobody). "Nobody" is a fine answer to both.
+
 Anything after the mode is instructions for this run: options of the request, a title, a problem you accept.
 
-> /finish pr as a draft, reviewer anna, the flaky upload test is known
+> /finish pr as a draft, assign it to me, reviewer anna, the flaky upload test is known
 
-The agent still runs every check: it reports the flaky test as accepted instead of stopping, and adds `--draft --reviewer anna` to `gh pr create`. Instructions never make it push or force.
+The agent still runs every check: it reports the flaky test as accepted instead of stopping, and adds `--draft --assignee @me --reviewer anna` to `gh pr create`, without asking about either. Instructions never make it push or force.
 
 The mode is required: `/finish` alone shows the syntax, `/finish help` the modes with the base the branch would go into and what gets checked. Nothing is pushed: for a merge or pull request, the agent gives you `git push -u origin <branch>`, then creates the request after your yes. The cleanup commit is part of the request, so merging it completes the work. `hotfix/` and `release/` branches are left to you, because finishing them is a release.
 
