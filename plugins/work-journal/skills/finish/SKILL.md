@@ -4,7 +4,7 @@ description: "Finishes the work on the current branch. It checks that everything
 license: MIT
 argument-hint: "<merge | merge-request | mr | pull-request | pr | help> [instructions]"
 metadata:
-  version: "0.5.0"
+  version: "0.6.0"
 ---
 
 # Finish
@@ -64,10 +64,28 @@ All modes: close the branch's task (delete its task file; for a tracker see step
 ### `mr`, `pr`
 
 - `mr` uses `glab`, `pr` uses `gh`; if it doesn't match the host of `origin`, say so and ask. Not logged in: see the backlog skill, [Not logged in](../backlog/SKILL.md#not-logged-in).
-- The branch must be on the remote and up to date (`git status -sb`). If it isn't, give the user `git push -u origin <branch>` and stop until they say it is done. Never pass `--push` or `--fill`, which push.
-- **Title:** the task title, after the Jira key if there is one (`PODCAST-42 CSV export`). **Body:** the goal in one line, what changed (a few bullets from the commits and the handoff's status), how to verify (from the handoff), then `Closes #42` for an issue on the same host, or the Jira key.
+- The branch must be on the remote and up to date (`git status -sb`). If it isn't, give the user `git push -u origin <branch>` in the same message as the title, body and command below (one stop, not two), and create nothing until they say it is pushed. Never pass `--push` or `--fill`, which push.
+- **Title:** the task title, after the Jira key if there is one (`PODCAST-42 CSV export`).
+- **Body:** see [The description](#the-description). Draft it before step 2 deletes the task file and the handoff it is built from.
+- **Assignee:** named in the instructions (a person, "me", "nobody"): follow them. Otherwise ask, in the same message, whether to assign the request and to whom: the user, someone else, nobody. Never pick one yourself. A name is resolved as in the backlog skill, [People](../backlog/SKILL.md#people-aiteammd). The flag is `--assignee <handle>` for both tools (`gh`: `@me` for the user; `glab`: the username `glab auth status` shows). Reviewers are added only when asked.
 - Show title, body and the exact command, and run it after the user's yes:
   - `gh pr create --base <base> --title "<title>" --body-file -`, body on stdin;
   - `glab mr create --target-branch <base> --title "<title>" --description-file - --yes`, body on stdin.
 - The commit of step 2 is part of the request, so merging it closes everything. If the review asks for changes, the next agent on the branch writes a new handoff. A Jira work item moves to Done after the merge, by Jira automation or by hand (`acli jira workitem transition`).
 - Report the URL.
+
+#### The description
+
+The reviewer was not in the conversation and may test the work days later: the description alone must tell them what it is, what changed and how to check it. Three parts, in this order, in the language of the project's issues and commits:
+
+1. **Introduction**, no heading, two to four lines: what the request does and why. Someone who stops reading here knows what they are approving.
+2. **`## Changes`**, in detail: what changed and where (files, components, pages, commands, config), grouped by area for a large branch; the decisions a reviewer would question, each with its reason; what was left out on purpose; what needs care when merging (migration, new config or dependency, changed public behavior). From the commits, `git diff --stat <base>...HEAD`, the handoff and the journal.
+3. **`## How to test`**, everything a tester needs, with no question left to ask:
+   - **Specifications:** what the work had to do: the task's `Done when` or acceptance criteria, one line each, with a link to every issue it comes from (`#42` on the same host, the full URL elsewhere, the Jira key). No written specification: say so and give the handoff's goal.
+   - **Setup:** what is needed first (install, config, data, migration, accounts), if anything.
+   - **Steps:** numbered, each with what to do and what must happen. First the automated tests (the command, what they cover), then by hand what they don't cover, one step per specification line.
+   - **Edge cases:** those the work handles (empty or very large input, invalid values, limits, permissions, errors, old data), each with how to try it and the expected result; then those it does not handle or that nobody tried, said as such.
+
+Last, `Closes #42` for each issue on the same host, or the Jira key.
+
+Write only what is true: a step nobody ran is marked "not run", a specification with no link gets none, and nothing is invented to fill a part. A small change gets short parts, but all three: a part with nothing to say says so in one line. Check failures the user accepted go under Changes.
