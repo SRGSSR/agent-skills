@@ -1095,6 +1095,39 @@ console.log('null');`,
       return [bad.length === 0, bad.join(', ') || 'none'];
     });
   },
+  'finish-worktrees-clean'() {
+    graders['finish-merge-base']();
+    const list = git('worktree', 'list', '--porcelain');
+    check('The subagent worktree and its branch worktree-agent-a3f9c2 are removed', () => {
+      const wt = list.includes('agent-a3f9c2') || exists('.claude/worktrees/agent-a3f9c2');
+      const br = git('branch', '--list', 'worktree-agent-a3f9c2').trim();
+      return [!wt && !br, `worktree ${wt ? 'still there' : 'gone'}, branch ${br ? 'still there' : 'deleted'}`];
+    });
+    check("The user's worktree .worktrees/pdf-spike and its branch are kept", () => {
+      const wt = list.includes('.worktrees/pdf-spike') && exists('.worktrees/pdf-spike/pdf.js');
+      const br = git('branch', '--list', 'spike/pdf-export').trim();
+      return [wt && Boolean(br), `worktree ${wt ? 'kept' : 'gone'}, branch ${br ? 'kept' : 'deleted'}`];
+    });
+  },
+  'finish-worktrees-left'() {
+    const msg = finalMessage();
+    const anc = spawnSync('git', ['-C', repo, 'merge-base', '--is-ancestor', base, 'develop']).status === 0;
+    check('develop is unchanged (no merge)', () => [!anc, anc ? 'feature merged into develop' : 'unchanged']);
+    check('The branch is not closed (the handoff is still in feature/csv-helper)', () => {
+      const files = git('ls-tree', '-r', '--name-only', 'feature/csv-helper').split('\n');
+      return [files.includes('.ai/handoff/feature-csv-helper.md'), files.includes('.ai/handoff/feature-csv-helper.md') ? 'handoff present' : 'handoff deleted'];
+    });
+    check('Both subagent worktrees and their work are kept', () => {
+      const list = git('worktree', 'list', '--porcelain');
+      const dirty = exists('.claude/worktrees/agent-b71d04') && git('-C', path.join(repo, '.claude/worktrees/agent-b71d04'), 'status', '--porcelain').trim() !== '';
+      const commit = git('branch', '--list', 'worktree-agent-e5c812').trim() !== '' && list.includes('agent-e5c812');
+      return [dirty && commit && list.includes('agent-b71d04'), `b71d04 ${dirty ? 'with its change' : 'gone or clean'}, e5c812 ${commit ? 'with its branch' : 'gone'}`];
+    });
+    check('The final message names both worktrees and asks about them', () => {
+      const both = /b71d04/.test(msg) && /e5c812/.test(msg);
+      return [both && /\?/.test(msg), `${both ? 'both named' : 'not both named'}, ${/\?/.test(msg) ? 'asks' : 'no question'}`];
+    });
+  },
   'finish-gitflow-merge'() {
     graders['finish-merge-base']();
     const msg = finalMessage();

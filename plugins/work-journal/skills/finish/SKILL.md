@@ -4,7 +4,7 @@ description: "Finishes the work on the current branch. It checks that everything
 license: MIT
 argument-hint: "<merge | merge-request | mr | pull-request | pr | help> [instructions]"
 metadata:
-  version: "0.6.0"
+  version: "0.7.0"
 ---
 
 # Finish
@@ -32,6 +32,7 @@ Run every check, then report all problems at once. If there is any, stop: one li
 - **Branch:** a work branch, not the development or default branch. On a `hotfix/` or `release/` branch, stop and ask: finishing one is a release (merges into the default and development branches, and a tag).
 - **Base:** the handoff's `Base:`. Without it: with git flow, its development branch; otherwise the candidate (`develop`, the default branch) whose merge base with this branch is the most recent (`git log -1 --format=%ci $(git merge-base HEAD <candidate>)`). Propose it and get a yes. A base that no longer exists: stop.
 - **Working tree:** uncommitted changes are listed; ask whether they belong to the work.
+- **Agent worktrees:** in `git worktree list`, only those an agent tool created for its subagents (Claude Code: `.claude/worktrees/agent-<id>` on the branch `worktree-agent-<id>`), never the user's own. Each one with uncommitted changes (`git -C <path> status --porcelain`) or with commits whose changes are not in this branch (`git cherry HEAD <its branch>`, lines starting with `+`) is listed: ask whether that work belongs to the branch or can be dropped. The others hold nothing left and go in step 2.
 - **Build and tests:** the commands in the project's instructions (`AGENTS.md`, `CLAUDE.md`, README, package scripts). A failure stops; no commands found, say so.
 - **Handoff:** no open status items or next steps, no open questions for the user.
 - **Reminders:** none left under the handoff's `## Reminders`. List each one left with what you would do with it: done, dropped or a task. The user answers one by one; dropping is a fine answer.
@@ -49,6 +50,8 @@ In soft mode the report keeps its tone: what is missing is offered as a short li
 ## 2. Close the work on the branch
 
 All modes: close the branch's task (delete its task file; for a tracker see step 3), delete the handoff, add the journal entry for the end of the task (what was done, what moved where, the new tasks), and commit on the branch (`finish: <task>`).
+
+Then remove the agent worktrees of step 1 that hold nothing left, and those the user said to drop: `git worktree remove <path>` (`--force` only for a dropped one), then `git branch -D <its branch>`: `-D` because its commits may be in this branch as cherry-picks, which `-d` doesn't see. Only these temporary branches, never a work branch. Report what was removed.
 
 ## 3. Integrate
 
