@@ -18,6 +18,8 @@
 # Files not claimed by any entry are added by the first commit.
 # An optional `remote` file holds the URL set as `origin` (never fetched).
 # An optional `git-config` file holds `key value` lines set with git config (for example git flow's).
+# An optional `post-build.sh` is sourced last, in the repo, with g() at hand (for example to add worktrees;
+# use `git worktree add --relative-paths`, so the copy of a run still works).
 set -euo pipefail
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
@@ -85,6 +87,7 @@ build_variant() {
     if [ "$with_state" = 1 ] && [ "$state_done" = 0 ]; then
       commit_state "$last_date"
     fi
+    if [ -f "$src/post-build.sh" ]; then . "$src/post-build.sh"; fi
   )
 }
 
