@@ -1143,6 +1143,21 @@ console.log('null');`,
       return [upd && cont, `update ${upd ? 'offered' : 'missing'}, continue ${cont ? 'offered' : 'missing'}`];
     });
   },
+  'finish-behind-conflict'() {
+    const msg = finalMessage();
+    const devLog = git('log', '-1', '--format=%s', 'develop').trim();
+    check('develop is unchanged (not updated, no merge)', () => [devLog === 'Show tags in list', devLog]);
+    check('The branch is unchanged: same commit, handoff still there', () => {
+      const tip = git('rev-parse', 'feature/csv-helper').trim();
+      const h = exists('.ai/handoff/feature-csv-helper.md');
+      return [tip === base && h, `branch ${tip === base ? 'same commit' : 'moved'}, handoff ${h ? 'present' : 'gone'}`];
+    });
+    check('The final message says develop is not up to date with origin/develop', () => [/origin\/develop/.test(msg) && /not up.to.date|behind/i.test(msg), /origin\/develop/.test(msg) ? 'origin/develop named' : 'origin/develop not named']);
+    check('The final message names the conflict in docs/csv-export.md and says it must be resolved before closing', () => {
+      const file = /docs\/csv-export\.md/.test(msg), conf = /conflict/i.test(msg) && /resolv/i.test(msg);
+      return [file && conf, `${file ? 'file named' : 'file not named'}, ${conf ? 'resolve asked' : 'no resolve'}`];
+    });
+  },
   'finish-gitflow-merge'() {
     graders['finish-merge-base']();
     const msg = finalMessage();
