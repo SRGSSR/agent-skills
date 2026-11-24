@@ -20,6 +20,8 @@ jobs:
       - run: npm install --no-save --no-package-lock yaml@2.9.1 @anthropic-ai/claude-code@2.1.323
       - name: Skills, manifests and links
         run: node scripts/check-skills.mjs
+      - name: Session start hooks
+        run: sh scripts/test-hooks.sh
       - name: Claude Code plugin validation
         run: |
           npx claude plugin validate --strict .

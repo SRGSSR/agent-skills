@@ -4,14 +4,14 @@ description: "Starts the work on a task or feature in a branch of its own, with 
 license: MIT
 argument-hint: "[<task or name> [context]]"
 metadata:
-  version: "0.4.0"
+  version: "0.4.1"
 ---
 
 # Start
 
 `/start <task or name> [context]` opens one branch for one task, with its handoff from the first minute, so the work can be paused and resumed at any point. `<task or name>` is an issue (`#42`), a Jira key (`PODCAST-42`), a task file (`docs/backlog/csv-export.md`), a task title, or just a name; the optional context is a short description of the goal.
 
-**Resuming paused work:** `/start` with the task or name of a branch that already exists resumes it (step 1). `/start` alone resumes the current branch if it has a handoff, as in the work-journal skill, [Resuming](../work-journal/SKILL.md#resuming); on a branch without one, show the syntax and the paused work (`ls .ai/handoff/`), and stop. When resuming, after reading the handoff and before going on with its next step, run on the branch and its base (the handoff's `Base:`, or found as there) the checks of the finish skill, [Check](../finish/SKILL.md#1-check): **Up to date with origin** and **Conflicts with the base**, with the same questions, and update or resolve after the user's yes as in its **Updating and resolving**. Conflicts with the base must be resolved before the work goes on.
+**Resuming paused work:** `/start` with the task or name of a branch that already exists resumes it (step 1). `/start` alone resumes the current branch if it has a handoff, as in the work-journal skill, [Resuming](../work-journal/SKILL.md#resuming); on a branch without one, show the syntax and the paused work (the local branches with a handoff of their own, found as in [Resuming](../work-journal/SKILL.md#resuming)), and stop. When resuming, after reading the handoff and before going on with its next step, run on the branch and its base (the handoff's `Base:`, or found as there) the checks of the finish skill, [Check](../finish/SKILL.md#1-check): **Up to date with origin** and **Conflicts with the base**, with the same questions, and update or resolve after the user's yes as in its **Updating and resolving**. Conflicts with the base must be resolved before the work goes on.
 
 Formats of the handoff, journal and tasks are in the [work-journal skill](../work-journal/SKILL.md); task lookups and tracker commands in the [backlog skill](../backlog/SKILL.md). Talk in the user's language.
 

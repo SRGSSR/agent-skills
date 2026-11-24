@@ -48,6 +48,8 @@ AGENTS.md                 ← journal block (about 9 lines), loaded on every tas
 
 `.ai/` is meant to be committed, so the handoff travels across machines and people; for `.ai/team.md` you choose when you create it. You can ignore `.ai/journal/` if you prefer to keep the log private.
 
+In Claude Code the plugin also brings a session start hook, run when a session starts and after `/clear`, in projects with the block: if the current branch has a handoff, it shows a line with `/start`, `/pause` and `/finish` and has Claude resume from the handoff before answering your first message; otherwise it lists the local branches with a handoff (paused work). Where there is nothing to resume it shows nothing. Other tools rely on the block alone.
+
 <details>
 <summary><b>What a handoff looks like</b></summary>
 
@@ -156,7 +158,7 @@ At `/finish`, in any mode, every reminder left is closed one by one before the h
 
 ## Cost
 
-The always-loaded part is the `AGENTS.md` block: about 9 lines. Journal entries are 2 to 6 lines at checkpoints, and resuming reads only the branch's handoff and the last few entries.
+The always-loaded part is the `AGENTS.md` block: about 9 lines. Journal entries are 2 to 6 lines at checkpoints, and resuming reads only the branch's handoff and the last few entries. The session start hook adds one or two lines to Claude Code's context, only when there is something to resume.
 
 ## With project-phase
 

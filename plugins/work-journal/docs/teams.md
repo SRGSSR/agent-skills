@@ -94,7 +94,7 @@ The agent still runs every check: it reports the flaky test as accepted instead 
 
 The mode is required: `/finish` alone shows the syntax, `/finish help` the modes with the base the branch would go into and what gets checked. Nothing is pushed: for a merge or pull request, the agent gives you `git push -u origin <branch>`, then creates the request after your yes. The cleanup commit is part of the request, so merging it completes the work. `hotfix/` and `release/` branches are left to you, because finishing them is a release.
 
-`ls .ai/handoff/` is the list of work in progress. An agent that starts on a branch without a handoff sees the others, mentions them only if relevant, and doesn't resume them unless you ask.
+Each handoff is committed on its own branch, so the work in progress is the branches that have one. An agent that starts on a branch without a handoff looks for them in your local branches (in Claude Code the session start hook lists them), mentions them only if relevant, and doesn't resume them unless you ask.
 
 The journal and the debt list are shared by all branches. Setup adds `merge=union` for them to `.gitattributes`, so when two branches append on the same day, git keeps both sides. Merge buttons in web UIs may ignore `.gitattributes`; the conflict is then trivial: keep both sides, ordered by time.
 
