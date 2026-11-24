@@ -1152,14 +1152,15 @@ console.log('null');`,
       const h = exists('.ai/handoff/feature-csv-helper.md');
       return [tip === base && h, `branch ${tip === base ? 'same commit' : 'moved'}, handoff ${h ? 'present' : 'gone'}`];
     });
-    check('The final message says develop is not up to date with origin/develop', () => [/origin\/develop/.test(msg) && /not up.to.date|behind/i.test(msg), /origin\/develop/.test(msg) ? 'origin/develop named' : 'origin/develop not named']);
+    check('The final message says develop is not up to date with origin/develop', () => [/origin\/develop/.test(msg) && /not up.to.date|behind|non è aggiornato|indietro/i.test(msg), /origin\/develop/.test(msg) ? 'origin/develop named' : 'origin/develop not named']);
     check('The final message names the conflict in docs/csv-export.md and says it must be resolved before closing', () => {
-      const file = /docs\/csv-export\.md/.test(msg), conf = /conflict/i.test(msg) && /resolv/i.test(msg);
+      const file = /docs\/csv-export\.md/.test(msg), conf = /conflict|conflitt/i.test(msg) && /resolv|risol/i.test(msg);
       return [file && conf, `${file ? 'file named' : 'file not named'}, ${conf ? 'resolve asked' : 'no resolve'}`];
     });
   },
   'start-resume-behind'() {
     // Same checks as /finish; "before closing" reads as "before the work goes on" here.
+    // Italian too: runners with Italian global instructions reply in Italian (see run-prompt.md).
     graders['finish-behind-conflict']();
   },
   'finish-gitflow-merge'() {
