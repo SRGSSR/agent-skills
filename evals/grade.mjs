@@ -1158,6 +1158,10 @@ console.log('null');`,
       return [file && conf, `${file ? 'file named' : 'file not named'}, ${conf ? 'resolve asked' : 'no resolve'}`];
     });
   },
+  'start-resume-behind'() {
+    // Same checks as /finish; "before closing" reads as "before the work goes on" here.
+    graders['finish-behind-conflict']();
+  },
   'finish-gitflow-merge'() {
     graders['finish-merge-base']();
     const msg = finalMessage();
