@@ -1,10 +1,10 @@
 ---
 name: finish
-description: "Finishes the work on the current branch. It checks that everything is done and documented (commits, build and tests, handoff, docs, decisions, follow-ups, debt) and stops to explain and ask if not. Otherwise it closes the branch the way the user names, `merge` (git flow feature finish, or a merge into the branch it started from) or `mr` / `pr` (prepares a merge request or pull request). Use this skill whenever the user types `/finish` with or without `merge`, `mr`, `merge-request`, `pr`, `pull-request` or `help` and optional instructions after it, or asks to finish, wrap up or close the feature or branch, merge it, or open a merge or pull request for it. Part of the work-journal plugin; `/start` begins the work, `/pause` suspends it."
+description: "Finishes the work on the current branch. It checks that everything is done and documented (commits, branch and base up to date with origin, no conflicts with the base, build and tests, handoff, docs, decisions, follow-ups, debt) and stops to explain and ask if not. Otherwise it closes the branch the way the user names, `merge` (git flow feature finish, or a merge into the branch it started from) or `mr` / `pr` (prepares a merge request or pull request). Use this skill whenever the user types `/finish` with or without `merge`, `mr`, `merge-request`, `pr`, `pull-request` or `help` and optional instructions after it, or asks to finish, wrap up or close the feature or branch, merge it, or open a merge or pull request for it. Part of the work-journal plugin; `/start` begins the work, `/pause` suspends it."
 license: MIT
 argument-hint: "<merge | merge-request | mr | pull-request | pr | help> [instructions]"
 metadata:
-  version: "0.7.0"
+  version: "0.8.0"
 ---
 
 # Finish
@@ -31,6 +31,8 @@ Run every check, then report all problems at once. If there is any, stop: one li
 
 - **Branch:** a work branch, not the development or default branch. On a `hotfix/` or `release/` branch, stop and ask: finishing one is a release (merges into the default and development branches, and a tag).
 - **Base:** the handoff's `Base:`. Without it: with git flow, its development branch; otherwise the candidate (`develop`, the default branch) whose merge base with this branch is the most recent (`git log -1 --format=%ci $(git merge-base HEAD <candidate>)`). Propose it and get a yes. A base that no longer exists: stop.
+- **Up to date with origin:** `git fetch origin`, then for the branch and for the base `git rev-list --count <x>..origin/<x>`. Each one behind is a problem of its own: "`<x>` is not up to date with `origin/<x>`, what do you want to do?", with the options "Update it before continuing" (resolving any conflicts it brings) and "Continue without updating". Skip a branch that isn't on `origin`, and the whole check with no `origin` remote; a fetch that fails (offline, not logged in) is said in the report and doesn't stop.
+- **Conflicts with the base:** `git merge-tree --write-tree --name-only HEAD <base>`, and again with `origin/<base>` if it points elsewhere; exit code 1 means conflicts, listed after the first line. Name the files and say they must be resolved before the branch is closed: "resolve them now?" There is no continuing without it. Git older than 2.38 has no `--write-tree`: say the check couldn't run.
 - **Working tree:** uncommitted changes are listed; ask whether they belong to the work.
 - **Agent worktrees:** in `git worktree list`, only those an agent tool created for its subagents (Claude Code: `.claude/worktrees/agent-<id>` on the branch `worktree-agent-<id>`), never the user's own. Each one with uncommitted changes (`git -C <path> status --porcelain`) or with commits whose changes are not in this branch (`git cherry HEAD <its branch>`, lines starting with `+`; `-` means already in this branch) is listed: ask whether that work belongs to the branch or can be dropped. The others hold nothing left and go in step 2.
 - **Build and tests:** the commands in the project's instructions (`AGENTS.md`, `CLAUDE.md`, README, package scripts). A failure stops; no commands found, say so.
@@ -44,6 +46,13 @@ Run every check, then report all problems at once. If there is any, stop: one li
 
   Name each gap with the file where it belongs.
 - **What must last:** decisions and dead ends moved where people look, follow-ups and open questions filed as tasks, deliberate shortcuts in `.ai/debt.md` if project-phase is in use (work-journal, [When the branch's task is done](../work-journal/SKILL.md#when-the-branchs-task-is-done)). In [soft mode](../work-journal/SKILL.md#soft-mode) follow-ups and open questions are not filed on their own: they are closed one by one like reminders.
+
+**Updating and resolving**, after the user's yes, never on your own:
+
+- A branch only behind: fast-forward, `git merge --ff-only origin/<x>` if it is checked out, `git fetch origin <x>:<x>` if not. Behind with local commits too: merge, never rebase: `git merge origin/<x>` on that branch (for the base: `git switch <base>`, merge, `git switch` back).
+- Conflicts with the base: merge the base, updated if the user chose so, into the branch: `git merge <base>`.
+- When a merge stops on conflicts, resolve each one keeping what both sides meant; where they contradict, or a side's intent is unclear, ask. Report how each file was resolved, run the build and tests again, then commit the merge.
+- Then run the checks again from the top.
 
 In soft mode the report keeps its tone: what is missing is offered as a short list of last things to settle, not as failures. After the final report of step 3, name the tasks assigned to the user and offer the next one, as that section says.
 
@@ -60,7 +69,7 @@ Then remove the agent worktrees of step 1 that hold nothing left, and those the 
 - git flow: `GIT_MERGE_AUTOEDIT=no git flow feature finish <name>` (merges into the development branch, deletes the branch).
 - Otherwise: `git switch <base>`, `git merge --no-ff <branch>`, then `git branch -d <branch>`: only the local branch, only once merged, never `-D` and never the remote one.
 - If the base is the default branch (`main`, `master`), ask once before merging: many teams protect it and review there; mention `/finish pr` or `mr`.
-- Conflicts: stop, list the files, and ask whether to resolve them or abort the merge. Don't resolve them on your own.
+- Conflicts (the base moved after the check): stop, list the files, and ask whether to resolve them, as in step 1, or abort the merge. Don't resolve them on your own.
 - A local merge doesn't trigger `Closes #42`: for a tracker task, propose closing it (`glab issue close`, `gh issue close`, Jira: transition to Done), and run it after the user's yes.
 - Report the merge commit and the deleted branch, and that nothing was pushed.
 

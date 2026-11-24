@@ -25,7 +25,7 @@ Each branch has its own handoff (`feature/csv-export` → `.ai/handoff/feature-c
 
 > /start PODCAST-42 export the item list as CSV
 
-The agent checks that nothing is left uncommitted or half done, reads the task, and opens `feature/PODCAST-42-csv-export`: with `git flow feature start` if the repo uses git flow, otherwise from the development branch. It writes the handoff with the task's goal and `Base: develop` (where the branch started), adds a journal entry, commits both on the new branch, and offers to assign the task to you and move it to In Progress (Jira), after your yes. If a branch for the task already exists, it resumes it from its handoff instead; `/start` alone resumes the current branch. Asked in words ("let's start on PODCAST-42"), it proposes `/start` and waits.
+The agent checks that nothing is left uncommitted or half done, reads the task, asks what to do if the development branch is behind `origin` (update it first, or continue without), and opens `feature/PODCAST-42-csv-export`: with `git flow feature start` if the repo uses git flow, otherwise from the development branch. It writes the handoff with the task's goal and `Base: develop` (where the branch started), adds a journal entry, commits both on the new branch, and offers to assign the task to you and move it to In Progress (Jira), after your yes. If a branch for the task already exists, it resumes it from its handoff instead; `/start` alone resumes the current branch. Resuming runs the same checks as `/finish`: the branch and its base up to date with `origin`, and no conflicts between them, which must be resolved before the work goes on. Asked in words ("let's start on PODCAST-42"), it proposes `/start` and waits.
 
 > /pause Anna takes over on Monday
 
@@ -33,7 +33,7 @@ The agent checks that everything Anna needs is written down (status, next steps,
 
 > /finish merge
 
-The agent checks everything first: no stray uncommitted changes, build and tests green, nothing open in the handoff, docs complete for what the branch changed (each new command, option or behavior described where users look, with an example wherever similar things have one, nothing describing the old behavior), decisions and dead ends moved, follow-ups filed as tasks. If anything is missing it stops, lists it and asks. Otherwise it closes the task, deletes the handoff, writes the journal entry, commits, and integrates the way you named:
+The agent checks everything first: the branch and its base up to date with `origin` (if one is behind, it asks whether to update it first), no conflicts between the branch and its base (they must be resolved before the branch is closed: after your yes it merges the base into the branch, resolves them, asking where the two sides contradict, and runs the tests again), no stray uncommitted changes, build and tests green, nothing open in the handoff, docs complete for what the branch changed (each new command, option or behavior described where users look, with an example wherever similar things have one, nothing describing the old behavior), decisions and dead ends moved, follow-ups filed as tasks. If anything is missing it stops, lists it and asks. Otherwise it closes the task, deletes the handoff, writes the journal entry, commits, and integrates the way you named:
 
 | Mode | What happens |
 |---|---|

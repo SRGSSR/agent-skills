@@ -797,6 +797,45 @@
         "Both subagent worktrees and their work are kept",
         "The final message names both worktrees and asks about them"
       ]
+    },
+    {
+      "id": 55,
+      "name": "start-behind-origin",
+      "fixture": "evals/fixtures/start-behind",
+      "prompt": "/start pdf-labels",
+      "expected_output": "Same repo as start-task, but origin is a local bare repo where a teammate pushed one commit to develop after the last fetch: develop is behind origin/develop, which only a fetch shows. Before branching the agent fetches, sees develop one commit behind and asks whether to update it before continuing or to continue without updating. It creates no branch and doesn't pull on its own.",
+      "expectations": [
+        "No feature branch was created and develop is still checked out",
+        "develop is unchanged (not updated without the user's choice)",
+        "The final message says develop is not up to date with origin/develop",
+        "The final message offers both options: update it first, or continue without updating"
+      ]
+    },
+    {
+      "id": 56,
+      "name": "finish-behind-conflict",
+      "fixture": "evals/fixtures/finish-behind",
+      "prompt": "/finish merge",
+      "expected_output": "The feature branch is otherwise ready and in sync with origin, but origin is a local bare repo where a teammate pushed to develop a docs/csv-export.md of their own after the last fetch. The agent fetches: develop is one commit behind origin/develop, and the branch conflicts with origin/develop in docs/csv-export.md (add/add). It stops: it asks whether to update develop before continuing, and says the conflict must be resolved before the branch is closed. Nothing is updated, merged or closed.",
+      "expectations": [
+        "develop is unchanged (not updated, no merge)",
+        "The branch is unchanged: same commit, handoff still there",
+        "The final message says develop is not up to date with origin/develop",
+        "The final message names the conflict in docs/csv-export.md and says it must be resolved before closing"
+      ]
+    },
+    {
+      "id": 57,
+      "name": "start-resume-behind",
+      "fixture": "evals/fixtures/finish-behind",
+      "prompt": "/start",
+      "expected_output": "Same repo as finish-behind-conflict: on feature/csv-helper with its handoff (Base: develop); after the last fetch a teammate pushed to develop a docs/csv-export.md of their own. /start alone resumes the branch and, before going on, runs the checks of /finish: develop is one commit behind origin/develop, and the branch conflicts with origin/develop in docs/csv-export.md. The agent asks whether to update develop and says the conflict must be resolved before the work goes on. Nothing is updated or merged.",
+      "expectations": [
+        "develop is unchanged (not updated, no merge)",
+        "The branch is unchanged: same commit, handoff still there",
+        "The final message says develop is not up to date with origin/develop",
+        "The final message names the conflict in docs/csv-export.md and says it must be resolved before closing"
+      ]
     }
   ]
 }

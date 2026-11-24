@@ -98,7 +98,7 @@ Before pausing, two things:
 
 Then it rewrites the handoff (with a `Paused:` line saying why and until when, if you said so), adds a journal entry, commits both on the branch, and tells you how to resume. Nothing is pushed or stashed, and the branch and its task stay open. Text after `/pause` is instructions for this run; `/pause help` shows what gets checked.
 
-To resume, `/start` on that branch (or `/start <task>` from another one) does the same as "Where were we?".
+To resume, `/start` on that branch (or `/start <task>` from another one) does the same as "Where were we?", and first checks that the branch and its base are up to date with `origin` and free of conflicts with each other, as `/finish` does: if one is behind it asks whether to update it, and conflicts are resolved, after your yes, before the work goes on.
 
 Write the handoff before you need it: on long tasks the agent also rewrites it at milestones and when the context is getting long, so a crash or an exhausted quota still leaves a usable state.
 

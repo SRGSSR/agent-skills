@@ -1128,6 +1128,41 @@ console.log('null');`,
       return [both && /\?/.test(msg), `${both ? 'both named' : 'not both named'}, ${/\?/.test(msg) ? 'asks' : 'no question'}`];
     });
   },
+  'start-behind-origin'() {
+    const msg = finalMessage();
+    const cur = git('branch', '--show-current').trim();
+    const feats = git('branch', '--list', 'feature/*').trim();
+    check('No feature branch was created and develop is still checked out', () => [cur === 'develop' && !feats, `on ${cur}; feature branches: ${feats || 'none'}`]);
+    check("develop is unchanged (not updated without the user's choice)", () => {
+      const dev = git('rev-parse', 'develop').trim();
+      return [dev === base, dev === base ? 'unchanged' : `develop at ${dev.slice(0, 7)}, was ${base.slice(0, 7)}`];
+    });
+    check('The final message says develop is not up to date with origin/develop', () => [/origin\/develop/.test(msg) && /not up.to.date|behind/i.test(msg), /origin\/develop/.test(msg) ? 'origin/develop named' : 'origin/develop not named']);
+    check('The final message offers both options: update it first, or continue without updating', () => {
+      const upd = /update|pull/i.test(msg), cont = /continue without|without updating/i.test(msg);
+      return [upd && cont, `update ${upd ? 'offered' : 'missing'}, continue ${cont ? 'offered' : 'missing'}`];
+    });
+  },
+  'finish-behind-conflict'() {
+    const msg = finalMessage();
+    const devLog = git('log', '-1', '--format=%s', 'develop').trim();
+    check('develop is unchanged (not updated, no merge)', () => [devLog === 'Show tags in list', devLog]);
+    check('The branch is unchanged: same commit, handoff still there', () => {
+      const tip = git('rev-parse', 'feature/csv-helper').trim();
+      const h = exists('.ai/handoff/feature-csv-helper.md');
+      return [tip === base && h, `branch ${tip === base ? 'same commit' : 'moved'}, handoff ${h ? 'present' : 'gone'}`];
+    });
+    check('The final message says develop is not up to date with origin/develop', () => [/origin\/develop/.test(msg) && /not up.to.date|behind|non è aggiornato|indietro/i.test(msg), /origin\/develop/.test(msg) ? 'origin/develop named' : 'origin/develop not named']);
+    check('The final message names the conflict in docs/csv-export.md and says it must be resolved before closing', () => {
+      const file = /docs\/csv-export\.md/.test(msg), conf = /conflict|conflitt/i.test(msg) && /resolv|risol/i.test(msg);
+      return [file && conf, `${file ? 'file named' : 'file not named'}, ${conf ? 'resolve asked' : 'no resolve'}`];
+    });
+  },
+  'start-resume-behind'() {
+    // Same checks as /finish; "before closing" reads as "before the work goes on" here.
+    // Italian too: runners with Italian global instructions reply in Italian (see run-prompt.md).
+    graders['finish-behind-conflict']();
+  },
   'finish-gitflow-merge'() {
     graders['finish-merge-base']();
     const msg = finalMessage();
