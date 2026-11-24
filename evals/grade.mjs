@@ -1128,6 +1128,21 @@ console.log('null');`,
       return [both && /\?/.test(msg), `${both ? 'both named' : 'not both named'}, ${/\?/.test(msg) ? 'asks' : 'no question'}`];
     });
   },
+  'start-behind-origin'() {
+    const msg = finalMessage();
+    const cur = git('branch', '--show-current').trim();
+    const feats = git('branch', '--list', 'feature/*').trim();
+    check('No feature branch was created and develop is still checked out', () => [cur === 'develop' && !feats, `on ${cur}; feature branches: ${feats || 'none'}`]);
+    check("develop is unchanged (not updated without the user's choice)", () => {
+      const dev = git('rev-parse', 'develop').trim();
+      return [dev === base, dev === base ? 'unchanged' : `develop at ${dev.slice(0, 7)}, was ${base.slice(0, 7)}`];
+    });
+    check('The final message says develop is not up to date with origin/develop', () => [/origin\/develop/.test(msg) && /not up.to.date|behind/i.test(msg), /origin\/develop/.test(msg) ? 'origin/develop named' : 'origin/develop not named']);
+    check('The final message offers both options: update it first, or continue without updating', () => {
+      const upd = /update|pull/i.test(msg), cont = /continue without|without updating/i.test(msg);
+      return [upd && cont, `update ${upd ? 'offered' : 'missing'}, continue ${cont ? 'offered' : 'missing'}`];
+    });
+  },
   'finish-gitflow-merge'() {
     graders['finish-merge-base']();
     const msg = finalMessage();

@@ -797,6 +797,19 @@
         "Both subagent worktrees and their work are kept",
         "The final message names both worktrees and asks about them"
       ]
+    },
+    {
+      "id": 55,
+      "name": "start-behind-origin",
+      "fixture": "evals/fixtures/start-behind",
+      "prompt": "/start pdf-labels",
+      "expected_output": "Same repo as start-task, but origin is a local bare repo where a teammate pushed one commit to develop after the last fetch: develop is behind origin/develop, which only a fetch shows. Before branching the agent fetches, sees develop one commit behind and asks whether to update it before continuing or to continue without updating. It creates no branch and doesn't pull on its own.",
+      "expectations": [
+        "No feature branch was created and develop is still checked out",
+        "develop is unchanged (not updated without the user's choice)",
+        "The final message says develop is not up to date with origin/develop",
+        "The final message offers both options: update it first, or continue without updating"
+      ]
     }
   ]
 }
