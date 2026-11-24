@@ -83,6 +83,8 @@ Decisions, dead ends and open questions get their own sections when there are an
 
 The agent reads the handoff and the last journal entries, checks them against git (new commits, merges, uncommitted files), says in one or two lines what it is resuming, and continues. If something changed the plan, or the handoff has open questions for you, it asks first.
 
+In Claude Code you don't need to ask: when a session starts on a branch with a handoff, Claude Code shows a line that says so (`work-journal · feature/csv-export has a handoff: /start resumes it, /pause parks it, /finish closes it.`), and Claude resumes from the handoff before answering your first message. On a branch without one, the line lists the other local branches that have one.
+
 For a pause that is checked first, type `/pause`:
 
 > /pause until billing answers about archived items

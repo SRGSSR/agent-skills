@@ -66,7 +66,7 @@ AGENTS.md          ← contract block (about 15 lines), loaded on every task
 
 The skill handles setup, phase changes with transition checklists (for example prototype → stabilize: secrets, auth, validation, tests, CI, ...) and debt reviews. A transition's plan goes into `.ai/debt.md` as `must`, `soon` and `later` items, so it outlives the session.
 
-- **Claude Code** reads `AGENTS.md` only when there is no `CLAUDE.md`. Setup adds `@AGENTS.md` to an existing `CLAUDE.md`.
+- **Claude Code** reads `AGENTS.md` only when there is no `CLAUDE.md`. Setup adds `@AGENTS.md` to an existing `CLAUDE.md`. The plugin also brings a session start hook: when a session starts and after `/clear`, in projects with the block, it shows the current phase in one line (`project-phase · stabilize (since 2026-11-04)`).
 - **Gemini CLI** reads `GEMINI.md` by default. Add `AGENTS.md` to `context.fileName` in its settings.
 - **Tools without skill support** still follow the block in `AGENTS.md`. You only need the skill for setup and phase changes, and you can do those by hand from the files in [`skills/project-phase/references/`](skills/project-phase/references/).
 
