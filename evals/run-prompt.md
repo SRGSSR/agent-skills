@@ -36,6 +36,7 @@ Environment notes:
 - Don't commit, push or create branches. If you start a server to check something, stop it before finishing. Network access may be unavailable.
 - If you need to identify yourself (tool/model): <tool>/<model>.
 - (Only if the eval has `global_instructions`.) The user's global agent instructions, loaded in every project, contain: `<global_instructions>`
+- (Only if the eval has `environment`.) <environment>
 
 Installed skills (load a skill by reading its SKILL.md when its description matches the situation, then follow it):
 - project-phase (<repo>/plugins/project-phase/skills/project-phase/SKILL.md): <description from its frontmatter, verbatim>

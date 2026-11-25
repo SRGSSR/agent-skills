@@ -1163,6 +1163,12 @@ console.log('null');`,
     // Italian too: runners with Italian global instructions reply in Italian (see run-prompt.md).
     graders['finish-behind-conflict']();
   },
+  'finish-no-sh'() {
+    graders['finish-behind-conflict']();
+  },
+  'start-resume-no-sh'() {
+    graders['finish-behind-conflict']();
+  },
   'finish-gitflow-merge'() {
     graders['finish-merge-base']();
     const msg = finalMessage();
