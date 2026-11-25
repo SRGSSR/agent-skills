@@ -11,9 +11,12 @@ Make the fallback for `finish/scripts/git-checks.sh` explicit and verified, for 
 Done when the three are in, checks and evals pass, docs updated.
 
 ## Status
+- [x] 1. start and finish (0.4.3, 0.9.1): without sh, the git commands by hand, named in one line of finish step 1
+- [x] 2. Evals 58-59 (environment field): 58 passes 3/3, 59 1/1 with the final text; earlier wordings failed 58 (docs/design.md)
+- [x] 3. Setup step 7 (work-journal 0.18.0): on Windows suggests <install>/bin on PATH; not tried on Windows
 
 ## Next steps
-- Read `start/SKILL.md` and the fallback sentence in `finish/SKILL.md` step 1; add the clause to start.
+None: the work is done; `/finish` closes it.
 
 ## Pointers
 - Request in the conversation of 2026-11-25, after `/finish merge` of feature/scripts; design notes `docs/design.md` "Token cost and scripts".
