@@ -62,12 +62,29 @@ const walk = (dir) => {
   }
 };
 walk('.');
+// GitHub's heading anchors: lowercase, punctuation dropped, spaces to hyphens, -1, -2 for repeats.
+const anchorCache = new Map();
+const anchors = (file) => {
+  if (!anchorCache.has(file)) {
+    const seen = new Map();
+    const text = readFileSync(file, 'utf8').replace(/```[\s\S]*?```/g, '');
+    anchorCache.set(file, new Set([...text.matchAll(/^#{1,6} +(.+?) *$/gm)].map(([, h]) => {
+      const slug = h.toLowerCase().replace(/[^\p{L}\p{N} _-]/gu, '').replace(/ /g, '-');
+      const n = seen.get(slug) ?? 0;
+      seen.set(slug, n + 1);
+      return n ? `${slug}-${n}` : slug;
+    })));
+  }
+  return anchorCache.get(file);
+};
 for (const file of markdown) {
   const text = readFileSync(file, 'utf8').replace(/```[\s\S]*?```/g, '').replace(/`[^`\n]*`/g, '');
   for (const [, target] of text.matchAll(/\]\(([^)\s]+)\)/g)) {
-    if (/^(https?:|mailto:|#)/.test(target)) continue;
-    const path = target.split('#')[0];
-    if (path && !existsSync(join(dirname(file), path))) fail(file, `broken link ${target}`);
+    if (/^(https?:|mailto:)/.test(target)) continue;
+    const [path, anchor] = target.split('#');
+    const dest = path ? join(dirname(file), path) : file;
+    if (!existsSync(dest)) fail(file, `broken link ${target}`);
+    else if (anchor && dest.endsWith('.md') && !anchors(dest).has(anchor)) fail(file, `broken anchor ${target}`);
   }
 }
 

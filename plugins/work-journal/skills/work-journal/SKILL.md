@@ -44,24 +44,9 @@ Talk in the user's language: this skill is written in English, but reports, ques
 
 ## Setup
 
-When the user asks to set this up (`/work-journal setup`), or the first time you write a journal entry in a repo without it (unless it is off, see [On / off](#on--off); an explicit setup replaces the off marker with the block):
+When the user asks to set this up (`/work-journal setup`, also to review a project already set up), or the first time you write a journal entry in a repo without the block (unless it is off, see [On / off](#on--off)), read [`references/setup.md`](references/setup.md) and follow it: it adds the block below to `AGENTS.md` and chooses where design decisions and tasks go.
 
-1. Add the block below to `AGENTS.md` (create the file if missing; leave existing content untouched). Agent tools load it on every task, which is what makes the protocol work even when this skill is not loaded.
-2. Claude Code reads `AGENTS.md` only when there is no `CLAUDE.md`. If `CLAUDE.md` exists and does not import it, add a line `@AGENTS.md` near the top.
-3. **Choose where design decisions and tasks go**, and write the two configuration lines at the top of the block accordingly:
-   - Design decisions: if the repo has `docs/adr/`, `docs/decisions/` or `docs/design/`, use it. Otherwise propose `docs/design/` (or a single `docs/decisions.md` for a small project), or none.
-   - Tasks: if `origin` is on GitLab or GitHub (`git remote get-url origin`: `gitlab.com`, `github.com`, or a self-hosted host that `glab auth status` lists or whose name says gitlab), propose its issues. Jira comes first if branch names or commit subjects keep repeating one issue key (`git branch -a` and `git log -200 --format=%s`, pattern `[A-Z][A-Z0-9]+-[0-9]+`, ignoring names like `UTF-8` or `SHA-256`), or if the user names Jira: propose that project. Add the site (`<name>.atlassian.net`) to the line if `acli jira auth status` shows it; if not, write the line without it and ask for the site, which the user needs only to log in. The code can live on GitHub or GitLab with the tasks in Jira. Likewise another tracker if a connector for it is available. Otherwise `docs/backlog/` (one file per open task: no notifications or boards, fine for developers who read the repo), or none. If the repo already keeps open work in a file (`ROADMAP.md`, `TODO.md`), offer to split it into `docs/backlog/` files; without a yes, name that file as the task list and keep its format. A repo that already has `docs/tasks/` or `docs/todo/` with one file per task keeps it: name that folder in the block.
-   - Line variants: `Design decisions: none (code comments, commit messages, README).`, `Tasks: GitLab issues of team/podcast (via glab; writes only with the user's confirmation).`, `Tasks: Jira PODCAST on example.atlassian.net (via acli; writes only with the user's confirmation).`, `Tasks: Jira PODCAST, parent = PODCAST-10 (via acli; writes only with the user's confirmation).` (a fixed filter, only if the user asks for one), `Tasks: none (follow-ups go in the final message).`
-   - Ask the user only about what you could not detect, in one question. If setup runs without the user asking for it, don't stop the task for this: ask in the final message and leave the lines out until they answer. A block without them means none for both. Never create the folders now; the first file creates them.
-   - Team: never propose or create `.ai/team.md` at setup, whatever the authors or the tracker: it holds personal data and is created only when the user asks for it (see the [backlog skill](../backlog/SKILL.md#people-aiteammd)).
-4. Add this line to `.gitattributes` (create the file if missing) unless it is already there. `merge=union` makes git keep both sides when two branches append to the same day's journal, instead of reporting a conflict; `linguist-generated` collapses journal diffs in GitHub pull requests.
-   ```
-   .ai/journal/*.md merge=union linguist-generated=true
-   ```
-5. Don't create `.ai/` files yet; they are created on first write.
-6. Tell the user, in one line, that `.ai/` is meant to be committed so the handoff travels across machines and people. If they prefer to keep the journal private, add `.ai/journal/` to `.gitignore` and keep `.ai/handoff/` committed (or ignore all of `.ai/`).
-
-**Review (`/work-journal setup` with the block already there).** Show the two configuration lines, run step 3's detection again, and propose only what it suggests changing: issues or Jira keys that appeared since, a task folder that grew into a tracker, a fixed filter if the user asks. Change only the lines the user confirms, update the rest of the block to the current template if it is older, keeping those two lines, and add what steps 2 and 4 find missing (`@AGENTS.md`, the `.gitattributes` line). Never touch the journal, handoffs, task files, design decisions or `.ai/team.md`: moving existing tasks to a tracker is a separate step, each issue created with the user's confirmation as in the [backlog skill](../backlog/SKILL.md#creating-backlog-new). If nothing needs to change, say so in one line.
+### The block
 
 ```markdown
 <!-- work-journal:start -->
@@ -77,7 +62,7 @@ When the user asks to set this up (`/work-journal setup`), or the first time you
 <!-- work-journal:end -->
 ```
 
-**Upgrading from an older version** is part of the protocol, not an unrequested change: do it without asking whenever you find the old layout. If `AGENTS.md` has a work-journal block that differs from the one above apart from its two configuration lines, replace it, keep its configuration lines, and run setup step 4. If it has no configuration lines (0.3 and earlier), run setup step 3 too. If `.ai/handoff.md` exists (the single handoff of version 0.2 and earlier), treat it as the handoff of the branch it names, or of the current branch; the next time you write the handoff, write `.ai/handoff/<branch>.md` and delete `.ai/handoff.md`. If it is only an idle state ("No active task"), delete it. Mention the upgrade in one line.
+**Upgrading from an older version** is part of the protocol, not an unrequested change: do it without asking whenever you find the old layout. If `AGENTS.md` has a work-journal block that differs from the one above apart from its two configuration lines, replace it, keep its configuration lines, and run step 4 of [Setup](references/setup.md#setup). If it has no configuration lines (0.3 and earlier), run its step 3 too. If `.ai/handoff.md` exists (the single handoff of version 0.2 and earlier), treat it as the handoff of the branch it names, or of the current branch; the next time you write the handoff, write `.ai/handoff/<branch>.md` and delete `.ai/handoff.md`. If it is only an idle state ("No active task"), delete it. Mention the upgrade in one line.
 
 ## On / off
 
@@ -87,9 +72,7 @@ The user can turn the protocol off for one project, with `/work-journal off`, or
 - Don't read the handoff at session start, don't journal at checkpoints, don't write the handoff unprompted, don't run setup.
 - Do what the user explicitly asks this time ("write a handoff", "where were we?"), without turning the protocol back on. Mention once, in one line, that work-journal is off here and `/work-journal on` re-enables it.
 
-**To turn it off:** replace the block, from `<!-- work-journal:start -->` to `<!-- work-journal:end -->` inclusive, with `<!-- work-journal:off -->`. If there is no block, add the marker near the top of `AGENTS.md` (create the file if missing). Leave `.ai/`, design decisions, tasks, `.gitattributes` and any `@AGENTS.md` line in `CLAUDE.md` as they are. Report in one line: off for this project, files kept in `.ai/`, `/work-journal on` restores it.
-
-**To turn it on:** if the block is already there, say so. Otherwise replace the marker (or, without a marker, add the block) with the block above and run the rest of setup: configuration lines, `CLAUDE.md` import, `.gitattributes`, and the one-line note about committing `.ai/` only if `.ai/` does not exist yet. Report in one line.
+**To turn it off or on** (`/work-journal off`, `on`, or in words), read [`references/setup.md`](references/setup.md#turning-it-off-and-on).
 
 ## Soft mode
 
@@ -97,35 +80,7 @@ Some people work with care and precision but don't like task trackers. Soft mode
 
 **On** means the person's global instructions, the file their tool loads in every project (`~/.claude/CLAUDE.md` for Claude Code, `~/.codex/AGENTS.md` for Codex, the equivalent elsewhere), contain the line `work-journal: soft`. It then applies in every repo that has the work-journal block, and not where the protocol is off. Never write the line in a repo's `AGENTS.md` or `CLAUDE.md`: those speak for everyone.
 
-- `/work-journal soft on`: add the line to that file (create it if missing). If you can't write there, give the person the line to add by hand. Report in one line, saying that each tool has its own file, so it is on in this tool only.
-- `/work-journal soft off`: remove the line, the same way. Reminders already in handoffs stay, and are closed when their branch finishes.
-- `/work-journal soft once`: on for this session only, in this repo. Write nothing: the conversation holds it, and it ends with the session, or earlier with `/work-journal soft off`, which then leaves the file alone. Reminders noted meanwhile stay in the handoff like any other. Report in one line, with `soft on` as the way to keep it.
-- `/work-journal soft`: say whether it is on, and whether for good or for this session.
-
-While it is on:
-
-**Tone.** Whatever soft mode makes you say is one line, an offer or a question and never an instruction, with no reproach and no count of what is late or undone. "Not now" is a good answer: take it, and don't raise the same thing again in this session.
-
-**Reminders instead of tasks.** When something comes up that should not be forgotten (the person says "we must remember to…" or "later we should…", or you notice a follow-up while working), offer in one line to note it: "Shall I note that billing still needs to hear about the new separator?" Write it only after a yes; if the person asked for the note themselves, just write it. It goes in the `## Reminders` section of the branch's handoff (see [Writing the handoff](#writing-the-handoff); write the handoff if the branch has none), and in the next commit of the session.
-
-Propose a task instead only in two cases. Say which one applies; the person decides:
-
-- it is for someone else: a line in this handoff would not reach them (see the backlog skill, [Tasks for someone else](../backlog/SKILL.md#tasks-for-someone-else));
-- it can't be done before this branch finishes: a reminder ends with its handoff.
-
-On the development or default branch there are no reminders: nothing ever closes that handoff. Offer a task there, or `/start` to open a branch for it.
-
-**Reminding.** Only the reminders that carry this person's handle; other people's are theirs. Three moments:
-
-- when resuming: after saying what you are resuming, one short line per reminder ("Still noted: tell billing about the separator.");
-- when the work touches what a reminder is about: one line, then go on ("While we're in `export.js`: you wanted to rename `formatRow`. Now?");
-- before `/finish`, which closes them all (see [When the branch's task is done](#when-the-branchs-task-is-done)).
-
-When one is done, delete its line and say so in a few words.
-
-**Assigned tasks.** When a session starts on a branch with no handoff, and after a `/finish`, read the open tasks assigned to the person, whoever created them: the backlog skill's [listing](../backlog/SKILL.md#what-to-show), only the group assigned to the user, without postponed tasks. If there are any, name them in a line or two and offer the first with `/start`: "Two things are waiting for you: #42 CSV export and #57 login error. Shall we start with #42?" If the person asked for something else, do that first and put the line at the end of your reply. With none assigned, no task list, or a tracker that is not logged in, say nothing: don't start a login for this.
-
-Once a task is started, `/start` splits it into small steps in the handoff's Next steps, each one doable in a sitting and with a visible result. Offer them one at a time: after each, one line on what is done and the next one as a question.
+When it is on for the person (the line, or `soft once` in this session), and for the `/work-journal soft` commands, read [`references/soft-mode.md`](references/soft-mode.md) before going on: how to turn it on and off, its tone, reminders instead of tasks, when to remind, and the tasks assigned to the person. When it is off, skip it.
 
 ## Resuming
 
@@ -260,7 +215,7 @@ Links: docs/design/2026-10-02-csv-export.md
 - Optional `## Notes` at the end: dated one-line comments (`- 2026-10-05: billing also wants the archived items`), added by `/backlog comment`.
 - Optional `Postponed:` line: the task waits, with the date it can resume if known (`Postponed: 2027-01-15`, `Postponed: after the summer`, or nothing after the colon). `/backlog` shows it and doesn't suggest the task before that date; delete the line to resume it.
 - No status field: in progress means a branch or handoff exists; done means the file is gone. The branch that does the task deletes its file, so merging the branch closes the task.
-- `Assignee` is optional, a team handle (the Handle column of `.ai/team.md` if the project has one, see the [backlog skill](../backlog/SKILL.md#people-aiteammd); otherwise a git or tracker username), never a full name or email. Never assign or reassign a task unless the user asks.
+- `Assignee` is optional, a team handle (the Handle column of `.ai/team.md` if the project has one, see the [backlog skill](../backlog/references/team.md#people-aiteammd); otherwise a git or tracker username), never a full name or email. Never assign or reassign a task unless the user asks.
 - Write new task files only for follow-ups and open questions at the end of a branch's task, or when the user asks. In [soft mode](#soft-mode) even fewer: a reminder in the handoff comes first.
 
 **A tracker** (GitLab or GitHub issues, Jira, ...): reach it through its CLI (`glab` for GitLab, `gh` for GitHub, `acli` for Jira Cloud) or a connector (for Jira, the Atlassian connector if `acli` is missing).
