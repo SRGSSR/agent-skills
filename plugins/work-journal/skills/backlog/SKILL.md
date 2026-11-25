@@ -4,7 +4,7 @@ description: "Lists, creates, edits, comments on and closes the project's tasks 
 license: MIT
 argument-hint: "[new | edit | comment | close | filter | help] ..."
 metadata:
-  version: "0.12.1"
+  version: "0.13.0"
 ---
 
 # Backlog

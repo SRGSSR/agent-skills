@@ -4,7 +4,7 @@ description: "Starts the work on a task or feature in a branch of its own, with 
 license: MIT
 argument-hint: "[<task or name> [context]]"
 metadata:
-  version: "0.4.1"
+  version: "0.4.2"
 ---
 
 # Start

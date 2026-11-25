@@ -4,7 +4,7 @@ description: "Finishes the work on the current branch. It checks that everything
 license: MIT
 argument-hint: "<merge | merge-request | mr | pull-request | pr | help> [instructions]"
 metadata:
-  version: "0.8.0"
+  version: "0.9.0"
 ---
 
 # Finish
