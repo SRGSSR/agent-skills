@@ -39,10 +39,19 @@ The host of `origin` decides: GitLab uses `glab mr`, GitHub uses `gh pr`. Anothe
 
 | Host | List with | The user is |
 |---|---|---|
-| GitHub | `gh pr list --json number,title,author,assignees,reviewRequests,reviewDecision,isDraft,mergeable,statusCheckRollup,headRefName,updatedAt --limit 100` | `gh api user --jq .login` |
-| GitLab | `glab mr list -F json -P 100` (read `iid`, `title`, `author`, `assignees`, `reviewers`, `draft`, `has_conflicts`, `detailed_merge_status`, `source_branch`, `updated_at`) | `username` of `glab api user` |
+| GitHub | `gh pr list`, below | `gh api user --jq .login` |
+| GitLab | `glab mr list`, below | `glab api user --jq .username` |
 
-A listing fetches at most 100: if it returns exactly that many, say there may be more.
+One line per request, with only the fields the listing needs (the full JSON carries every description and check run):
+
+```sh
+gh pr list --limit 100 --json number,title,author,assignees,reviewRequests,reviewDecision,isDraft,mergeable,statusCheckRollup,headRefName,updatedAt --jq '(["number","title","author","assignees","reviewers","decision","draft","mergeable","checks","branch","updated"] | @tsv), (.[] | [.number, .title, .author.login, ([.assignees[].login] | join(",")), ([.reviewRequests[] | (.login // .name)] | join(",")), (.reviewDecision // ""), .isDraft, .mergeable, ([.statusCheckRollup[] | (.conclusion // .state // "")] as $c | if ($c | length) == 0 then "" elif any($c[]; . == "FAILURE" or . == "ERROR" or . == "TIMED_OUT" or . == "CANCELLED" or . == "ACTION_REQUIRED" or . == "STARTUP_FAILURE") then "failed" elif any($c[]; . == "" or . == "PENDING" or . == "EXPECTED") then "running" else "passed" end), .headRefName, .updatedAt[:10]] | @tsv)'
+glab mr list -P 100 -F json --jq '(["iid","title","author","assignees","reviewers","draft","conflicts","merge_status","branch","updated"] | @tsv), (.[] | [.iid, .title, .author.username, ([.assignees[].username] | join(",")), ([.reviewers[].username] | join(",")), .draft, .has_conflicts, .detailed_merge_status, .source_branch, .updated_at[:10]] | @tsv)'
+```
+
+A `glab` too old for `--jq`: `glab mr list -P 100` (a text list), then `glab mr view <id>` for the few the listing needs more about. Never read the full JSON.
+
+A listing fetches at most 100: if it returns exactly that many (after the header line), say there may be more.
 
 ## What to show
 

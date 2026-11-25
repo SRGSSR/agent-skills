@@ -36,13 +36,22 @@ Read the `Tasks:` line of the work-journal block in `AGENTS.md`:
 |---|---|
 | A folder (`docs/backlog/`, `docs/tasks/`, `docs/todo/`) | `grep -m1 -H '^# ' docs/backlog/*.md` (titles) and `grep -H -e '^Assignee:' -e '^Postponed:' docs/backlog/*.md`, with the folder the block names. Don't read the files whole. Creation order, oldest first: `git log --diff-filter=A --format= --name-only --reverse -- docs/backlog/` (skip files no longer there; files not yet committed come last). |
 | A file (`ROADMAP.md`, `TODO.md`) | Its open items, in its own format |
-| GitLab issues | `glab issue list --order created_at --sort asc -O json -P 100` (open issues, oldest first; read number, title, assignees, labels, milestone) |
-| GitHub issues | `gh issue list --search "sort:created-asc" --json number,title,assignees,labels,milestone --limit 100` (oldest first) |
+| GitLab issues | `glab issue list`, below: open issues, oldest first, one line each with number, title, assignees, labels, milestone |
+| GitHub issues | `gh issue list`, below: the same, oldest first |
 | Jira | Two searches, the current sprint and the rest: `acli jira workitem search --jql "project = <KEY> AND statusCategory != Done AND sprint in openSprints() ORDER BY priority DESC, Rank" --fields "key,summary,assignee,status,priority,labels" --limit 100 --json`, then the same with `AND (sprint is EMPTY OR sprint not in openSprints())`. A project without sprints (Kanban) gives an error or nothing for the first: use only the second, without the sprint condition. If `acli` is missing, the Atlassian connector with the same JQL. |
 | Another tracker | Its connector, open items of the named project |
 | `none`, or no block | Say there is no task list; offer to choose one (work-journal setup step 3). Don't search the journal for follow-ups. |
 
-A tracker listing fetches at most 100: if it returns exactly that many, say there may be more and suggest `/backlog filter`.
+The GitLab and GitHub listings, with a filter that keeps only those fields (the full JSON of 100 issues, descriptions included, can take more than 100k tokens):
+
+```sh
+glab issue list --order created_at --sort asc -P 100 -O json --jq '(["iid","title","assignees","labels","milestone"] | @tsv), (.[] | [.iid, .title, ([.assignees[].username] | join(",")), (.labels | join(",")), (.milestone.title // "")] | @tsv)'
+gh issue list --search "sort:created-asc" --limit 100 --json number,title,assignees,labels,milestone --jq '(["number","title","assignees","labels","milestone"] | @tsv), (.[] | [.number, .title, ([.assignees[].login] | join(",")), ([.labels[].name] | join(",")), (.milestone.title // "")] | @tsv)'
+```
+
+A `glab` too old for `--jq`: the same command without `-O json --jq ...` (a text list), and again with `--assignee=@me` for the user's issues. Never read the full JSON.
+
+A tracker listing fetches at most 100: if it returns exactly that many (after the header line), say there may be more and suggest `/backlog filter`.
 
 The line can add a fixed filter after the project, for a repo that works on part of a shared tracker: `Jira PODCAST, parent = PODCAST-10`, `GitLab issues of team/podcast, label backend`. Apply it to every listing, on top of any `/backlog filter`, and give new tasks the same parent or label. Say it in the first line of the listing ("PODCAST, parent = PODCAST-10:").
 
@@ -62,7 +71,7 @@ Never ask for a token in the chat or write it in a file. Never invent issues and
 ## What to show
 
 1. **Work in progress first.** If the current branch has a handoff (`.ai/handoff/<branch>.md`), its next step comes before any new task. A task with a handoff on another branch is in progress there: mark it (`docs/backlog/csv-export.md` ↔ `.ai/handoff/feature-csv-export.md`; for an issue, a handoff or branch that names its ID; in Jira, also status category In Progress).
-2. **Then the open tasks, grouped:** assigned to the user, unassigned, assigned to others (count per handle only, unless the user asks for someone's tasks). In Jira, the current sprint comes first with these three groups, then the backlog with the same three; within a group, the order the user asked for (priority, due date, ...), else higher priority first; ties go by Rank in Jira, by creation date, oldest first, in GitLab, GitHub and a folder. The user is `@me` in GitLab and GitHub, the account of `acli jira auth status` in Jira, `git config user.name` for a folder (or the row of `.ai/team.md` with that git name).
+2. **Then the open tasks, grouped:** assigned to the user, unassigned, assigned to others (count per handle only, unless the user asks for someone's tasks). In Jira, the current sprint comes first with these three groups, then the backlog with the same three; within a group, the order the user asked for (priority, due date, ...), else higher priority first; ties go by Rank in Jira, by creation date, oldest first, in GitLab, GitHub and a folder. The user is the account of `glab api user --jq .username` in GitLab and `gh api user --jq .login` in GitHub, the account of `acli jira auth status` in Jira, `git config user.name` for a folder (or the row of `.ai/team.md` with that git name).
 3. **A table per section** (one, or in Jira the current sprint and the backlog), one row per task, yours first, then unassigned: task (file name or issue ID), title, assignee (its handle in `.ai/team.md` if there; leave out the column when every row is assigned to the user, as in "what is assigned to me?": it would repeat their own name), priority if the tracker has one (leave out the column if every task has the default), status (in progress, [postponed](#postponed-tasks), else empty). No bodies. The count of others' tasks goes in one line under the table. Any other list of tasks (matches to choose from, duplicates) is a table with the same columns.
 4. End with one suggestion: the current branch's next step, else the first task assigned to the user (in Jira, in the current sprint first), else the first unassigned one, skipping postponed tasks whose date has not passed or is not known. For a new task, add how to begin it: `/start <ID or file name>`.
 5. Last line: the other commands, `new`, `edit`, `comment`, `close`, `filter`, `help`, in one line.
