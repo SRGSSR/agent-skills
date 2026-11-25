@@ -1,0 +1,32 @@
+# Work journal: setup, on and off
+
+Part of the [work-journal skill](../SKILL.md): read for `/work-journal setup` (also the review of a project already set up), the first journal entry in a repo without the block, and `/work-journal on` or `off`. The block itself is in the skill, [The block](../SKILL.md#the-block).
+
+## Setup
+
+When the user asks to set this up (`/work-journal setup`), or the first time you write a journal entry in a repo without it (unless it is off, see [On / off](../SKILL.md#on--off); an explicit setup replaces the off marker with the block):
+
+1. Add the block of the skill, [The block](../SKILL.md#the-block), to `AGENTS.md` (create the file if missing; leave existing content untouched). Agent tools load it on every task, which is what makes the protocol work even when this skill is not loaded.
+2. Claude Code reads `AGENTS.md` only when there is no `CLAUDE.md`. If `CLAUDE.md` exists and does not import it, add a line `@AGENTS.md` near the top.
+3. **Choose where design decisions and tasks go**, and write the two configuration lines at the top of the block accordingly:
+   - Design decisions: if the repo has `docs/adr/`, `docs/decisions/` or `docs/design/`, use it. Otherwise propose `docs/design/` (or a single `docs/decisions.md` for a small project), or none.
+   - Tasks: if `origin` is on GitLab or GitHub (`git remote get-url origin`: `gitlab.com`, `github.com`, or a self-hosted host that `glab auth status` lists or whose name says gitlab), propose its issues. Jira comes first if branch names or commit subjects keep repeating one issue key (`git branch -a` and `git log -200 --format=%s`, pattern `[A-Z][A-Z0-9]+-[0-9]+`, ignoring names like `UTF-8` or `SHA-256`), or if the user names Jira: propose that project. Add the site (`<name>.atlassian.net`) to the line if `acli jira auth status` shows it; if not, write the line without it and ask for the site, which the user needs only to log in. The code can live on GitHub or GitLab with the tasks in Jira. Likewise another tracker if a connector for it is available. Otherwise `docs/backlog/` (one file per open task: no notifications or boards, fine for developers who read the repo), or none. If the repo already keeps open work in a file (`ROADMAP.md`, `TODO.md`), offer to split it into `docs/backlog/` files; without a yes, name that file as the task list and keep its format. A repo that already has `docs/tasks/` or `docs/todo/` with one file per task keeps it: name that folder in the block.
+   - Line variants: `Design decisions: none (code comments, commit messages, README).`, `Tasks: GitLab issues of team/podcast (via glab; writes only with the user's confirmation).`, `Tasks: Jira PODCAST on example.atlassian.net (via acli; writes only with the user's confirmation).`, `Tasks: Jira PODCAST, parent = PODCAST-10 (via acli; writes only with the user's confirmation).` (a fixed filter, only if the user asks for one), `Tasks: none (follow-ups go in the final message).`
+   - Ask the user only about what you could not detect, in one question. If setup runs without the user asking for it, don't stop the task for this: ask in the final message and leave the lines out until they answer. A block without them means none for both. Never create the folders now; the first file creates them.
+   - Team: never propose or create `.ai/team.md` at setup, whatever the authors or the tracker: it holds personal data and is created only when the user asks for it (see the [backlog skill](../../backlog/references/team.md#people-aiteammd)).
+4. Add this line to `.gitattributes` (create the file if missing) unless it is already there. `merge=union` makes git keep both sides when two branches append to the same day's journal, instead of reporting a conflict; `linguist-generated` collapses journal diffs in GitHub pull requests.
+   ```
+   .ai/journal/*.md merge=union linguist-generated=true
+   ```
+5. Don't create `.ai/` files yet; they are created on first write.
+6. Tell the user, in one line, that `.ai/` is meant to be committed so the handoff travels across machines and people. If they prefer to keep the journal private, add `.ai/journal/` to `.gitignore` and keep `.ai/handoff/` committed (or ignore all of `.ai/`).
+
+**Review (`/work-journal setup` with the block already there).** Show the two configuration lines, run step 3's detection again, and propose only what it suggests changing: issues or Jira keys that appeared since, a task folder that grew into a tracker, a fixed filter if the user asks. Change only the lines the user confirms, update the rest of the block to the current template if it is older, keeping those two lines, and add what steps 2 and 4 find missing (`@AGENTS.md`, the `.gitattributes` line). Never touch the journal, handoffs, task files, design decisions or `.ai/team.md`: moving existing tasks to a tracker is a separate step, each issue created with the user's confirmation as in the [backlog skill](../../backlog/references/writing.md#creating-backlog-new). If nothing needs to change, say so in one line.
+
+## Turning it off and on
+
+What off means is in the skill, [On / off](../SKILL.md#on--off).
+
+**To turn it off:** replace the block, from `<!-- work-journal:start -->` to `<!-- work-journal:end -->` inclusive, with `<!-- work-journal:off -->`. If there is no block, add the marker near the top of `AGENTS.md` (create the file if missing). Leave `.ai/`, design decisions, tasks, `.gitattributes` and any `@AGENTS.md` line in `CLAUDE.md` as they are. Report in one line: off for this project, files kept in `.ai/`, `/work-journal on` restores it.
+
+**To turn it on:** if the block is already there, say so. Otherwise replace the marker (or, without a marker, add the block) with the block of the skill and run the rest of setup: configuration lines, `CLAUDE.md` import, `.gitattributes`, and the one-line note about committing `.ai/` only if `.ai/` does not exist yet. Report in one line.

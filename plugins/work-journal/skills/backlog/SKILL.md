@@ -4,7 +4,7 @@ description: "Lists, creates, edits, comments on and closes the project's tasks 
 license: MIT
 argument-hint: "[new | edit | comment | close | filter | help] ..."
 metadata:
-  version: "0.12.1"
+  version: "0.13.0"
 ---
 
 # Backlog
@@ -12,14 +12,19 @@ metadata:
 Commands:
 
 - `/backlog`: the open tasks and what to pick up next.
-- `/backlog new <what>`: create a task. See [Creating](#creating-backlog-new).
-- `/backlog edit <task> <change>`: change a task's title, description, labels, type or assignee. See [Editing](#editing-backlog-edit).
-- `/backlog comment <task> <text>`: add a comment to a task. See [Commenting](#commenting-backlog-comment).
-- `/backlog close <task>`: close a task by file name, issue ID or Jira key. See [Closing](#closing-backlog-close).
+- `/backlog new <what>`: create a task. See [Creating](references/writing.md#creating-backlog-new).
+- `/backlog edit <task> <change>`: change a task's title, description, labels, type or assignee. See [Editing](references/writing.md#editing-backlog-edit).
+- `/backlog comment <task> <text>`: add a comment to a task. See [Commenting](references/writing.md#commenting-backlog-comment).
+- `/backlog close <task>`: close a task by file name, issue ID or Jira key. See [Closing](references/writing.md#closing-backlog-close).
 - `/backlog filter <condition>`: the open tasks that match a condition (parent, epic, label, milestone, sprint, assignee, text, or JQL). See [Filtering](#filtering-backlog-filter).
 - `/backlog help`: this list of commands, with where the tasks are and the filter in use. Read only the block; run nothing else.
 
-The same requests in words ("open an issue for ...", "assign #42 to Simo", "note on #42 that ...", "close #42") work the same way. People named in a request are looked up in [`.ai/team.md`](#people-aiteammd); creating that file starts with a personal-data warning, before any lookup. Formats and lifecycle of task files and issues are in the [work-journal skill, Tasks](../work-journal/SKILL.md#tasks); this skill runs them.
+The same requests in words ("open an issue for ...", "assign #42 to Simo", "note on #42 that ...", "close #42") work the same way. People named in a request are looked up in [`.ai/team.md`](references/team.md#people-aiteammd); creating that file starts with a personal-data warning, before any lookup. Formats and lifecycle of task files and issues are in the [work-journal skill, Tasks](../work-journal/SKILL.md#tasks); this skill runs them.
+
+This file covers listing and filtering. Read the reference files only when the request needs them, and before acting on it:
+
+- [`references/writing.md`](references/writing.md): `new`, `edit`, `comment`, `close`, assigning a task, and the same in words.
+- [`references/team.md`](references/team.md): a request that names a person, or asks to create or update `.ai/team.md`.
 
 Talk in the user's language.
 
@@ -31,13 +36,22 @@ Read the `Tasks:` line of the work-journal block in `AGENTS.md`:
 |---|---|
 | A folder (`docs/backlog/`, `docs/tasks/`, `docs/todo/`) | `grep -m1 -H '^# ' docs/backlog/*.md` (titles) and `grep -H -e '^Assignee:' -e '^Postponed:' docs/backlog/*.md`, with the folder the block names. Don't read the files whole. Creation order, oldest first: `git log --diff-filter=A --format= --name-only --reverse -- docs/backlog/` (skip files no longer there; files not yet committed come last). |
 | A file (`ROADMAP.md`, `TODO.md`) | Its open items, in its own format |
-| GitLab issues | `glab issue list --order created_at --sort asc -O json -P 100` (open issues, oldest first; read number, title, assignees, labels, milestone) |
-| GitHub issues | `gh issue list --search "sort:created-asc" --json number,title,assignees,labels,milestone --limit 100` (oldest first) |
+| GitLab issues | `glab issue list`, below: open issues, oldest first, one line each with number, title, assignees, labels, milestone |
+| GitHub issues | `gh issue list`, below: the same, oldest first |
 | Jira | Two searches, the current sprint and the rest: `acli jira workitem search --jql "project = <KEY> AND statusCategory != Done AND sprint in openSprints() ORDER BY priority DESC, Rank" --fields "key,summary,assignee,status,priority,labels" --limit 100 --json`, then the same with `AND (sprint is EMPTY OR sprint not in openSprints())`. A project without sprints (Kanban) gives an error or nothing for the first: use only the second, without the sprint condition. If `acli` is missing, the Atlassian connector with the same JQL. |
 | Another tracker | Its connector, open items of the named project |
 | `none`, or no block | Say there is no task list; offer to choose one (work-journal setup step 3). Don't search the journal for follow-ups. |
 
-A tracker listing fetches at most 100: if it returns exactly that many, say there may be more and suggest `/backlog filter`.
+The GitLab and GitHub listings, with a filter that keeps only those fields (the full JSON of 100 issues, descriptions included, can take more than 100k tokens):
+
+```sh
+glab issue list --order created_at --sort asc -P 100 -O json --jq '(["iid","title","assignees","labels","milestone"] | @tsv), (.[] | [.iid, .title, ([.assignees[].username] | join(",")), (.labels | join(",")), (.milestone.title // "")] | @tsv)'
+gh issue list --search "sort:created-asc" --limit 100 --json number,title,assignees,labels,milestone --jq '(["number","title","assignees","labels","milestone"] | @tsv), (.[] | [.number, .title, ([.assignees[].login] | join(",")), ([.labels[].name] | join(",")), (.milestone.title // "")] | @tsv)'
+```
+
+A `glab` too old for `--jq`: the same command without `-O json --jq ...` (a text list), and again with `--assignee=@me` for the user's issues. Never read the full JSON.
+
+A tracker listing fetches at most 100: if it returns exactly that many (after the header line), say there may be more and suggest `/backlog filter`.
 
 The line can add a fixed filter after the project, for a repo that works on part of a shared tracker: `Jira PODCAST, parent = PODCAST-10`, `GitLab issues of team/podcast, label backend`. Apply it to every listing, on top of any `/backlog filter`, and give new tasks the same parent or label. Say it in the first line of the listing ("PODCAST, parent = PODCAST-10:").
 
@@ -57,7 +71,7 @@ Never ask for a token in the chat or write it in a file. Never invent issues and
 ## What to show
 
 1. **Work in progress first.** If the current branch has a handoff (`.ai/handoff/<branch>.md`), its next step comes before any new task. A task with a handoff on another branch is in progress there: mark it (`docs/backlog/csv-export.md` ↔ `.ai/handoff/feature-csv-export.md`; for an issue, a handoff or branch that names its ID; in Jira, also status category In Progress).
-2. **Then the open tasks, grouped:** assigned to the user, unassigned, assigned to others (count per handle only, unless the user asks for someone's tasks). In Jira, the current sprint comes first with these three groups, then the backlog with the same three; within a group, the order the user asked for (priority, due date, ...), else higher priority first; ties go by Rank in Jira, by creation date, oldest first, in GitLab, GitHub and a folder. The user is `@me` in GitLab and GitHub, the account of `acli jira auth status` in Jira, `git config user.name` for a folder (or the row of `.ai/team.md` with that git name).
+2. **Then the open tasks, grouped:** assigned to the user, unassigned, assigned to others (count per handle only, unless the user asks for someone's tasks). In Jira, the current sprint comes first with these three groups, then the backlog with the same three; within a group, the order the user asked for (priority, due date, ...), else higher priority first; ties go by Rank in Jira, by creation date, oldest first, in GitLab, GitHub and a folder. The user is the account of `glab api user --jq .username` in GitLab and `gh api user --jq .login` in GitHub, the account of `acli jira auth status` in Jira, `git config user.name` for a folder (or the row of `.ai/team.md` with that git name).
 3. **A table per section** (one, or in Jira the current sprint and the backlog), one row per task, yours first, then unassigned: task (file name or issue ID), title, assignee (its handle in `.ai/team.md` if there; leave out the column when every row is assigned to the user, as in "what is assigned to me?": it would repeat their own name), priority if the tracker has one (leave out the column if every task has the default), status (in progress, [postponed](#postponed-tasks), else empty). No bodies. The count of others' tasks goes in one line under the table. Any other list of tasks (matches to choose from, duplicates) is a table with the same columns.
 4. End with one suggestion: the current branch's next step, else the first task assigned to the user (in Jira, in the current sprint first), else the first unassigned one, skipping postponed tasks whose date has not passed or is not known. For a new task, add how to begin it: `/start <ID or file name>`.
 5. Last line: the other commands, `new`, `edit`, `comment`, `close`, `filter`, `help`, in one line.
@@ -81,7 +95,7 @@ Translate the condition into the tracker's own filter, so the tracker does the w
 - GitLab: the `glab issue list` flags: `--epic <id> --group <group>`, `--label`, `--milestone`, `--assignee`, `--search`.
 - GitHub: the `gh issue list` flags: `--label`, `--milestone`, `--assignee`, `--type`, `--search` with GitHub search syntax (keep `sort:created-asc` in it). There is no flag for sub-issues of a parent: try it in `--search`, and if the query fails, say so.
 - Folder: match titles, `Assignee:` and `Links:` lines with `grep`.
-- A person ("Simo's tasks"): their handle for that tracker from [`.ai/team.md`](#people-aiteammd).
+- A person ("Simo's tasks"): their handle for that tracker from [`.ai/team.md`](references/team.md#people-aiteammd).
 
 If the tracker cannot express the condition, say so and offer the nearest filter it has; don't list everything and filter by guess. A `/backlog filter` lasts for that listing only; for one that should always apply, offer to add it to the `Tasks:` line.
 
@@ -99,86 +113,3 @@ Sprint planning belongs to the team in Jira, not to the agent:
 - A work item in a sprint can be edited, commented on and closed, with the same confirmation as any write.
 - Never move a work item into a sprint, to another sprint or back to the backlog, and never delete or archive one (`acli jira workitem delete`, `archive`). If the user asks, say it is done in Jira.
 
-## Creating (`/backlog new`)
-
-In the work-journal skill's [soft mode](../work-journal/SKILL.md#soft-mode), a task for the user themselves that fits in the work of the current branch gets one question first: a reminder in the handoff instead? Create the task if they prefer it, and always when it is for someone else, can't be done before the branch finishes, or the branch is the development or default one.
-
-1. **Draft** from the user's words and the conversation, in the task file shape: a title, `Why:`, `Done when:`, optionally `Links:`. Don't invent a reason or a done condition: if one is missing, ask for it in the same message as the draft, or leave a `?` and say so. No assignee unless the user names one; for someone other than the user, see [Tasks for someone else](#tasks-for-someone-else).
-2. **Check for duplicates** in the open tasks (titles only); if one looks the same, say so and ask before creating another.
-3. **Create:**
-   - Folder: write `<folder>/<name>.md` in the folder the block names, `<name>` being the branch that will do it without its prefix (`csv-export`). Don't create a branch for it.
-   - GitLab: `glab issue create --title "<title>" --description-file - --yes`, with the body on stdin (a heredoc), so quotes and line breaks survive. Add `--assignee <handle>` only if the user named one.
-   - GitHub: `gh issue create --title "<title>" --body-file -`, same body on stdin.
-   - Jira: `acli jira workitem create --project <KEY> --type Task --summary "<title>" --description "$(cat <<'EOF' ... EOF)" --json`. Use another type only if the user names one; if the project requires more fields, show the error and ask.
-   - Another tracker: its connector.
-   - A fixed filter in the `Tasks:` line goes on the new task too: a parent with `--parent` (`acli`, `gh`) or `--epic` (`glab`), a label with `--label`.
-4. **Report** the file name, or the issue number or key and URL from the command output.
-
-## Tasks for someone else
-
-A task assigned to someone other than the user (see [What to show](#what-to-show), step 2) is read by a person who was not in this conversation, and must tell them what is being handed to them. This applies when creating it with that assignee, when assigning or reassigning it to them, and when editing a task already assigned to them.
-
-- **The body explains the work**, in plain words, before `Why:`: what to do and where (files, components, pages, URLs), what is already known or decided (constraints, what was tried, what is out of scope), and whom to ask (the user's handle). Then `Why:`, `Done when:` and `Links:` as usual. No shorthand from this session ("as discussed", "the bug above", "option B"): name things.
-- **Take it from the conversation and the code.** What you can't find out, ask the user in the same message as the draft; never invent it.
-- **Assigning an existing task** whose body would leave the assignee guessing: propose the fuller body in the same confirmation, as before → after. The user can decline; then assign only.
-
-## Editing (`/backlog edit`)
-
-1. **Find the task** as in [Closing](#closing-backlog-close) step 1, and read its current values.
-2. **Show the change** as before → after, with the exact command, and run it only after the user confirms (see [Writes need confirmation](#writes-need-confirmation)). Change only what the user asked for, except for the fuller body of [Tasks for someone else](#tasks-for-someone-else), proposed in the same confirmation. An assignee comes from [`.ai/team.md`](#people-aiteammd).
-3. **Edit:**
-   - Jira: `acli jira workitem edit --key <KEY-12> --summary "<title>" --yes` (also `--description`, `--labels`, `--remove-labels`, `--type`); assignee: `acli jira workitem assign --key <KEY-12> --assignee <account ID> --yes`, or `--remove-assignee`. `acli` cannot change the priority: use the Atlassian connector if available, otherwise say it is done in Jira. Never the sprint (see [Jira sprints](#jira-sprints)).
-   - GitLab: `glab issue update <id>` with `--title`, `--description-file -` (body on stdin), `--label`, `--unlabel`, `--assignee`, `--unassign`, `--milestone`.
-   - GitHub: `gh issue edit <id>` with `--title`, `--body-file -`, `--add-label`, `--remove-label`, `--add-assignee`, `--remove-assignee`, `--milestone`.
-   - Folder: edit the file (title, `Why:`, `Done when:`, `Links:`, `Assignee:`, `Postponed:`); git keeps the old version.
-   - Another tracker: its connector.
-4. **Report** what changed, with the URL or file.
-
-## Commenting (`/backlog comment`)
-
-1. **Find the task** as in [Closing](#closing-backlog-close) step 1.
-2. **Write the comment** from the user's words: keep their meaning, fix only typos, add nothing they did not say. If the user asked you to write it ("tell them the API is ready"), draft it and show it. Point to commits, files or merge requests instead of pasting diffs or logs; never put secrets, tokens or personal data in a comment.
-3. **Post:**
-   - GitLab: `glab issue note <id> -m "<text>"`; for more than one line, pass the text through a quoted heredoc (`-m "$(cat <<'EOF' ... EOF)"`).
-   - GitHub: `gh issue comment <id> --body-file -`, with the text on stdin.
-   - Jira: `acli jira workitem comment create --key <KEY-12> --body "<text>"`, multi-line text through a quoted heredoc as for GitLab.
-   - Folder: append a dated line, `- YYYY-MM-DD: <text>`, under a `## Notes` heading at the end of the task file (add the heading if missing).
-   - Another tracker: its connector.
-4. **Report** the comment URL from the command output (for Jira, the work item URL), or the file changed.
-
-## Closing (`/backlog close`)
-
-A task normally closes with the branch that does it: the branch deletes the task file, or its merge request says `Closes #42`, or for Jira it is moved to Done after the merge. `/backlog close` is for the rest: done elsewhere, dropped, duplicated.
-
-1. **Find it** by file name, issue ID or title. If more than one task matches, list them and ask.
-2. **Warn** if the work looks in progress (a handoff or branch names it), or if it is assigned to someone other than the user. Ask before going on.
-3. **Close:**
-   - Folder: delete the file. Say that the deletion closes the task for everyone when it reaches the shared branch.
-   - GitLab: `glab issue close <id>`. GitHub: `gh issue close <id>`, adding `--reason "not planned"` for a dropped task, or `--duplicate-of <number>` for a duplicate.
-   - Jira: `acli jira workitem transition --key <KEY-12> --status "Done" --yes`. Statuses depend on the project's workflow: for a dropped task use its status for that (Won't Do, Cancelled) if the user names one or the work item shows it; if the transition fails, show the error and ask for the status name.
-   - Another tracker: its connector.
-4. If the user gave a reason (duplicate of #12, no longer needed), post it as a comment before closing, in the same confirmation: GitLab `glab issue note <id> -m "<reason>"` then `glab issue close <id>`; GitHub `gh issue close <id> --comment "<reason>"`; Jira `acli jira workitem comment create` then `acli jira workitem transition`. For a folder task, the reason goes in the commit message that deletes the file.
-
-## People (`.ai/team.md`)
-
-The same person often has a different handle in git, GitLab, GitHub and Jira, and people name each other by first name ("assign it to Simo"). `.ai/team.md`, when the project has one, maps them, one row per person:
-
-```markdown
-# Team
-
-| Handle   | Git              | GitLab   | GitHub        | Jira           | Roles       | Aliases             |
-|----------|------------------|----------|---------------|----------------|-------------|---------------------|
-| monacosi | Simone Monaco    | monacosi | simone-monaco | 712020:3f1c... | backend, PO | Simone, Simo, Simon |
-| rossial  | Alessandro Rossi |          |               | 712020:9a2b... |             | Alessandro          |
-```
-
-- **Handle** is the name used in task files (`Assignee:`) and in listings. The other columns hold the handle on each system; leave a cell empty if the person is not there. Jira takes the account ID, not the email. **Roles** is free text (`backend`, `frontend`, `QA`, `PO`), filled in by the team; empty until then. Only handles, account IDs, display names, roles and aliases: no emails, phone numbers or other personal data.
-- **Aligned:** pad every cell with spaces to the widest cell of its column, so the pipes line up and the table reads in plain text too. Keep it aligned when you add or change a row.
-- **Lookup:** when a request names a person, read the file if there is one and match the name against Handle, the system columns and Aliases, ignoring case. One match: use that row's handle for the system in use. More than one: list them and ask. A match with an empty cell for the system in use counts as none.
-- **None:** look the person up in the tracker (GitLab `glab api "projects/:id/members/all?query=<name>"`, GitHub `gh api "repos/{owner}/{repo}/collaborators" --jq '.[].login'`, Jira the assignee of a work item they have, `acli jira workitem view <KEY> --json`, or the Atlassian connector's user lookup) and ask who it is if it is not clear; don't guess between similar names. If the file exists, propose the row with what you found and add it when the user confirms. If there is no file, use what you found for this request only: don't propose creating it.
-- **Suggesting an assignee:** when a new task has no assignee, or the user asks who could take one, suggest the people whose Roles match the task's area, with how many open tasks each already has. Only suggest: assign when the user asks, and in a tracker after their confirmation. Without the file, don't suggest anyone.
-- **Created only when the user asks for it** ("create the team file", "map the team in `.ai/team.md`"). Never propose it on your own: not at setup, not when a name is missing, not because the project has several authors or a tracker.
-  1. **Warn first, before any search:** the file links each person's name, nicknames, roles and accounts on git, GitLab, GitHub and Jira, which is personal data. Ask whether to continue, and stop until the user answers. Until then, look up no one: no `git log` of authors, no tracker members, not even for a preview, and name no one in the warning. If not, write nothing and run no search.
-  2. **Collect:** `git log --since=12.months --format='%aN' | sort -u` (names only, never emails); GitLab `glab api "projects/:id/members/all"` (username, name); GitHub `gh api "repos/{owner}/{repo}/collaborators" --jq '.[].login'` and each login's name (`gh api users/<login> --jq .name`); Jira the assignees of the project's work items (account ID, display name). Match people across systems by name; mark uncertain matches with `?` and list them, never guess. Handle: the tracker username (else the GitLab or GitHub one, else the git name in lowercase with hyphens); Aliases: the first name; Roles: empty. Skip bots (`[bot]`, `dependabot`, `gitlab-bot`, `renovate`).
-  3. **Show the table and ask where it goes:** committed, shared with everyone who has access to the repo (who already sees these names in `git log` and the tracker), or ignored by git (add `.ai/team.md` to `.gitignore`), each person keeping their own. In a public repo, recommend ignoring it: committed, it would put accounts, nicknames and roles online. Visibility: `gh repo view --json visibility` or `glab repo view` (shows public); if you can't tell, say so. Write the file, and `.gitignore` if chosen, after the user's answer.
-- **Changed** when the user asks, or a row added as in None above. The user can edit it by hand.

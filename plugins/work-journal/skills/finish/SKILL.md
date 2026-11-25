@@ -4,7 +4,7 @@ description: "Finishes the work on the current branch. It checks that everything
 license: MIT
 argument-hint: "<merge | merge-request | mr | pull-request | pr | help> [instructions]"
 metadata:
-  version: "0.8.0"
+  version: "0.9.0"
 ---
 
 # Finish
@@ -29,12 +29,14 @@ Never push, force or rewrite history. Formats are in the [work-journal skill](..
 
 Run every check, then report all problems at once. If there is any, stop: one line per problem with what would fix it, and ask. Don't fix them without the user's yes.
 
+The git checks (the first six below) run in one command, from the repo: `sh <this skill's folder>/scripts/git-checks.sh [<base>]`, the base only if the user named one. It prints one line per check and changes nothing but the remote-tracking refs; lines starting with `problem:` go in the report, `ask:` is a question for the user, and a failed fetch is said in the report. Where `sh` can't run, do the same checks with git by hand: the script is short and shows the commands.
+
 - **Branch:** a work branch, not the development or default branch. On a `hotfix/` or `release/` branch, stop and ask: finishing one is a release (merges into the default and development branches, and a tag).
-- **Base:** the handoff's `Base:`. Without it: with git flow, its development branch; otherwise the candidate (`develop`, the default branch) whose merge base with this branch is the most recent (`git log -1 --format=%ci $(git merge-base HEAD <candidate>)`). Propose it and get a yes. A base that no longer exists: stop.
-- **Up to date with origin:** `git fetch origin`, then for the branch and for the base `git rev-list --count <x>..origin/<x>`. Each one behind is a problem of its own: "`<x>` is not up to date with `origin/<x>`, what do you want to do?", with the options "Update it before continuing" (resolving any conflicts it brings) and "Continue without updating". Skip a branch that isn't on `origin`, and the whole check with no `origin` remote; a fetch that fails (offline, not logged in) is said in the report and doesn't stop.
-- **Conflicts with the base:** `git merge-tree --write-tree --name-only HEAD <base>`, and again with `origin/<base>` if it points elsewhere; exit code 1 means conflicts, listed after the first line. Name the files and say they must be resolved before the branch is closed: "resolve them now?" There is no continuing without it. Git older than 2.38 has no `--write-tree`: say the check couldn't run.
+- **Base:** the handoff's `Base:`. Without it: with git flow, its development branch; otherwise the candidate (`develop`, the default branch) whose merge base with this branch is the most recent. Propose it and get a yes. A base that no longer exists: stop.
+- **Up to date with origin:** the branch and the base, after `git fetch origin`. Each one behind is a problem of its own: "`<x>` is not up to date with `origin/<x>`, what do you want to do?", with the options "Update it before continuing" (resolving any conflicts it brings) and "Continue without updating". A branch that isn't on `origin` is skipped, and the whole check with no `origin` remote; a fetch that fails (offline, not logged in) is said in the report and doesn't stop.
+- **Conflicts with the base**, and with `origin/<base>` if it points elsewhere: name the files and say they must be resolved before the branch is closed: "resolve them now?" There is no continuing without it. Git older than 2.38 can't run this check: say so.
 - **Working tree:** uncommitted changes are listed; ask whether they belong to the work.
-- **Agent worktrees:** in `git worktree list`, only those an agent tool created for its subagents (Claude Code: `.claude/worktrees/agent-<id>` on the branch `worktree-agent-<id>`), never the user's own. Each one with uncommitted changes (`git -C <path> status --porcelain`) or with commits whose changes are not in this branch (`git cherry HEAD <its branch>`, lines starting with `+`; `-` means already in this branch) is listed: ask whether that work belongs to the branch or can be dropped. The others hold nothing left and go in step 2.
+- **Agent worktrees:** only those an agent tool created for its subagents (Claude Code: `.claude/worktrees/agent-<id>` on the branch `worktree-agent-<id>`), never the user's own. Each one with uncommitted changes or with commits whose changes are not in this branch is listed: ask whether that work belongs to the branch or can be dropped. The others hold nothing left and go in step 2.
 - **Build and tests:** the commands in the project's instructions (`AGENTS.md`, `CLAUDE.md`, README, package scripts). A failure stops; no commands found, say so.
 - **Handoff:** no open status items or next steps, no open questions for the user.
 - **Reminders:** none left under the handoff's `## Reminders`. List each one left with what you would do with it: done, dropped or a task. The user answers one by one; dropping is a fine answer.
@@ -75,29 +77,4 @@ Then remove the agent worktrees of step 1 that hold nothing left, and those the 
 
 ### `mr`, `pr`
 
-- `mr` uses `glab`, `pr` uses `gh`; if it doesn't match the host of `origin`, say so and ask. Not logged in: see the backlog skill, [Not logged in](../backlog/SKILL.md#not-logged-in).
-- The branch must be on the remote and up to date (`git status -sb`). If it isn't, give the user `git push -u origin <branch>` in the same message as the title, body and command below (one stop, not two), and create nothing until they say it is pushed. Never pass `--push` or `--fill`, which push.
-- **Title:** the task title, after the Jira key if there is one (`PODCAST-42 CSV export`).
-- **Body:** see [The description](#the-description). Draft it before step 2 deletes the task file and the handoff it is built from.
-- **Reviewer and assignee** are two things: the reviewer checks and approves the request, the assignee carries it to the merge (often the author). Each one named in the instructions (a person, "me", "nobody"): follow them. For each one they don't name, ask in the same message, as one question: who reviews it (someone, nobody), and whom to assign it to (the user, someone else, nobody). Never pick either yourself, and never propose the user as their own reviewer. A name is resolved as in the backlog skill, [People](../backlog/SKILL.md#people-aiteammd). The flags are `--reviewer <handle>` and `--assignee <handle>` for both tools (`gh`: `@me` for the user as assignee; `glab`: the username `glab auth status` shows).
-- Show title, body and the exact command, and run it after the user's yes:
-  - `gh pr create --base <base> --title "<title>" --body-file -`, body on stdin;
-  - `glab mr create --target-branch <base> --title "<title>" --description-file - --yes`, body on stdin.
-- The commit of step 2 is part of the request, so merging it closes everything. If the review asks for changes, the next agent on the branch writes a new handoff. A Jira work item moves to Done after the merge, by Jira automation or by hand (`acli jira workitem transition`).
-- Report the URL.
-
-#### The description
-
-The reviewer was not in the conversation and may test the work days later: the description alone must tell them what it is, what changed and how to check it. Three parts, in this order, in the language of the project's issues and commits:
-
-1. **Introduction**, no heading, two to four lines: what the request does and why. Someone who stops reading here knows what they are approving.
-2. **`## Changes`**, in detail: what changed and where (files, components, pages, commands, config), grouped by area for a large branch; the decisions a reviewer would question, each with its reason; what was left out on purpose; what needs care when merging (migration, new config or dependency, changed public behavior). From the commits, `git diff --stat <base>...HEAD`, the handoff and the journal.
-3. **`## How to test`**, everything a tester needs, with no question left to ask:
-   - **Specifications:** what the work had to do: the task's `Done when` or acceptance criteria, one line each, with a link to every issue it comes from (`#42` on the same host, the full URL elsewhere, the Jira key). No written specification: say so and give the handoff's goal.
-   - **Setup:** what is needed first (install, config, data, migration, accounts), if anything.
-   - **Steps:** numbered, each with what to do and what must happen. First the automated tests (the command, what they cover), then by hand what they don't cover, one step per specification line.
-   - **Edge cases:** those the work handles (empty or very large input, invalid values, limits, permissions, errors, old data), each with how to try it and the expected result; then those it does not handle or that nobody tried, said as such.
-
-Last, `Closes #42` for each issue on the same host, or the Jira key.
-
-Write only what is true: a step nobody ran is marked "not run", a specification with no link gets none, and nothing is invented to fill a part. A small change gets short parts, but all three: a part with nothing to say says so in one line. Check failures the user accepted go under Changes.
+Read [`references/merge-request.md`](references/merge-request.md) and follow it: title, description, reviewer and assignee, then the command after the user's yes. Draft the description before step 2 deletes the task file and the handoff it is built from.
