@@ -130,7 +130,7 @@ On 5 of those 15 cases the model already got everything right on its own; they s
 - **A repo with no phase recorded** (with `project-phase: ask` in the global instructions): with the skill, the agent asked, stated the phase it assumed from tags, CI and deploy files, and recorded nothing until answered.
 - **"Create the team file":** with the skill, the agent warned that the file holds personal data and looked no one up before you agreed; without, it created the file right away.
 
-The suite has since grown to 48 cases, run as each feature lands.
+The suite has since grown to 60 cases, run as each feature lands.
 
 ## Guides
 
