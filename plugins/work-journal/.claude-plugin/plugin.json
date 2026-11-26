@@ -1,6 +1,6 @@
 {
   "name": "work-journal",
-  "version": "0.27.0",
+  "version": "0.27.1",
   "description": "Keeps a terse work journal and a per-branch handoff in the repo so any agent, model or human can pause and resume with zero context. Includes /backlog (task files, GitHub or GitLab issues, Jira), /request (merge and pull requests), /start, /pause and /finish for branch work.",
   "author": {
     "name": "SRG SSR"

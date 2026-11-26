@@ -12,7 +12,7 @@ You don't have to ask for the setup: the first time the agent writes a journal e
 
 `.ai/` is meant to be committed, so the handoff travels with the repo. To keep the journal private, add `.ai/journal/` to `.gitignore` and keep `.ai/handoff/` committed.
 
-On Windows, `/finish` and `/start` run their git checks as a `sh` script. If `sh` isn't on your PATH but Git for Windows is installed, setup tells you to add its `bin` folder (for example `C:\Program Files\Git\bin`) to PATH; it never changes PATH itself. Without it the agent runs the same checks by hand, at a higher token cost.
+On Windows, `/finish` and `/start` run their git checks as a `sh` script. If `sh` isn't on your PATH but Git for Windows is installed, setup tells you to add its `bin` folder (for example `C:\Program Files\Git\bin`) to PATH; it never changes PATH itself. Claude Code with Git for Windows can still run the script through its Bash tool, which uses Git Bash; an agent with no way to run `sh` runs the same checks by hand, at a higher token cost.
 
 ### A new repo
 

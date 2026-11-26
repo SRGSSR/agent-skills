@@ -4,7 +4,7 @@ description: "Finishes the work on the current branch. It checks that everything
 license: MIT
 argument-hint: "<merge | merge-request | mr | pull-request | pr | help> [instructions]"
 metadata:
-  version: "0.9.1"
+  version: "0.9.2"
 ---
 
 # Finish
@@ -29,7 +29,7 @@ Never push, force or rewrite history. Formats are in the [work-journal skill](..
 
 Run every check, then report all problems at once. If there is any, stop: one line per problem with what would fix it, and ask. Don't fix them without the user's yes.
 
-The git checks (the first six below) run in one command, from the repo: `sh <this skill's folder>/scripts/git-checks.sh [<base>]`, the base only if the user named one. It prints one line per check and changes nothing but the remote-tracking refs; lines starting with `problem:` go in the report, `ask:` is a question for the user, and a failed fetch is said in the report. Where `sh` can't run, run the same commands by hand, each one: `git fetch origin`; for the branch and the base `git rev-list --count <x>..origin/<x>`; `git merge-tree --write-tree --name-only HEAD <base>`, and again with `origin/<base>` if `git rev-parse` gives it another commit; `git status --porcelain`; `git worktree list`, and for each agent worktree `git -C <path> status --porcelain` and `git cherry HEAD <its branch>`.
+The git checks (the first six below) run in one command, from the repo: `sh <this skill's folder>/scripts/git-checks.sh [<base>]`, the base only if the user named one. It prints one line per check and changes nothing but the remote-tracking refs; lines starting with `problem:` go in the report, `ask:` is a question for the user, and a failed fetch is said in the report. Where `sh` isn't on PATH but you have a Bash tool that runs Git Bash (Claude Code on Windows, with PowerShell as the main shell), run the script with that tool. Where nothing can run it, run the same commands by hand, each one: `git fetch origin`; for the branch and the base `git rev-list --count <x>..origin/<x>`; `git merge-tree --write-tree --name-only HEAD <base>`, and again with `origin/<base>` if `git rev-parse` gives it another commit; `git status --porcelain`; `git worktree list`, and for each agent worktree `git -C <path> status --porcelain` and `git cherry HEAD <its branch>`.
 
 - **Branch:** a work branch, not the development or default branch. On a `hotfix/` or `release/` branch, stop and ask: finishing one is a release (merges into the default and development branches, and a tag).
 - **Base:** the handoff's `Base:`. Without it: with git flow, its development branch; otherwise the candidate (`develop`, the default branch) whose merge base with this branch is the most recent. Propose it and get a yes. A base that no longer exists: stop.
