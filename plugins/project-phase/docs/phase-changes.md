@@ -20,7 +20,7 @@ How a project moves from one phase to the next, how the agent behaves when the p
 4. `.ai/phase.md` gets the new phase and a history line with the date and the reason; the contract block in `AGENTS.md` is replaced with the new phase's block.
 5. With [`work-journal`](../../work-journal/README.md) installed, the change is logged in the journal.
 
-The agent never changes the phase on its own: only you decide. `/project-phase setup` on a project already set up does the same review from the repo signals: it shows the current set, phase, overrides and rules, proposes only what the signals suggest changing, and runs a phase change through these same steps.
+The agent never changes the phase on its own: only you decide. `/project-phase setup` on a project already set up does the same review from the repo signals: it shows the current set, phase, overrides and rules, proposes only what the signals suggest changing, and runs a phase change through these same steps. The block in `AGENTS.md` is rebuilt from `.ai/phase.md`, so a rule you wrote only in the block is first moved to the custom rules of `phase.md`, and the agent tells you.
 
 ## Transitions
 
