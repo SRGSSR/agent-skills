@@ -10,9 +10,10 @@ On native Windows, Claude Code runs the Bash tool and command hooks in Git Bash 
 Done when both are in, versions bumped, checks pass, docs updated.
 
 ## Status
+Done: finish 0.9.2, start 0.4.3 → 0.4.4, plugin 0.27.1, design.md and getting-started updated; checks green. No eval run, not tried on Windows.
 
 ## Next steps
-- Edit the fallback sentence in `finish/SKILL.md` step 1 and its pointer in `start/SKILL.md`.
+- /finish.
 
 ## Pointers
 - Request in the conversation of 2026-11-26; design notes `docs/design.md` "Session start hooks" and "Token cost and scripts".
