@@ -1325,6 +1325,10 @@ graders['phase-review'] = () => {
     return [kept && Boolean(added), `kept: ${kept}, today: ${added || 'none'}`];
   });
   check('.ai/debt.md is unchanged', () => [read('.ai/debt.md') === atBase('.ai/debt.md'), read('.ai/debt.md') === atBase('.ai/debt.md') ? 'unchanged' : 'changed']);
+  check('.gitattributes has the line `.ai/debt.md merge=union` (missing in the fixture)', () => {
+    const l = read('.gitattributes').split('\n').find((x) => /^\.ai\/debt\.md\s+.*merge=union/.test(x));
+    return [Boolean(l), l || 'missing'];
+  });
   check('No other files changed (only AGENTS.md, .ai/phase.md and .gitattributes)', () => {
     const bad = changedFiles().filter((f) => !['AGENTS.md', '.ai/phase.md', '.gitattributes'].includes(f));
     return [bad.length === 0, bad.join(', ') || 'none'];

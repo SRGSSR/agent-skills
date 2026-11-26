@@ -4,7 +4,7 @@ description: "Sets and applies the project's lifecycle phase (explore, prototype
 license: MIT
 argument-hint: "[setup | on | off | help]"
 metadata:
-  version: "0.6.2"
+  version: "0.6.3"
 ---
 
 # Project Phase
@@ -111,7 +111,7 @@ If the user's global instructions name a default set (for example `project-phase
    - Add the line `.ai/debt.md merge=union` to `.gitattributes` (create the file if missing) unless it is already there: when two branches add debt items, git keeps both instead of reporting a conflict.
 5. **Report** in two or three lines: phase, set, files touched.
 
-**Review (`/project-phase setup` on a project already set up).** Show the current set, phase, area overrides and custom rules in a few lines, read the signals as in step 2, and propose only what they suggest changing: a phase change (run it as in [Changing phase](#changing-phase)), another set, an override, a rule. Change only what the user confirms, rebuild the block from `phase.md` as in step 4, and add a history line. Before rebuilding, move bullets of the block that are neither in the phase contract nor in `phase.md` to `## Custom rules` in `phase.md`, and say so: the rebuild would drop them. Never rewrite the history or touch `.ai/debt.md` here. If nothing needs to change, say so in one line.
+**Review (`/project-phase setup` on a project already set up).** Show the current set, phase, area overrides and custom rules in a few lines, read the signals as in step 2, and propose only what they suggest changing: a phase change (run it as in [Changing phase](#changing-phase)), another set, an override, a rule. Change only what the user confirms, rebuild the block from `phase.md` as in step 4, and add a history line. Before rebuilding, move bullets of the block that are neither in the phase contract nor in `phase.md` to `## Custom rules` in `phase.md`, and say so: the rebuild would drop them. Add what step 4 finds missing, without asking: the `.gitattributes` line and the `@AGENTS.md` import in `CLAUDE.md`. Never rewrite the history or touch `.ai/debt.md` here. If nothing needs to change, say so in one line.
 
 ### Status
 
