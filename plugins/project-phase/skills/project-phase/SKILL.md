@@ -4,7 +4,7 @@ description: "Sets and applies the project's lifecycle phase (explore, prototype
 license: MIT
 argument-hint: "[setup | on | off | help]"
 metadata:
-  version: "0.6.1"
+  version: "0.6.2"
 ---
 
 # Project Phase
@@ -111,7 +111,7 @@ If the user's global instructions name a default set (for example `project-phase
    - Add the line `.ai/debt.md merge=union` to `.gitattributes` (create the file if missing) unless it is already there: when two branches add debt items, git keeps both instead of reporting a conflict.
 5. **Report** in two or three lines: phase, set, files touched.
 
-**Review (`/project-phase setup` on a project already set up).** Show the current set, phase, area overrides and custom rules in a few lines, read the signals as in step 2, and propose only what they suggest changing: a phase change (run it as in [Changing phase](#changing-phase)), another set, an override, a rule. Change only what the user confirms, rebuild the block from `phase.md` as in step 4, and add a history line. Never rewrite the history or touch `.ai/debt.md` here. If nothing needs to change, say so in one line.
+**Review (`/project-phase setup` on a project already set up).** Show the current set, phase, area overrides and custom rules in a few lines, read the signals as in step 2, and propose only what they suggest changing: a phase change (run it as in [Changing phase](#changing-phase)), another set, an override, a rule. Change only what the user confirms, rebuild the block from `phase.md` as in step 4, and add a history line. Before rebuilding, move bullets of the block that are neither in the phase contract nor in `phase.md` to `## Custom rules` in `phase.md`, and say so: the rebuild would drop them. Never rewrite the history or touch `.ai/debt.md` here. If nothing needs to change, say so in one line.
 
 ### Status
 
@@ -122,7 +122,7 @@ Answer from the contract block and `phase.md`: current phase and since when, wha
 1. Confirm the target phase with the user, unless they already stated it clearly.
 2. Run the transition checklist from [references/transitions.md](references/transitions.md#transition-checklists). Present it as a short prioritized list (must now / should soon / later) and ask what to do now. Some transitions generate real work (prototype → stabilize); others are mostly a change of stance (production → maintenance). Do not start the work without agreement.
    The plan must outlive the session, because a transition like stabilize takes weeks: add each gap the checklist found as an open item in `.ai/debt.md` (skip those already there), with its priority (`must`, `soon`, `later`). If the user changes the priorities, update the lines. If the `work-journal` block names a task list, larger items also become tasks that link the debt item.
-3. Update `phase.md` (current phase, history line with date and reason) and replace the contract block with the one for the new phase.
+3. Update `phase.md` (current phase, history line with date and reason) and replace the contract block with the one for the new phase, after moving its hand-written bullets to `phase.md` as in the setup review.
 4. If the `work-journal` skill is in use, log the change in the journal.
 
 ### Debt review

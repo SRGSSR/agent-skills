@@ -6,7 +6,7 @@ Why the skills work the way they do, and what was discarded. This repo keeps its
 
 - `off` leaves a one-line marker (`<!-- project-phase:off -->`) instead of just deleting the block: the skills trigger on common phrases and `work-journal` sets itself up on the first journal entry, so a deleted block would come back. Discarded: the off state in `.ai/` (an extra read on every trigger, and `work-journal` has no state file), commenting the block out (it contains HTML comments, which don't nest, and would still cost context), a global switch (uninstalling is that).
 - While off, an explicit request is still served once, with a one-line reminder: refusing would be unhelpful, silently turning the skill back on would defeat `off`. `.ai/` is never touched by on/off.
-- `project-phase on` rebuilds the block from `.ai/phase.md` like setup does, so `off` first moves hand-added bullets to `## Custom rules`.
+- `project-phase on` rebuilds the block from `.ai/phase.md` like setup does, so `off` first moves hand-added bullets to `## Custom rules`. The setup review and a phase change rebuild it too, and move them the same way first (eval 60: with only `off` covered, 1 Sonnet run of 2 and the baseline left a hand-written rule only in the block; with the review and phase change covered, 2 of 2).
 - The skills are written in English only, and triggers work in Italian, French and German without examples. Replies follow the user's language (the English skill text pulled replies into English before this was stated); files keep the language they already use. Forcing files to English was discarded: a team writing its journal in German should not get mixed-language files.
 
 ## Several people, long-lived projects
