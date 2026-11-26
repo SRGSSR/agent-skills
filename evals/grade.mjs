@@ -1298,6 +1298,38 @@ graders['request-list-gitlab'] = () => {
     return [bad.length === 0, bad.join(', ') || 'only the journal'];
   });
 };
+graders['phase-review'] = () => {
+  const today = new Date().toISOString().slice(0, 10);
+  const phase = read('.ai/phase.md');
+  const blk = block(read('AGENTS.md'), 'project-phase');
+  // Bullets under ## Custom rules, up to the next heading.
+  const custom = (phase.split(/^## Custom rules\s*$/m)[1] || '').split(/^## /m)[0];
+  const noJs = (t) => /javascript/i.test(t);
+  const demo = (t) => /demo items?/i.test(t);
+  check('The phase is unchanged: prototype since 2026-09-22 in .ai/phase.md, and the PROTOTYPE block in AGENTS.md', () => {
+    const cur = phase.split('\n').find((l) => /^Current:/.test(l)) || '';
+    return [/prototype/i.test(cur) && cur.includes('2026-09-22') && /Project phase: PROTOTYPE/.test(blk), `${cur} | block: ${(blk.match(/Project phase: \w+/) || ['none'])[0]}`];
+  });
+  check('The requested rule (JavaScript turned off) is under ## Custom rules in .ai/phase.md and in the block', () => [noJs(custom) && noJs(blk), `phase.md: ${noJs(custom)}, block: ${noJs(blk)}`]);
+  check('The rule written by hand in the block (demo items in server.js) is still in the block', () => {
+    const l = blk.split('\n').find(demo);
+    return [Boolean(l), l || 'missing'];
+  });
+  check('The rule written by hand is also under ## Custom rules in .ai/phase.md', () => {
+    const l = custom.split('\n').find(demo);
+    return [Boolean(l), l || 'missing'];
+  });
+  check('The existing history line is kept and a history line dated today is added', () => {
+    const kept = phase.includes('- 2026-09-22: set to prototype (setup).');
+    const added = phase.split('\n').find((l) => l.startsWith(`- ${today}`));
+    return [kept && Boolean(added), `kept: ${kept}, today: ${added || 'none'}`];
+  });
+  check('.ai/debt.md is unchanged', () => [read('.ai/debt.md') === atBase('.ai/debt.md'), read('.ai/debt.md') === atBase('.ai/debt.md') ? 'unchanged' : 'changed']);
+  check('No other files changed (only AGENTS.md, .ai/phase.md and .gitattributes)', () => {
+    const bad = changedFiles().filter((f) => !['AGENTS.md', '.ai/phase.md', '.gitattributes'].includes(f));
+    return [bad.length === 0, bad.join(', ') || 'none'];
+  });
+};
 graders['setup-production-repo-fr'] = graders['setup-production-repo'];
 graders['resume-from-handoff-de'] = graders['resume-from-handoff'];
 
